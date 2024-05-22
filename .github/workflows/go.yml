@@ -24,7 +24,7 @@ jobs:
     - name: Install Dependencies
       run: |
         go get .
-        go get github.com/gocolly/colly v1.2.0 // indirect
+        go get github.com/gocolly/colly
 
     - name: Build
       run: go build -v ./...
