@@ -1,4 +1,4 @@
-package main
+package filmdata
 
 import (
 	"reflect"

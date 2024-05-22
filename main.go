@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
+
+	"lbxdr/filmdata"
 )
 
 func parseArgs() string {
@@ -28,12 +30,12 @@ func parseArgs() string {
 
 func main() {
 	url := parseArgs()
-	urlList, err := ScrapeList(url)
+	urlList, err := filmdata.ScrapeList(url)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(urlList)
-	id, err := ScrapeFilmID(urlList[0])
+	id, err := filmdata.ScrapeFilmID(urlList[0])
 	if err != nil {
 		panic(err)
 	}
