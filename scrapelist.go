@@ -13,6 +13,8 @@ func ScrapeList(rawURL string) ([]string, error) {
 	url, err := url.Parse(rawURL)
 	if err != nil {
 		return nil, err
+	} else if (url.Hostname() != "letterboxd.com") {
+		return nil, fmt.Errorf("%s is not a letterboxd.com url", url)
 	}
 	filmURLList := []string{}
 	c := colly.NewCollector()
@@ -40,7 +42,9 @@ func ScrapeList(rawURL string) ([]string, error) {
 func ScrapeFilmID(rawURL string) (int, error) {
 	url, err := url.Parse(rawURL)
 	if err != nil {
-		return 0, err
+		return -1, err
+	} else if (url.Hostname() != "letterboxd.com") {
+		return -1, fmt.Errorf("%s is not a letterboxd.com url", url)
 	}
 	c := colly.NewCollector()
 	id := -1
