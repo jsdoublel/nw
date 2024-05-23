@@ -34,10 +34,16 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(urlList)
-	id, err := filmdata.ScrapeFilmID(urlList[0])
-	if err != nil {
-		panic(err)
+	// fmt.Println(urlList)
+	for _, url := range urlList {
+		id, err := filmdata.ScrapeFilmID(url)
+		if err != nil {
+			panic(err)
+		}
+		film, err := filmdata.TMDBFilm(id)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(film.Title)
 	}
-	fmt.Println(id)
 }
