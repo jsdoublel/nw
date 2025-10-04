@@ -10,15 +10,10 @@ import (
 
 func parseArgs() string {
 	flag.Usage = func() {
-		fmt.Fprintf(flag.CommandLine.Output(),
-			"Usage of %s [flags] <positional args>\n",
-			os.Args[0])
-		fmt.Fprint(flag.CommandLine.Output(),
-			"Flags:\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "Usage of %s [flags] <positional args>\n", os.Args[0])
+		fmt.Fprint(flag.CommandLine.Output(), "Flags:\n")
 		flag.PrintDefaults()
-		// List positional args
-		fmt.Fprint(flag.CommandLine.Output(),
-			"\nPositional:\n\t[url] letterboxd list url\n")
+		fmt.Fprint(flag.CommandLine.Output(), "\nPositional:\n\t[url] letterboxd list url\n")
 	}
 	flag.Parse()
 	if flag.NArg() != 1 {
@@ -44,6 +39,6 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(film.Title)
+		fmt.Printf("Title: %s, Year:  %s\n", film.Title, film.ReleaseDate)
 	}
 }

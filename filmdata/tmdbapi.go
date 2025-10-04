@@ -7,18 +7,19 @@ import (
 	"github.com/cyruzin/golang-tmdb"
 )
 
-var TMDB_CLIENT *tmdb.Client = nil
+var TMDBClient *tmdb.Client = nil
 
 func tmdbClient() (*tmdb.Client, error) {
-	if TMDB_CLIENT != nil  {
-		return TMDB_CLIENT, nil
+	if TMDBClient != nil {
+		return TMDBClient, nil
 	}
-	TMDB_CLIENT, err := tmdb.Init(os.Getenv("TMDB_API"))
+	var err error
+	TMDBClient, err = tmdb.Init(os.Getenv("TMDB_API"))
 	if err != nil {
-		return nil, fmt.Errorf("Error: Could not connect to API. %s\n", err)
+		return nil, fmt.Errorf("could not connect to API, %s", err)
 	}
-	TMDB_CLIENT.SetClientAutoRetry()
-	return TMDB_CLIENT, nil
+	TMDBClient.SetClientAutoRetry()
+	return TMDBClient, nil
 }
 
 func TMDBFilm(id int) (*tmdb.MovieDetails, error) {
@@ -28,8 +29,7 @@ func TMDBFilm(id int) (*tmdb.MovieDetails, error) {
 	}
 	film, err := client.GetMovieDetails(id, nil)
 	if err != nil {
-		return nil, fmt.Errorf("Error: Could not retrieve film. %s\n", err)
+		return nil, fmt.Errorf("could not retrieve film, %s", err)
 	}
 	return film, nil
 }
-

@@ -5,14 +5,14 @@ import (
 )
 
 func TestTMDBFilm(t *testing.T) {
-	testCases := []struct{
-		name string
-		id int
+	testCases := []struct {
+		name     string
+		id       int
 		expected string
 	}{
 		{
-			name: "Dancer in the Dark",
-			id: 16,
+			name:     "Dancer in the Dark",
+			id:       16,
 			expected: "Dancer in the Dark",
 		},
 	}
@@ -27,5 +27,13 @@ func TestTMDBFilm(t *testing.T) {
 				t.Errorf("%s != %s", film.Title, test.expected)
 			}
 		})
+	}
+}
+
+func BenchmarkTMDBFilm(b *testing.B) {
+	for b.Loop() {
+		if _, err := TMDBFilm(16); err != nil {
+			b.Fatalf("failed to get film data, %s", err)
+		}
 	}
 }

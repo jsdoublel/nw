@@ -36,9 +36,18 @@ func TestScrapeList(t *testing.T) {
 				t.Errorf("Produced Error %s", err)
 			}
 			if !reflect.DeepEqual(test.expected, urlList) {
-				t.Errorf("%v\n!=\n%v", test.expected, urlList)
+				t.Errorf("want=%v\n!= got=\n%v", test.expected, urlList)
 			}
 		})
+	}
+}
+
+func BenchmarkScrapeList(b *testing.B) {
+	testListUrl := "https://letterboxd.com/sentralperk/list/sight-sound/"
+	for b.Loop() {
+		if _, err := ScrapeList(testListUrl); err != nil {
+			b.Fatalf("failed to scrape list, %s", err)
+		}
 	}
 }
 
@@ -70,5 +79,14 @@ func TestScrapeFilmID(t *testing.T) {
 				t.Errorf("%d != %d", test.expected, id)
 			}
 		})
+	}
+}
+
+func BenchmarkScrapeFilmID(b *testing.B) {
+	filmUrl := "https://letterboxd.com/film/2001-a-space-odyssey/"
+	for b.Loop() {
+		if _, err := ScrapeFilmID(filmUrl); err != nil {
+			b.Fatalf("failed to scrape film url, %s", err)
+		}
 	}
 }
