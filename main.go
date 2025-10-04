@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"lbxdr/filmdata"
+	"github.com/jsdoublel/lbxdr/filmdata"
 )
 
 func parseArgs() string {
