@@ -51,6 +51,14 @@ func BenchmarkScrapeList(b *testing.B) {
 	}
 }
 
+func BenchmarkScrapeUserLists(b *testing.B) {
+	for b.Loop() {
+		if _, err := ScapeUserLists("jsdoublel"); err != nil {
+			b.Fatalf("failed to scrape user's lists, %s", err)
+		}
+	}
+}
+
 func TestScrapeFilmID(t *testing.T) {
 	testCases := []struct {
 		name     string

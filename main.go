@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/jsdoublel/lbxdr/filmdata"
@@ -24,21 +25,26 @@ func parseArgs() string {
 }
 
 func main() {
-	url := parseArgs()
-	urlList, err := filmdata.ScrapeList(url)
+	username := parseArgs()
+	lists, err := filmdata.ScapeUserLists(username)
 	if err != nil {
-		panic(err)
+		log.Fatalf("error: %s", err)
 	}
-	// fmt.Println(urlList)
-	for _, url := range urlList {
-		id, err := filmdata.ScrapeFilmID(url)
-		if err != nil {
-			panic(err)
-		}
-		film, err := filmdata.TMDBFilm(id)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Printf("Title: %s, Year:  %s\n", film.Title, film.ReleaseDate)
-	}
+	fmt.Println(lists)
+	// urlList, err := filmdata.ScrapeList(url)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// // fmt.Println(urlList)
+	// for _, url := range urlList {
+	// 	id, err := filmdata.ScrapeFilmID(url)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	film, err := filmdata.TMDBFilm(id)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	fmt.Printf("Title: %s, Year:  %s\n", film.Title, film.ReleaseDate)
+	// }
 }

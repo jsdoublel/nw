@@ -1,14 +1,74 @@
 package filmdata
 
 import (
+	"errors"
 	"fmt"
-	"log"
 	"net/url"
 	"strconv"
 	"strings"
 
 	"github.com/gocolly/colly"
 )
+
+const LetterboxdUrl = "https://letterboxd.com"
+
+type FilmListHeader struct {
+	name    string
+	listUrl string
+}
+
+func (flh FilmListHeader) String() string {
+	return fmt.Sprintf("{%s : %s}", flh.name, flh.listUrl)
+}
+
+func MakeUserWatchlistHeader(username string) (FilmListHeader, error) {
+	watchlistUrl, err := url.JoinPath(LetterboxdUrl, username, "watchlist")
+	if err != nil {
+		return FilmListHeader{}, fmt.Errorf("problem joining url parts, %w", err)
+	}
+	return FilmListHeader{name: "Watchlist", listUrl: watchlistUrl}, nil
+}
+
+func MakeUserFilmListHeader(username string) (FilmListHeader, error) {
+	filmListUrl, err := url.JoinPath(LetterboxdUrl, username, "films")
+	if err != nil {
+		return FilmListHeader{}, fmt.Errorf("problem joining url parts, %w", err)
+	}
+	return FilmListHeader{name: "Watched", listUrl: filmListUrl}, nil
+}
+
+func ScapeUserLists(username string) ([]FilmListHeader, error) {
+	listPageUrl, err := url.JoinPath(LetterboxdUrl, username, "lists")
+	if err != nil {
+		return nil, fmt.Errorf("problem joining url parts, %w", err)
+	}
+	usersListUrls := []FilmListHeader{}
+	c := colly.NewCollector()
+	c.OnHTML("h2.name.prettify", func(h *colly.HTMLElement) {
+		h.ForEach("a[href]", func(_ int, h *colly.HTMLElement) {
+			if listUrl := h.Request.AbsoluteURL(h.Attr("href")); strings.Contains(listUrl, "/list/") {
+				usersListUrls = append(usersListUrls, FilmListHeader{name: h.Text, listUrl: listUrl})
+			}
+		})
+	})
+	var paginationErr error
+	c.OnHTML("a.next", func(h *colly.HTMLElement) {
+		if paginationErr != nil {
+			return
+		}
+		nextURL := h.Request.AbsoluteURL(h.Attr("href"))
+		if err := c.Visit(nextURL); err != nil && !errors.Is(err, colly.ErrAlreadyVisited) {
+			paginationErr = fmt.Errorf("paginate user lists: %w", err)
+		}
+	})
+	if err := c.Visit(listPageUrl); err != nil {
+		return nil, fmt.Errorf("problem trying to visit url, %w", err)
+	}
+	if paginationErr != nil {
+		return nil, paginationErr
+	}
+	return usersListUrls, nil
+}
 
 func ScrapeList(rawURL string) ([]string, error) {
 	url, err := url.Parse(rawURL)
@@ -18,36 +78,30 @@ func ScrapeList(rawURL string) ([]string, error) {
 		return nil, fmt.Errorf("%s is not a letterboxd.com url", url)
 	}
 	filmURLList := []string{}
-	count := 0
 	c := colly.NewCollector()
 	c.OnHTML("ul.poster-list", func(h *colly.HTMLElement) {
-		// if !strings.Contains(h.Request.URL.Path, "film/") {
-		// h.ForEach("div.poster.film-poster", func(_ int, h *colly.HTMLElement) {
 		h.ForEach("div.react-component", func(_ int, h *colly.HTMLElement) {
-			count++
 			if fUrl := h.Request.AbsoluteURL(h.Attr("data-target-link")); strings.Contains(fUrl, "/film/") {
 				filmURLList = append(filmURLList, fUrl)
 			}
-			// c.Visit(filmPage)
 		})
-		// }
 	})
+	var paginationErr error
 	c.OnHTML(".next", func(h *colly.HTMLElement) {
-		err = c.Visit(h.Request.AbsoluteURL(h.Attr("href")))
+		if paginationErr != nil {
+			return
+		}
+		nextURL := h.Request.AbsoluteURL(h.Attr("href"))
+		if err := c.Visit(nextURL); err != nil && !errors.Is(err, colly.ErrAlreadyVisited) {
+			paginationErr = fmt.Errorf("paginate list: %w", err)
+		}
 	})
-	if err != nil {
-		return nil, err
-	}
-	// c.OnHTML("a.micro-button.track-event", func(h *colly.HTMLElement) {
-	// 	if h.Text == "TMDb" {
-	// 		filmURLList = append(filmURLList, h.Attr("href"))
-	// 	}
-	// })
 	if err = c.Visit(url.String()); err != nil {
 		return nil, err
 	}
-	// fmt.Println(filmURLList)
-	log.Printf("%d div.react-component found, %d were films", count, len(filmURLList))
+	if paginationErr != nil {
+		return nil, paginationErr
+	}
 	return filmURLList, nil
 }
 
