@@ -1,4 +1,4 @@
-module github.com/jsdoublel/lbxdr
+module github.com/jsdoublel/nw
 
 go 1.24.0
 

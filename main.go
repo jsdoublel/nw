@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/jsdoublel/lbxdr/filmdata"
+	"github.com/jsdoublel/nw/filmdata"
 )
 
 func parseArgs() string {

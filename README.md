@@ -1,4 +1,4 @@
-# lbxdr
+# NW (Next Watch)
 
 CTL utility for selecting films to watch from letterboxd. 
 
