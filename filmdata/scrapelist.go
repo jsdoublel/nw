@@ -13,12 +13,12 @@ import (
 const LetterboxdUrl = "https://letterboxd.com"
 
 type FilmListHeader struct {
-	name    string
-	listUrl string
+	Name    string
+	ListUrl string
 }
 
 func (flh FilmListHeader) String() string {
-	return fmt.Sprintf("{%s : %s}", flh.name, flh.listUrl)
+	return fmt.Sprintf("{%s : %s}", flh.Name, flh.ListUrl)
 }
 
 func MakeUserWatchlistHeader(username string) (FilmListHeader, error) {
@@ -26,7 +26,7 @@ func MakeUserWatchlistHeader(username string) (FilmListHeader, error) {
 	if err != nil {
 		return FilmListHeader{}, fmt.Errorf("problem joining url parts, %w", err)
 	}
-	return FilmListHeader{name: "Watchlist", listUrl: watchlistUrl}, nil
+	return FilmListHeader{Name: "Watchlist", ListUrl: watchlistUrl}, nil
 }
 
 func MakeUserFilmListHeader(username string) (FilmListHeader, error) {
@@ -34,7 +34,7 @@ func MakeUserFilmListHeader(username string) (FilmListHeader, error) {
 	if err != nil {
 		return FilmListHeader{}, fmt.Errorf("problem joining url parts, %w", err)
 	}
-	return FilmListHeader{name: "Watched", listUrl: filmListUrl}, nil
+	return FilmListHeader{Name: "Watched", ListUrl: filmListUrl}, nil
 }
 
 func ScapeUserLists(username string) ([]FilmListHeader, error) {
@@ -47,7 +47,7 @@ func ScapeUserLists(username string) ([]FilmListHeader, error) {
 	c.OnHTML("h2.name.prettify", func(h *colly.HTMLElement) {
 		h.ForEach("a[href]", func(_ int, h *colly.HTMLElement) {
 			if listUrl := h.Request.AbsoluteURL(h.Attr("href")); strings.Contains(listUrl, "/list/") {
-				usersListUrls = append(usersListUrls, FilmListHeader{name: h.Text, listUrl: listUrl})
+				usersListUrls = append(usersListUrls, FilmListHeader{Name: h.Text, ListUrl: listUrl})
 			}
 		})
 	})

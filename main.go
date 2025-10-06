@@ -6,7 +6,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/jsdoublel/nw/filmdata"
+	ud "github.com/jsdoublel/nw/userdata"
+	// "github.com/jsdoublel/nw/filmdata"
 )
 
 func parseArgs() string {
@@ -26,11 +27,19 @@ func parseArgs() string {
 
 func main() {
 	username := parseArgs()
-	lists, err := filmdata.ScapeUserLists(username)
+	user, err := ud.LoadUser(username)
 	if err != nil {
 		log.Fatalf("error: %s", err)
 	}
-	fmt.Println(lists)
+	fmt.Println(user.ListHeaders)
+	if err = user.Save(); err != nil {
+		log.Fatalf("error: %s", err)
+	}
+	// lists, err := filmdata.ScapeUserLists(username)
+	// if err != nil {
+	// 	log.Fatalf("error: %s", err)
+	// }
+	// fmt.Println(lists)
 	// urlList, err := filmdata.ScrapeList(url)
 	// if err != nil {
 	// 	panic(err)
