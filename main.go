@@ -32,6 +32,7 @@ func main() {
 		log.Fatalf("error: %s", err)
 	}
 	fmt.Println(user.ListHeaders)
+	fmt.Println(user.Watchlist.Films)
 	if err = user.Save(); err != nil {
 		log.Fatalf("error: %s", err)
 	}

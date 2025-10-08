@@ -2,7 +2,9 @@ package userdata
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"path"
 
@@ -18,9 +20,9 @@ const (
 
 type User struct {
 	Name        string
-	ListHeaders []fd.FilmListHeader
-	// watchlist FilmList
-	// films     FilmList
+	ListHeaders []*fd.FilmList
+	Watchlist   *fd.FilmList
+	Films       *fd.FilmList
 	// nwQueue   NextWatch
 }
 
@@ -63,19 +65,49 @@ func LoadUser(username string) (*User, error) {
 		}
 		return &save.User, nil
 	} else if os.IsNotExist(err) {
-		log.Println("no save found; creating new user")
+		log.Printf("no save found; creating new user %s", username)
 		return makeUser(username)
 	} else {
 		return nil, err
 	}
 }
 
+// creates user, scrapping all user information
+//
+// TODO: multithread
 func makeUser(username string) (*User, error) {
 	headers, err := fd.ScapeUserLists(username)
 	if err != nil {
 		return nil, err
 	}
-	return &User{Name: username, ListHeaders: headers}, nil
+	wlUrl, err := url.JoinPath(fd.LetterboxdUrl, username, "watchlist")
+	if err != nil {
+		return nil, err
+	}
+	watchlist, err := fd.ScrapeFilmList(wlUrl)
+	if err != nil {
+		return nil, err
+	} else if watchlist.Name != "" {
+		return nil, fmt.Errorf("watchlist had unexpected name %s", watchlist.Name)
+	}
+	watchlist.Name = "Watchlist"
+	fUrl, err := url.JoinPath(fd.LetterboxdUrl, username, "films")
+	if err != nil {
+		return nil, err
+	}
+	films, err := fd.ScrapeFilmList(fUrl)
+	if err != nil {
+		return nil, err
+	} else if films.Name != "" {
+		return nil, fmt.Errorf("films list had unexpected name %s", watchlist.Name)
+	}
+	films.Name = "Watched"
+	return &User{
+		Name:        username,
+		ListHeaders: headers,
+		Watchlist:   &watchlist,
+		Films:       &films,
+	}, nil
 }
 
 // Get save path name from username

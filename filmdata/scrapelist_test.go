@@ -8,35 +8,37 @@ import (
 func TestScrapeList(t *testing.T) {
 	testCases := []struct {
 		name     string
-		url      string
-		expected []string
+		expected FilmList
 	}{
 		{
 			name: "oscars: 2024",
-			url:  "https://letterboxd.com/oscars/list/the-96th-academy-award-nominees-for-best/",
-			expected: []string{
-				"https://letterboxd.com/film/oppenheimer-2023/",
-				"https://letterboxd.com/film/american-fiction/",
-				"https://letterboxd.com/film/anatomy-of-a-fall/",
-				"https://letterboxd.com/film/barbie/",
-				"https://letterboxd.com/film/the-holdovers/",
-				"https://letterboxd.com/film/killers-of-the-flower-moon/",
-				"https://letterboxd.com/film/maestro-2023/",
-				"https://letterboxd.com/film/past-lives/",
-				"https://letterboxd.com/film/poor-things-2023/",
-				"https://letterboxd.com/film/the-zone-of-interest/",
+			expected: FilmList{
+				Name:    "The 96th Academy Award nominees for Best Motion Picture of the Year",
+				ListUrl: "https://letterboxd.com/oscars/list/the-96th-academy-award-nominees-for-best/",
+				Films: []*Film{
+					{Url: "https://letterboxd.com/film/oppenheimer-2023/", Name: "Oppenheimer", Year: 2023},
+					{Url: "https://letterboxd.com/film/american-fiction/", Name: "American Fiction", Year: 2023},
+					{Url: "https://letterboxd.com/film/anatomy-of-a-fall/", Name: "Anatomy of a Fall", Year: 2023},
+					{Url: "https://letterboxd.com/film/barbie/", Name: "Barbie", Year: 2023},
+					{Url: "https://letterboxd.com/film/the-holdovers/", Name: "The Holdovers", Year: 2023},
+					{Url: "https://letterboxd.com/film/killers-of-the-flower-moon/", Name: "Killers of the Flower Moon", Year: 2023},
+					{Url: "https://letterboxd.com/film/maestro-2023/", Name: "Maestro", Year: 2023},
+					{Url: "https://letterboxd.com/film/past-lives/", Name: "Past Lives", Year: 2023},
+					{Url: "https://letterboxd.com/film/poor-things-2023/", Name: "Poor Things", Year: 2023},
+					{Url: "https://letterboxd.com/film/the-zone-of-interest/", Name: "The Zone of Interest", Year: 2023},
+				},
 			},
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			urlList, err := ScrapeList(test.url)
+			fl, err := ScrapeFilmList(test.expected.ListUrl)
 			if err != nil {
 				t.Errorf("Produced Error %s", err)
 			}
-			if !reflect.DeepEqual(test.expected, urlList) {
-				t.Errorf("want=%v\n!= got=\n%v", test.expected, urlList)
+			if !reflect.DeepEqual(test.expected, fl) {
+				t.Errorf("want=%v\n!= got=%v\n", test.expected, fl)
 			}
 		})
 	}
@@ -45,7 +47,7 @@ func TestScrapeList(t *testing.T) {
 func BenchmarkScrapeList(b *testing.B) {
 	testListUrl := "https://letterboxd.com/sentralperk/list/sight-sound/"
 	for b.Loop() {
-		if _, err := ScrapeList(testListUrl); err != nil {
+		if _, err := ScrapeFilmList(testListUrl); err != nil {
 			b.Fatalf("failed to scrape list, %s", err)
 		}
 	}
