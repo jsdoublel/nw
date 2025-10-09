@@ -19,22 +19,6 @@ var ErrInvalidUrl error = errors.New("invalid url")
 
 var titleYearRegex = regexp.MustCompile(`^(.+?)\s+\((\d{4})\)$`)
 
-// func MakeUserWatchlistHeader(username string) (FilmListHeader, error) {
-// 	watchlistUrl, err := url.JoinPath(LetterboxdUrl, username, "watchlist")
-// 	if err != nil {
-// 		return FilmListHeader{}, fmt.Errorf("problem joining url parts, %w", err)
-// 	}
-// 	return FilmListHeader{Name: "Watchlist", ListUrl: watchlistUrl}, nil
-// }
-
-// func MakeUserFilmListHeader(username string) (FilmListHeader, error) {
-// 	filmListUrl, err := url.JoinPath(LetterboxdUrl, username, "films")
-// 	if err != nil {
-// 		return FilmListHeader{}, fmt.Errorf("problem joining url parts, %w", err)
-// 	}
-// 	return FilmListHeader{Name: "Watched", ListUrl: filmListUrl}, nil
-// }
-
 func ScapeUserLists(username string) ([]*FilmList, error) {
 	listPageUrl, err := url.JoinPath(LetterboxdUrl, username, "lists")
 	if err != nil {
@@ -161,32 +145,3 @@ func ScrapeFilmID(rawURL string) (id int, err error) {
 	}
 	return
 }
-
-// type QuickDetails struct {
-// 	Name        string `json:"name"`
-// 	ReleaseYear int    `json:"releaseYear"`
-// }
-//
-// func FilmQuickDetails(filmUrl string) (QuickDetails, error) {
-// 	var qd QuickDetails
-// 	detailsUrl, err := url.JoinPath(filmUrl, "json")
-// 	if err != nil {
-// 		return qd, fmt.Errorf("join path, %w", err)
-// 	}
-// 	r, err := http.Get(detailsUrl)
-// 	if err != nil {
-// 		return qd, fmt.Errorf("failed to get details from %s, %w", detailsUrl, err)
-// 	}
-// 	defer func() { _ = r.Body.Close() }()
-// 	if r.StatusCode < 200 || r.StatusCode >= 300 {
-// 		return qd, fmt.Errorf("GET %s: status %d", detailsUrl, r.StatusCode)
-// 	}
-// 	b, err := io.ReadAll(r.Body)
-// 	if err != nil {
-// 		return qd, err
-// 	}
-// 	if err := json.Unmarshal(b, &qd); err != nil {
-// 		return qd, err
-// 	}
-// 	return qd, nil
-// }

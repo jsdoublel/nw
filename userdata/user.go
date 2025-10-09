@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"path"
+	"path/filepath"
 
 	fd "github.com/jsdoublel/nw/filmdata"
 )
@@ -34,8 +34,8 @@ type Save struct {
 // Save user info to file
 func (u *User) Save() error {
 	savePath := savePath(u.Name)
-	if _, err := os.Stat(path.Dir(savePath)); os.IsNotExist(err) {
-		if err = os.MkdirAll(path.Dir(savePath), 0o755); err != nil {
+	if _, err := os.Stat(filepath.Dir(savePath)); os.IsNotExist(err) {
+		if err = os.MkdirAll(filepath.Dir(savePath), 0o755); err != nil {
 			return err
 		}
 	}
@@ -112,20 +112,32 @@ func makeUser(username string) (*User, error) {
 
 // Get save path name from username
 func savePath(username string) string {
-	return path.Join(getSaveDirBase(), saveDir, username+saveExt)
+	return filepath.Join(getSaveDirBase(), saveDir, username+saveExt)
 }
 
-// Look for save data directory location. First check XDG location, then try
-// default XDG location (i.e., ~/.local/share); otherwise, use HOME.
+// Look for save data directory location. First check custom NW_DATA_HOME
+// variable, then XDG location, then tries a Windows and macOS location.
+// Finally, if all of those fails it returns the default XDG location (i.e.,
+// ~/.local/share).
 //
-// Currently assumes HOME is set (as per POSIX).
+// Will panic if HOME is not set and it cannot find LOCALAPPDATA.
 func getSaveDirBase() string {
+	if dir, ok := os.LookupEnv("NW_DATA_HOME"); ok {
+		return dir
+	}
 	if dir, ok := os.LookupEnv("XDG_DATA_HOME"); ok {
 		return dir
 	}
-	home := os.Getenv("HOME")
-	if home == "" {
+	home, ok := os.LookupEnv("HOME")
+	if !ok {
+		if dir, ok := os.LookupEnv("APPDATA"); ok { // try a Windows location
+			return dir
+		}
 		panic("HOME is not set")
 	}
-	return path.Join(os.Getenv("HOME"), ".local", "share")
+	dir := filepath.Join(home, "Library", "Application Support") // try macOS location
+	if _, err := os.Stat(dir); err == nil {
+		return dir
+	}
+	return filepath.Join(os.Getenv("HOME"), ".local", "share")
 }
