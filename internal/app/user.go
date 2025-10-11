@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 
 	m "github.com/jsdoublel/nw/internal/model"
-	w "github.com/jsdoublel/nw/internal/web"
 )
 
 const (
@@ -77,26 +76,26 @@ func LoadUser(username string) (*User, error) {
 //
 // TODO: multithread
 func makeUser(username string) (*User, error) {
-	headers, err := w.ScapeUserLists(username)
+	headers, err := m.ScapeUserLists(username)
 	if err != nil {
 		return nil, err
 	}
-	wlUrl, err := url.JoinPath(w.LetterboxdUrl, username, "watchlist")
+	wlUrl, err := url.JoinPath(m.LetterboxdUrl, username, "watchlist")
 	if err != nil {
 		return nil, err
 	}
-	watchlist, err := w.ScrapeFilmList(wlUrl)
+	watchlist, err := m.ScrapeFilmList(wlUrl)
 	if err != nil {
 		return nil, err
 	} else if watchlist.Name != "" {
 		return nil, fmt.Errorf("watchlist had unexpected name %s", watchlist.Name)
 	}
 	watchlist.Name = "Watchlist"
-	fUrl, err := url.JoinPath(w.LetterboxdUrl, username, "films")
+	fUrl, err := url.JoinPath(m.LetterboxdUrl, username, "films")
 	if err != nil {
 		return nil, err
 	}
-	films, err := w.ScrapeFilmList(fUrl)
+	films, err := m.ScrapeFilmList(fUrl)
 	if err != nil {
 		return nil, err
 	} else if films.Name != "" {

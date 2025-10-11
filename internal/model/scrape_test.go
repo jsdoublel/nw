@@ -1,33 +1,31 @@
-package web
+package model
 
 import (
 	"reflect"
 	"testing"
-
-	m "github.com/jsdoublel/nw/internal/model"
 )
 
 func TestScrapeList(t *testing.T) {
 	testCases := []struct {
 		name     string
-		expected m.FilmList
+		expected FilmList
 	}{
 		{
 			name: "oscars: 2024",
-			expected: m.FilmList{
-				Name:    "The 96th Academy Award nominees for Best Motion Picture of the Year",
-				ListUrl: "https://letterboxd.com/oscars/list/the-96th-academy-award-nominees-for-best/",
-				Films: []*m.Film{
-					{Url: "https://letterboxd.com/film/oppenheimer-2023/", Name: "Oppenheimer", Year: 2023},
-					{Url: "https://letterboxd.com/film/american-fiction/", Name: "American Fiction", Year: 2023},
-					{Url: "https://letterboxd.com/film/anatomy-of-a-fall/", Name: "Anatomy of a Fall", Year: 2023},
-					{Url: "https://letterboxd.com/film/barbie/", Name: "Barbie", Year: 2023},
-					{Url: "https://letterboxd.com/film/the-holdovers/", Name: "The Holdovers", Year: 2023},
-					{Url: "https://letterboxd.com/film/killers-of-the-flower-moon/", Name: "Killers of the Flower Moon", Year: 2023},
-					{Url: "https://letterboxd.com/film/maestro-2023/", Name: "Maestro", Year: 2023},
-					{Url: "https://letterboxd.com/film/past-lives/", Name: "Past Lives", Year: 2023},
-					{Url: "https://letterboxd.com/film/poor-things-2023/", Name: "Poor Things", Year: 2023},
-					{Url: "https://letterboxd.com/film/the-zone-of-interest/", Name: "The Zone of Interest", Year: 2023},
+			expected: FilmList{
+				Name: "The 96th Academy Award nominees for Best Motion Picture of the Year",
+				Url:  "https://letterboxd.com/oscars/list/the-96th-academy-award-nominees-for-best/",
+				Films: []*Film{
+					{Url: "https://letterboxd.com/film/oppenheimer-2023/", Title: "Oppenheimer", Year: 2023},
+					{Url: "https://letterboxd.com/film/american-fiction/", Title: "American Fiction", Year: 2023},
+					{Url: "https://letterboxd.com/film/anatomy-of-a-fall/", Title: "Anatomy of a Fall", Year: 2023},
+					{Url: "https://letterboxd.com/film/barbie/", Title: "Barbie", Year: 2023},
+					{Url: "https://letterboxd.com/film/the-holdovers/", Title: "The Holdovers", Year: 2023},
+					{Url: "https://letterboxd.com/film/killers-of-the-flower-moon/", Title: "Killers of the Flower Moon", Year: 2023},
+					{Url: "https://letterboxd.com/film/maestro-2023/", Title: "Maestro", Year: 2023},
+					{Url: "https://letterboxd.com/film/past-lives/", Title: "Past Lives", Year: 2023},
+					{Url: "https://letterboxd.com/film/poor-things-2023/", Title: "Poor Things", Year: 2023},
+					{Url: "https://letterboxd.com/film/the-zone-of-interest/", Title: "The Zone of Interest", Year: 2023},
 				},
 			},
 		},
@@ -35,7 +33,7 @@ func TestScrapeList(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			fl, err := ScrapeFilmList(test.expected.ListUrl)
+			fl, err := ScrapeFilmList(test.expected.Url)
 			if err != nil {
 				t.Errorf("Produced Error %s", err)
 			}

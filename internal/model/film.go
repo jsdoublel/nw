@@ -1,28 +1,28 @@
 package model
 
-import "fmt"
+import (
+	"fmt"
+)
 
+// User film list
 type FilmList struct {
-	Name    string
-	ListUrl string
-	Films   []*Film
+	Name  string  // name of list on letterboxd
+	Url   string  // letterboxd list url
+	Films []*Film // films in list (can be nil)
 }
 
 func (fl FilmList) String() string {
-	return fmt.Sprintf("{%s: %s}", fl.Name, fl.ListUrl)
+	return fmt.Sprintf("{%s: %s}", fl.Name, fl.Url)
 }
 
+// Struct storing data for film,
 type Film struct {
-	Url     string
-	Name    string
-	Year    uint
-	TMDBID  uint
-	Details *FilmDetails
-}
-
-type FilmDetails struct {
+	LBxdID uint   // letterboxd film id (used as unique identifier here)
+	Url    string // letterboxd url
+	Title  string // film title
+	Year   uint   // release year
 }
 
 func (f Film) String() string {
-	return fmt.Sprintf("%s (%d)", f.Name, f.Year)
+	return fmt.Sprintf("%s (%d)", f.Title, f.Year)
 }
