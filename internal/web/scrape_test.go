@@ -1,21 +1,23 @@
-package filmdata
+package web
 
 import (
 	"reflect"
 	"testing"
+
+	m "github.com/jsdoublel/nw/internal/model"
 )
 
 func TestScrapeList(t *testing.T) {
 	testCases := []struct {
 		name     string
-		expected FilmList
+		expected m.FilmList
 	}{
 		{
 			name: "oscars: 2024",
-			expected: FilmList{
+			expected: m.FilmList{
 				Name:    "The 96th Academy Award nominees for Best Motion Picture of the Year",
 				ListUrl: "https://letterboxd.com/oscars/list/the-96th-academy-award-nominees-for-best/",
-				Films: []*Film{
+				Films: []*m.Film{
 					{Url: "https://letterboxd.com/film/oppenheimer-2023/", Name: "Oppenheimer", Year: 2023},
 					{Url: "https://letterboxd.com/film/american-fiction/", Name: "American Fiction", Year: 2023},
 					{Url: "https://letterboxd.com/film/anatomy-of-a-fall/", Name: "Anatomy of a Fall", Year: 2023},

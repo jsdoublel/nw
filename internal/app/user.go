@@ -1,4 +1,4 @@
-package userdata
+package app
 
 import (
 	"encoding/json"
@@ -8,7 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
-	fd "github.com/jsdoublel/nw/filmdata"
+	m "github.com/jsdoublel/nw/internal/model"
+	w "github.com/jsdoublel/nw/internal/web"
 )
 
 const (
@@ -20,9 +21,9 @@ const (
 
 type User struct {
 	Name        string
-	ListHeaders []*fd.FilmList
-	Watchlist   *fd.FilmList
-	Films       *fd.FilmList
+	ListHeaders []*m.FilmList
+	Watchlist   *m.FilmList
+	Films       *m.FilmList
 	// nwQueue   NextWatch
 }
 
@@ -76,26 +77,26 @@ func LoadUser(username string) (*User, error) {
 //
 // TODO: multithread
 func makeUser(username string) (*User, error) {
-	headers, err := fd.ScapeUserLists(username)
+	headers, err := w.ScapeUserLists(username)
 	if err != nil {
 		return nil, err
 	}
-	wlUrl, err := url.JoinPath(fd.LetterboxdUrl, username, "watchlist")
+	wlUrl, err := url.JoinPath(w.LetterboxdUrl, username, "watchlist")
 	if err != nil {
 		return nil, err
 	}
-	watchlist, err := fd.ScrapeFilmList(wlUrl)
+	watchlist, err := w.ScrapeFilmList(wlUrl)
 	if err != nil {
 		return nil, err
 	} else if watchlist.Name != "" {
 		return nil, fmt.Errorf("watchlist had unexpected name %s", watchlist.Name)
 	}
 	watchlist.Name = "Watchlist"
-	fUrl, err := url.JoinPath(fd.LetterboxdUrl, username, "films")
+	fUrl, err := url.JoinPath(w.LetterboxdUrl, username, "films")
 	if err != nil {
 		return nil, err
 	}
-	films, err := fd.ScrapeFilmList(fUrl)
+	films, err := w.ScrapeFilmList(fUrl)
 	if err != nil {
 		return nil, err
 	} else if films.Name != "" {

@@ -1,4 +1,4 @@
-package filmdata
+package web
 
 import (
 	"testing"

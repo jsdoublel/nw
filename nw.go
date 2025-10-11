@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	ud "github.com/jsdoublel/nw/userdata"
+	"github.com/jsdoublel/nw/internal/app"
 )
 
 func parseArgs() string {
@@ -26,7 +26,7 @@ func parseArgs() string {
 
 func main() {
 	username := parseArgs()
-	user, err := ud.LoadUser(username)
+	user, err := app.LoadUser(username)
 	if err != nil {
 		log.Fatalf("error: %s", err)
 	}
