@@ -9,15 +9,17 @@ import (
 	m "github.com/jsdoublel/nw/internal/model"
 )
 
+const expireTime = 30 * 24 * time.Hour // film records are deleted after 30 days
+
 // Keeps track of all films that are currently in memory so we do not duplicate
 // scraping TMDB ids and TMDB api calls.
 type FilmStore struct {
-	Films map[uint]*FilmRecord // Film records index by letterboxd ids
+	Films map[int]*FilmRecord // Film records index by letterboxd ids
 }
 
 type FilmRecord struct {
 	m.Film
-	TMDBID  uint               // tmdb id number
+	TMDBID  int                // tmdb id number
 	Details *tmdb.MovieDetails // film details from tmdb
 	// These fields are only exported so they can be martialed. Please don't mutate.
 	Checked time.Time // last time details were checked
@@ -26,13 +28,17 @@ type FilmRecord struct {
 
 // Add film list to be tracked. Films in registered lists will be saved/stored
 // in save data as long as they have references.
-func (fs *FilmStore) AddList(filmList *m.FilmList) error {
-	return nil
+func (fs *FilmStore) AddList(filmList *m.FilmList) {
+	for _, film := range filmList.Films {
+		fs.register(*film)
+	}
 }
 
 // Stop tracking list and decrement ref counts as necessary.
-func (fs *FilmStore) RemoveList(filmList *m.FilmList) error {
-	return nil
+func (fs *FilmStore) RemoveList(filmList *m.FilmList) {
+	for _, film := range filmList.Films {
+		fs.deregister(*film)
+	}
 }
 
 // Get cached film record, retrieve if necessary
@@ -51,9 +57,43 @@ func (fs *FilmStore) Lookup(film m.Film) (*FilmRecord, error) {
 	panic("film record not found after adding it even though Add() returned err=nil")
 }
 
-// register a film to be tracked
-func (fs *FilmStore) register(film *m.Film) error {
-	return nil
+// Clear film records that are either not referenced or too old.
+func (fs *FilmStore) Clean() {
+	for id, fr := range fs.Films {
+		if fr.NRefs == 0 || time.Since(fr.Checked) > expireTime {
+			delete(fs.Films, id)
+		}
+	}
+}
+
+// register a film to be tracked (or increase ref counter if already registered)
+func (fs *FilmStore) register(film m.Film) {
+	if fr, ok := fs.Films[film.LBxdID]; ok {
+		fr.NRefs++
+	} else {
+		fs.Films[film.LBxdID] = &FilmRecord{
+			Film:    film,
+			TMDBID:  0,
+			Details: nil,
+			Checked: time.Time{}, // zero, we haven't checked
+			NRefs:   1,
+		}
+	}
+}
+
+// stop tracking an instance of a film (decrease ref counter)
+func (fs *FilmStore) deregister(film m.Film) {
+	fr, ok := fs.Films[film.LBxdID]
+	if !ok {
+		panic(fmt.Sprintf("trying to deregister %s, but it has not been registered", film))
+	}
+	if fr.NRefs == 0 {
+		panic(fmt.Sprintf("cannot decrement number of refs to %s, already 0", film))
+	}
+	fr.NRefs--
+	if fr.NRefs == 0 {
+		delete(fs.Films, film.LBxdID)
+	}
 }
 
 // retrieve film details. This involves scrapping letterboxd for TMDB id and
@@ -77,17 +117,11 @@ func (fs *FilmStore) retrieve(film m.Film) error {
 	} else { // temp record, since it has no references it will get cleared
 		fs.Films[film.LBxdID] = &FilmRecord{
 			Film:    film,
-			TMDBID:  uint(tmdbID),
+			TMDBID:  tmdbID,
 			Details: details,
 			Checked: time.Now(),
 			NRefs:   0,
 		}
 	}
 	return nil
-}
-
-func (fs *FilmStore) Remove(film m.Film) {
-}
-
-func (fs *FilmStore) Delete(film m.Film) {
 }

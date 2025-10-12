@@ -17,7 +17,7 @@ func (fl FilmList) String() string {
 
 // Struct storing data for film,
 type Film struct {
-	LBxdID uint   // letterboxd film id (used as unique identifier here)
+	LBxdID int    // letterboxd film id (used as unique identifier here)
 	Url    string // letterboxd url
 	Title  string // film title
 	Year   uint   // release year

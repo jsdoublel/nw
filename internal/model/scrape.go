@@ -81,10 +81,14 @@ func ScrapeFilmList(rawURL string) (fl FilmList, err error) {
 						}
 					}
 				}
-				if f.Title != "" && f.Year != 0 {
+				id, err := strconv.Atoi(h.Attr("data-film-id"))
+				if err == nil {
+					f.LBxdID = id
+				}
+				if f.Title != "" && f.Year != 0 && id != 0 {
 					fl.Films = append(fl.Films, &f)
 				} else {
-					log.Printf("failed to parse film title %s", title)
+					log.Printf("failed to parse film %s from %s", fUrl, fl.Url)
 				}
 			}
 		})
