@@ -8,7 +8,7 @@ import (
 	m "github.com/jsdoublel/nw/internal/model"
 )
 
-func TestFilmStoreAddList(t *testing.T) {
+func TestFilmStoreRegisterList(t *testing.T) {
 	testCases := []struct {
 		name     string
 		existing map[int]*FilmRecord
@@ -45,7 +45,7 @@ func TestFilmStoreAddList(t *testing.T) {
 				r := *record
 				fs.Films[id] = &r
 			}
-			fs.AddList(test.list)
+			fs.RegisterList(test.list)
 			if len(fs.Films) != len(test.wantRefs) {
 				t.Fatalf("expected %d records, got %d", len(test.wantRefs), len(fs.Films))
 			}
@@ -65,7 +65,7 @@ func TestFilmStoreAddList(t *testing.T) {
 	}
 }
 
-func TestFilmStoreRemoveList(t *testing.T) {
+func TestFilmStoreDeregisterList(t *testing.T) {
 	testCases := []struct {
 		name       string
 		existing   map[int]*FilmRecord
@@ -114,7 +114,7 @@ func TestFilmStoreRemoveList(t *testing.T) {
 					t.Fatalf("unexpected panic: %v", r)
 				}
 			}()
-			fs.RemoveList(test.list)
+			fs.DeregisterList(test.list)
 			if test.wantPanic {
 				return
 			}

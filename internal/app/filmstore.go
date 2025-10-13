@@ -28,14 +28,14 @@ type FilmRecord struct {
 
 // Add film list to be tracked. Films in registered lists will be saved/stored
 // in save data as long as they have references.
-func (fs *FilmStore) AddList(filmList *m.FilmList) {
+func (fs *FilmStore) RegisterList(filmList *m.FilmList) {
 	for _, film := range filmList.Films {
 		fs.register(*film)
 	}
 }
 
 // Stop tracking list and decrement ref counts as necessary.
-func (fs *FilmStore) RemoveList(filmList *m.FilmList) {
+func (fs *FilmStore) DeregisterList(filmList *m.FilmList) {
 	for _, film := range filmList.Films {
 		fs.deregister(*film)
 	}

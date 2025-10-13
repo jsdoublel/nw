@@ -73,19 +73,16 @@ func ScrapeFilmList(rawURL string) (fl FilmList, err error) {
 			if fUrl := h.Request.AbsoluteURL(h.Attr("data-target-link")); strings.Contains(fUrl, "/film/") {
 				f := Film{Url: fUrl}
 				title := h.Attr("data-item-name")
-				if title != "" {
-					if matches := titleYearRegex.FindStringSubmatch(title); len(matches) == 3 {
-						f.Title = matches[1]
-						if year, err := strconv.Atoi(matches[2]); err == nil {
-							f.Year = uint(year)
-						}
+				if matches := titleYearRegex.FindStringSubmatch(title); len(matches) == 3 {
+					f.Title = matches[1]
+					if year, err := strconv.Atoi(matches[2]); err == nil {
+						f.Year = uint(year)
 					}
 				}
-				id, err := strconv.Atoi(h.Attr("data-film-id"))
-				if err == nil {
+				if id, err := strconv.Atoi(h.Attr("data-film-id")); err == nil {
 					f.LBxdID = id
 				}
-				if f.Title != "" && f.Year != 0 && id != 0 {
+				if f.Title != "" && f.Year != 0 && f.LBxdID != 0 {
 					fl.Films = append(fl.Films, &f)
 				} else {
 					log.Printf("failed to parse film %s from %s", fUrl, fl.Url)

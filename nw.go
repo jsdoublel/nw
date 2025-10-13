@@ -26,13 +26,13 @@ func parseArgs() string {
 
 func main() {
 	username := parseArgs()
-	user, err := app.LoadUser(username)
+	application, err := app.Load(username)
 	if err != nil {
 		log.Fatalf("error: %s", err)
 	}
-	fmt.Println(user.ListHeaders)
-	fmt.Println(user.Watchlist.Films)
-	if err = user.Save(); err != nil {
+	fmt.Println(application.User.ListHeaders)
+	fmt.Println(application.User.Watchlist.Films)
+	if err = application.Save(); err != nil {
 		log.Fatalf("error: %s", err)
 	}
 }
