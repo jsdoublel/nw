@@ -22,7 +22,7 @@ type Save struct {
 
 // Save application info to file
 func (app *Application) Save() error {
-	savePath := savePath(app.User.Name)
+	savePath := savePath(app.Username)
 	if _, err := os.Stat(filepath.Dir(savePath)); os.IsNotExist(err) {
 		if err = os.MkdirAll(filepath.Dir(savePath), 0o755); err != nil {
 			return err
@@ -55,14 +55,11 @@ func Load(username string) (*Application, error) {
 		return &save.Application, nil
 	} else if errors.Is(err, os.ErrNotExist) {
 		log.Printf("no save found; creating new user %s", username)
-		user, err := makeUser(username)
+		app, err := createApp(username)
 		if err != nil {
 			return nil, err
 		}
-		return &Application{
-			User:      user,
-			FilmStore: FilmStore{Films: make(map[int]*FilmRecord)},
-		}, nil
+		return app, nil
 	} else {
 		return nil, err
 	}

@@ -16,7 +16,7 @@ func TestApplicationSave(t *testing.T) {
 		{
 			name: "writes save file",
 			app: Application{
-				User: User{Name: "alice"},
+				Username: "alice",
 				FilmStore: FilmStore{Films: map[int]*FilmRecord{
 					1: {Film: Film{LBxdID: 1, Title: "Stored", Url: "https://example.com/film"}, NRefs: 1, Checked: time.Now()},
 				}},
@@ -30,7 +30,7 @@ func TestApplicationSave(t *testing.T) {
 			if err := test.app.Save(); err != nil {
 				t.Fatalf("save returned error: %v", err)
 			}
-			path := savePath(test.app.User.Name)
+			path := savePath(test.app.Username)
 			if _, err := os.Stat(path); err != nil {
 				t.Fatalf("save file missing: %v", err)
 			}
@@ -69,7 +69,7 @@ func TestLoadReturnsSavedData(t *testing.T) {
 			content: Save{
 				Version: LatestSaveVersion,
 				Application: Application{
-					User: User{Name: "bob"},
+					Username: "bob",
 					FilmStore: FilmStore{Films: map[int]*FilmRecord{
 						7: {Film: Film{LBxdID: 7, Title: "Loaded"}, NRefs: 2},
 					}},

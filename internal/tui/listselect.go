@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"log"
+
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -15,26 +17,42 @@ type ListSelector struct {
 	app  *app.Application
 }
 
-func MakeListSelector(app *app.Application) ListSelector {
-	items := make([]list.Item, len(app.User.ListHeaders))
-	for i, lh := range app.User.ListHeaders {
-		items[i] = lh
+func MakeListSelector(app *app.Application) *ListSelector {
+	items := make([]list.Item, 0, len(app.ListHeaders))
+	for _, lh := range app.ListHeaders {
+		if !app.IsListTracked(lh) {
+			items = append(items, lh)
+		}
 	}
-	return ListSelector{
+	return &ListSelector{
 		list: list.New(items, list.NewDefaultDelegate(), 0, 0),
 		app:  app,
 	}
 }
 
-func (ls ListSelector) Init() tea.Cmd {
+func (ls *ListSelector) Init() tea.Cmd {
 	return nil
 }
 
-func (ls ListSelector) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (ls *ListSelector) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if msg.Type == tea.KeyEsc {
+		switch msg.Type {
+		case tea.KeyEsc:
 			return ls, tea.Quit
+		case tea.KeyEnter:
+			fl, ok := ls.list.SelectedItem().(*app.FilmList)
+			if !ok {
+				panic("ListSelector item should be *FilmList")
+			}
+			if err := ls.app.AddList(fl); err != nil {
+				log.Print(err.Error())
+				break
+			}
+			index := ls.list.Index()
+			if index >= 0 {
+				ls.list.RemoveItem(index)
+			}
 		}
 	case tea.WindowSizeMsg:
 		h, v := lsStyle.GetFrameSize()
@@ -45,6 +63,6 @@ func (ls ListSelector) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return ls, cmd
 }
 
-func (ls ListSelector) View() string {
+func (ls *ListSelector) View() string {
 	return lsStyle.Render(ls.list.View())
 }

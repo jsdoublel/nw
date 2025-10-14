@@ -44,7 +44,7 @@ func ScapeUserLists(username string) ([]*FilmList, error) {
 		}
 	})
 	if err := c.Visit(listPageUrl); err != nil {
-		return nil, fmt.Errorf("problem trying to visit url, %w", err)
+		return nil, fmt.Errorf("problem trying to visit url %s, %w", listPageUrl, err)
 	}
 	if paginationErr != nil {
 		return nil, paginationErr
