@@ -43,7 +43,7 @@ func (fs *FilmStore) DeregisterList(filmList *FilmList) {
 //
 // Returns error if it needs to retrieve details and fails.
 func (fs *FilmStore) Lookup(film Film) (*FilmRecord, error) {
-	if f, ok := fs.Films[film.LBxdID]; ok {
+	if f, ok := fs.Films[film.LBxdID]; ok && time.Since(f.Checked) < expireTime {
 		return f, nil
 	}
 	if err := fs.retrieve(film); err != nil {
@@ -58,7 +58,7 @@ func (fs *FilmStore) Lookup(film Film) (*FilmRecord, error) {
 // Clear film records that are either not referenced or too old.
 func (fs *FilmStore) Clean() {
 	for id, fr := range fs.Films {
-		if fr.NRefs == 0 || time.Since(fr.Checked) > expireTime {
+		if fr.NRefs == 0 {
 			delete(fs.Films, id)
 		}
 	}
@@ -96,30 +96,30 @@ func (fs *FilmStore) deregister(film Film) {
 
 // retrieve film details. This involves scrapping letterboxd for TMDB id and
 // then querying TMDB for details.
-//
-// panics if used when details already existed (use lookup).
 func (fs *FilmStore) retrieve(film Film) error {
-	if f, ok := fs.Films[film.LBxdID]; ok && !f.Checked.IsZero() {
-		panic(fmt.Sprintf("tried to retrieve details for %s, but details already stored", film))
+	fr, ok := fs.Films[film.LBxdID]
+	if !ok { // new tmp record if one does not exist
+		fr = &FilmRecord{
+			Film:  film,
+			NRefs: 0,
+		}
+		fs.Films[film.LBxdID] = fr
 	}
-	tmdbID, err := ScrapeFilmID(film.Url)
-	if err != nil {
-		return fmt.Errorf("couldn't get TMDB id, %w", err)
+	if fr.Details != nil && time.Since(fr.Checked) < expireTime {
+		return nil
 	}
-	details, err := TMDBFilm(tmdbID)
+	if fr.TMDBID == 0 {
+		var err error
+		fr.TMDBID, err = ScrapeFilmID(film.Url)
+		if err != nil {
+			return fmt.Errorf("couldn't get TMDB id, %w", err)
+		}
+	}
+	var err error
+	fr.Details, err = TMDBFilm(fr.TMDBID)
 	if err != nil {
 		return err
 	}
-	if fr, ok := fs.Films[film.LBxdID]; ok {
-		fr.Details = details
-	} else { // temp record, since it has no references it will get cleared
-		fs.Films[film.LBxdID] = &FilmRecord{
-			Film:    film,
-			TMDBID:  tmdbID,
-			Details: details,
-			Checked: time.Now(),
-			NRefs:   0,
-		}
-	}
+	fr.Checked = time.Now()
 	return nil
 }
