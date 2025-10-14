@@ -5,8 +5,6 @@ import (
 	"time"
 
 	tmdb "github.com/cyruzin/golang-tmdb"
-
-	m "github.com/jsdoublel/nw/internal/model"
 )
 
 const expireTime = 30 * 24 * time.Hour // film records are deleted after 30 days
@@ -18,7 +16,7 @@ type FilmStore struct {
 }
 
 type FilmRecord struct {
-	m.Film
+	Film
 	TMDBID  int                // tmdb id number
 	Details *tmdb.MovieDetails // film details from tmdb
 	// These fields are only exported so they can be martialed. Please don't mutate.
@@ -28,14 +26,14 @@ type FilmRecord struct {
 
 // Add film list to be tracked. Films in registered lists will be saved/stored
 // in save data as long as they have references.
-func (fs *FilmStore) RegisterList(filmList *m.FilmList) {
+func (fs *FilmStore) RegisterList(filmList *FilmList) {
 	for _, film := range filmList.Films {
 		fs.register(*film)
 	}
 }
 
 // Stop tracking list and decrement ref counts as necessary.
-func (fs *FilmStore) DeregisterList(filmList *m.FilmList) {
+func (fs *FilmStore) DeregisterList(filmList *FilmList) {
 	for _, film := range filmList.Films {
 		fs.deregister(*film)
 	}
@@ -44,7 +42,7 @@ func (fs *FilmStore) DeregisterList(filmList *m.FilmList) {
 // Get cached film record, retrieve if necessary
 //
 // Returns error if it needs to retrieve details and fails.
-func (fs *FilmStore) Lookup(film m.Film) (*FilmRecord, error) {
+func (fs *FilmStore) Lookup(film Film) (*FilmRecord, error) {
 	if f, ok := fs.Films[film.LBxdID]; ok {
 		return f, nil
 	}
@@ -67,7 +65,7 @@ func (fs *FilmStore) Clean() {
 }
 
 // register a film to be tracked (or increase ref counter if already registered)
-func (fs *FilmStore) register(film m.Film) {
+func (fs *FilmStore) register(film Film) {
 	if fr, ok := fs.Films[film.LBxdID]; ok {
 		fr.NRefs++
 	} else {
@@ -82,7 +80,7 @@ func (fs *FilmStore) register(film m.Film) {
 }
 
 // stop tracking an instance of a film (decrease ref counter)
-func (fs *FilmStore) deregister(film m.Film) {
+func (fs *FilmStore) deregister(film Film) {
 	fr, ok := fs.Films[film.LBxdID]
 	if !ok {
 		panic(fmt.Sprintf("trying to deregister %s, but it has not been registered", film))
@@ -100,15 +98,15 @@ func (fs *FilmStore) deregister(film m.Film) {
 // then querying TMDB for details.
 //
 // panics if used when details already existed (use lookup).
-func (fs *FilmStore) retrieve(film m.Film) error {
+func (fs *FilmStore) retrieve(film Film) error {
 	if f, ok := fs.Films[film.LBxdID]; ok && !f.Checked.IsZero() {
 		panic(fmt.Sprintf("tried to retrieve details for %s, but details already stored", film))
 	}
-	tmdbID, err := m.ScrapeFilmID(film.Url)
+	tmdbID, err := ScrapeFilmID(film.Url)
 	if err != nil {
 		return fmt.Errorf("couldn't get TMDB id, %w", err)
 	}
-	details, err := m.TMDBFilm(tmdbID)
+	details, err := TMDBFilm(tmdbID)
 	if err != nil {
 		return err
 	}

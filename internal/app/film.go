@@ -1,4 +1,4 @@
-package model
+package app
 
 import (
 	"fmt"
@@ -13,6 +13,20 @@ type FilmList struct {
 
 func (fl FilmList) String() string {
 	return fmt.Sprintf("{%s: %s}", fl.Name, fl.Url)
+}
+
+// ---- Implement interfaces for bubbletea list
+
+func (fl FilmList) FilterValue() string {
+	return fl.Name
+}
+
+func (fl FilmList) Title() string {
+	return fl.Name
+}
+
+func (fl FilmList) Description() string {
+	return fl.String()
 }
 
 // Struct storing data for film,

@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"os"
 	"path/filepath"
@@ -52,7 +53,7 @@ func Load(username string) (*Application, error) {
 			return nil, err
 		}
 		return &save.Application, nil
-	} else if os.IsNotExist(err) {
+	} else if errors.Is(err, os.ErrNotExist) {
 		log.Printf("no save found; creating new user %s", username)
 		user, err := makeUser(username)
 		if err != nil {

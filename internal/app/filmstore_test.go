@@ -5,21 +5,20 @@ import (
 	"time"
 
 	tmdb "github.com/cyruzin/golang-tmdb"
-	m "github.com/jsdoublel/nw/internal/model"
 )
 
 func TestFilmStoreRegisterList(t *testing.T) {
 	testCases := []struct {
 		name     string
 		existing map[int]*FilmRecord
-		list     *m.FilmList
+		list     *FilmList
 		wantRefs map[int]uint
 	}{
 		{
 			name:     "registers new film",
 			existing: map[int]*FilmRecord{},
-			list: &m.FilmList{
-				Films: []*m.Film{{LBxdID: 1, Url: "https://letterboxd.com/film/example", Title: "Example", Year: 2000}},
+			list: &FilmList{
+				Films: []*Film{{LBxdID: 1, Url: "https://letterboxd.com/film/example", Title: "Example", Year: 2000}},
 			},
 			wantRefs: map[int]uint{1: 1},
 		},
@@ -27,12 +26,12 @@ func TestFilmStoreRegisterList(t *testing.T) {
 			name: "increments existing reference",
 			existing: map[int]*FilmRecord{
 				1: {
-					Film:    m.Film{LBxdID: 1, Url: "https://letterboxd.com/film/example", Title: "Example", Year: 2000},
+					Film:    Film{LBxdID: 1, Url: "https://letterboxd.com/film/example", Title: "Example", Year: 2000},
 					NRefs:   1,
 					Checked: time.Now(),
 				},
 			},
-			list: &m.FilmList{Films: []*m.Film{
+			list: &FilmList{Films: []*Film{
 				{LBxdID: 1, Url: "https://letterboxd.com/film/example", Title: "Example", Year: 2000}},
 			},
 			wantRefs: map[int]uint{1: 2},
@@ -69,29 +68,29 @@ func TestFilmStoreDeregisterList(t *testing.T) {
 	testCases := []struct {
 		name       string
 		existing   map[int]*FilmRecord
-		list       *m.FilmList
+		list       *FilmList
 		wantRefs   map[int]uint
 		wantPanic  bool
 		wantExists map[int]bool
 	}{
 		{
 			name:       "decrements references",
-			existing:   map[int]*FilmRecord{1: {Film: m.Film{LBxdID: 1}, NRefs: 2, Checked: time.Now()}},
-			list:       &m.FilmList{Films: []*m.Film{{LBxdID: 1}}},
+			existing:   map[int]*FilmRecord{1: {Film: Film{LBxdID: 1}, NRefs: 2, Checked: time.Now()}},
+			list:       &FilmList{Films: []*Film{{LBxdID: 1}}},
 			wantRefs:   map[int]uint{1: 1},
 			wantExists: map[int]bool{1: true},
 		},
 		{
 			name:       "removes when count reaches zero",
-			existing:   map[int]*FilmRecord{1: {Film: m.Film{LBxdID: 1}, NRefs: 1, Checked: time.Now()}},
-			list:       &m.FilmList{Films: []*m.Film{{LBxdID: 1}}},
+			existing:   map[int]*FilmRecord{1: {Film: Film{LBxdID: 1}, NRefs: 1, Checked: time.Now()}},
+			list:       &FilmList{Films: []*Film{{LBxdID: 1}}},
 			wantRefs:   map[int]uint{},
 			wantExists: map[int]bool{1: false},
 		},
 		{
 			name:       "panics when film missing",
 			existing:   map[int]*FilmRecord{},
-			list:       &m.FilmList{Films: []*m.Film{{LBxdID: 42}}},
+			list:       &FilmList{Films: []*Film{{LBxdID: 42}}},
 			wantPanic:  true,
 			wantRefs:   map[int]uint{},
 			wantExists: map[int]bool{},
@@ -144,17 +143,17 @@ func TestFilmStoreClean(t *testing.T) {
 	}{
 		{
 			name:   "removes unreferenced film",
-			record: map[int]*FilmRecord{1: {Film: m.Film{LBxdID: 1}, Checked: time.Now()}},
+			record: map[int]*FilmRecord{1: {Film: Film{LBxdID: 1}, Checked: time.Now()}},
 			want:   map[int]bool{1: false},
 		},
 		{
 			name:   "removes expired film",
-			record: map[int]*FilmRecord{1: {Film: m.Film{LBxdID: 1}, NRefs: 1, Checked: time.Now().Add(-expireTime - time.Second)}},
+			record: map[int]*FilmRecord{1: {Film: Film{LBxdID: 1}, NRefs: 1, Checked: time.Now().Add(-expireTime - time.Second)}},
 			want:   map[int]bool{1: false},
 		},
 		{
 			name:   "retains active film",
-			record: map[int]*FilmRecord{1: {Film: m.Film{LBxdID: 1}, NRefs: 1, Checked: time.Now()}},
+			record: map[int]*FilmRecord{1: {Film: Film{LBxdID: 1}, NRefs: 1, Checked: time.Now()}},
 			want:   map[int]bool{1: true},
 		},
 	}
@@ -183,7 +182,7 @@ func TestFilmStoreLookup(t *testing.T) {
 	testCases := []struct {
 		name     string
 		existing map[int]*FilmRecord
-		film     m.Film
+		film     Film
 		expected *FilmRecord // test only checks title, and FilmRecord specific fields
 		wantErr  bool
 	}{
@@ -191,26 +190,26 @@ func TestFilmStoreLookup(t *testing.T) {
 			name: "returns existing record",
 			existing: map[int]*FilmRecord{
 				1: func() *FilmRecord {
-					r := &FilmRecord{Film: m.Film{LBxdID: 1, Title: "Stored"}, NRefs: 1, Checked: time.Now()}
+					r := &FilmRecord{Film: Film{LBxdID: 1, Title: "Stored"}, NRefs: 1, Checked: time.Now()}
 					r.Details = &tmdb.MovieDetails{ID: 1, Title: "Stored"}
 					return r
 				}(),
 			},
-			film:     m.Film{LBxdID: 1},
-			expected: &FilmRecord{Film: m.Film{LBxdID: 1, Title: "Stored"}, NRefs: 1, Checked: time.Now()},
+			film:     Film{LBxdID: 1},
+			expected: &FilmRecord{Film: Film{LBxdID: 1, Title: "Stored"}, NRefs: 1, Checked: time.Now()},
 			wantErr:  false,
 		},
 		{
 			name:     "gets new record",
 			existing: map[int]*FilmRecord{},
-			film: m.Film{
+			film: Film{
 				Url:    "https://letterboxd.com/film/dancer-in-the-dark/",
 				LBxdID: 2701,
 				Title:  "Dancer in the Dark",
 				Year:   2000,
 			},
 			expected: &FilmRecord{
-				Film: m.Film{
+				Film: Film{
 					Url:    "https://letterboxd.com/film/dancer-in-the-dark/",
 					LBxdID: 2701,
 					Title:  "Dancer in the Dark",
@@ -222,7 +221,7 @@ func TestFilmStoreLookup(t *testing.T) {
 		{
 			name:     "returns error when retrieval fails",
 			existing: map[int]*FilmRecord{},
-			film:     m.Film{LBxdID: 2, Url: "https://example.com/not-letterboxd"},
+			film:     Film{LBxdID: 2, Url: "https://example.com/not-letterboxd"},
 			expected: nil,
 			wantErr:  true,
 		},

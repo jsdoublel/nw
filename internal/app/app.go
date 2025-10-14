@@ -3,8 +3,6 @@ package app
 import (
 	"fmt"
 	"log"
-
-	m "github.com/jsdoublel/nw/internal/model"
 )
 
 type Application struct {
@@ -20,9 +18,9 @@ func (app *Application) Shutdown() {
 }
 
 // Saves list to be tracked
-func (app *Application) AddList(filmList *m.FilmList) error {
+func (app *Application) AddList(filmList *FilmList) error {
 	if filmList.Films == nil {
-		if list, err := m.ScrapeFilmList(filmList.Url); err != nil { // TODO: make goroutine
+		if list, err := ScrapeFilmList(filmList.Url); err != nil { // TODO: make goroutine
 			return fmt.Errorf("could not add list %s", list.Name)
 		}
 	}

@@ -6,7 +6,9 @@ import (
 	"log"
 	"os"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/jsdoublel/nw/internal/app"
+	"github.com/jsdoublel/nw/internal/tui"
 )
 
 func parseArgs() string {
@@ -30,8 +32,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("error: %s", err)
 	}
-	fmt.Println(application.User.ListHeaders)
-	fmt.Println(application.User.Watchlist.Films)
+	listSelector := tui.MakeListSelector(application)
+	p := tea.NewProgram(listSelector, tea.WithAltScreen())
+	if _, err := p.Run(); err != nil {
+		log.Printf("error: %s", err)
+	}
 	if err = application.Save(); err != nil {
 		log.Fatalf("error: %s", err)
 	}

@@ -3,16 +3,14 @@ package app
 import (
 	"fmt"
 	"net/url"
-
-	m "github.com/jsdoublel/nw/internal/model"
 )
 
 type User struct {
 	Name        string
-	ListHeaders []*m.FilmList
-	Lists       []*m.FilmList
-	Watchlist   *m.FilmList
-	Films       *m.FilmList
+	ListHeaders []*FilmList
+	Lists       []*FilmList
+	Watchlist   *FilmList
+	Films       *FilmList
 	// nwQueue   NextWatch
 }
 
@@ -20,26 +18,26 @@ type User struct {
 //
 // TODO: multithread
 func makeUser(username string) (User, error) {
-	headers, err := m.ScapeUserLists(username)
+	headers, err := ScapeUserLists(username)
 	if err != nil {
 		return User{}, err
 	}
-	wlUrl, err := url.JoinPath(m.LetterboxdUrl, username, "watchlist")
+	wlUrl, err := url.JoinPath(LetterboxdUrl, username, "watchlist")
 	if err != nil {
 		return User{}, err
 	}
-	watchlist, err := m.ScrapeFilmList(wlUrl)
+	watchlist, err := ScrapeFilmList(wlUrl)
 	if err != nil {
 		return User{}, err
 	} else if watchlist.Name != "" {
 		return User{}, fmt.Errorf("watchlist had unexpected name %s", watchlist.Name)
 	}
 	watchlist.Name = "Watchlist"
-	fUrl, err := url.JoinPath(m.LetterboxdUrl, username, "films")
+	fUrl, err := url.JoinPath(LetterboxdUrl, username, "films")
 	if err != nil {
 		return User{}, err
 	}
-	films, err := m.ScrapeFilmList(fUrl)
+	films, err := ScrapeFilmList(fUrl)
 	if err != nil {
 		return User{}, err
 	} else if films.Name != "" {

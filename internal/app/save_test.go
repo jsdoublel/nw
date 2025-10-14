@@ -6,8 +6,6 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
-
-	m "github.com/jsdoublel/nw/internal/model"
 )
 
 func TestApplicationSave(t *testing.T) {
@@ -20,7 +18,7 @@ func TestApplicationSave(t *testing.T) {
 			app: Application{
 				User: User{Name: "alice"},
 				FilmStore: FilmStore{Films: map[int]*FilmRecord{
-					1: &FilmRecord{Film: m.Film{LBxdID: 1, Title: "Stored", Url: "https://example.com/film"}, NRefs: 1, Checked: time.Now()},
+					1: {Film: Film{LBxdID: 1, Title: "Stored", Url: "https://example.com/film"}, NRefs: 1, Checked: time.Now()},
 				}},
 			},
 		},
@@ -51,8 +49,8 @@ func TestApplicationSave(t *testing.T) {
 			if !ok {
 				t.Fatalf("expected film record to be stored")
 			}
-			if stored.Film.Title != "Stored" {
-				t.Fatalf("expected stored title, got %s", stored.Film.Title)
+			if stored.Title != "Stored" {
+				t.Fatalf("expected stored title, got %s", stored.Title)
 			}
 		})
 	}
@@ -73,7 +71,7 @@ func TestLoadReturnsSavedData(t *testing.T) {
 				Application: Application{
 					User: User{Name: "bob"},
 					FilmStore: FilmStore{Films: map[int]*FilmRecord{
-						7: &FilmRecord{Film: m.Film{LBxdID: 7, Title: "Loaded"}, NRefs: 2},
+						7: {Film: Film{LBxdID: 7, Title: "Loaded"}, NRefs: 2},
 					}},
 				},
 			},
@@ -103,8 +101,8 @@ func TestLoadReturnsSavedData(t *testing.T) {
 			if !ok {
 				t.Fatalf("expected film record with id 7")
 			}
-			if record.Film.Title != test.wantFilm {
-				t.Fatalf("expected film title %s, got %s", test.wantFilm, record.Film.Title)
+			if record.Title != test.wantFilm {
+				t.Fatalf("expected film title %s, got %s", test.wantFilm, record.Title)
 			}
 		})
 	}
