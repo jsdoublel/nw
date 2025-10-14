@@ -14,7 +14,10 @@ func TestScrapeList(t *testing.T) {
 			name: "oscars: 2024",
 			expected: FilmList{
 				Name: "The 96th Academy Award nominees for Best Motion Picture of the Year",
-				Url:  "https://letterboxd.com/oscars/list/the-96th-academy-award-nominees-for-best/",
+				Desc: "All the nominees in the Best Motion Picture of the Year category at the 2024 Oscars, hosted on Sunday, March 10th at 4pm PST.\n\n" +
+					"With The Academy partnering with Letterboxd again this year, all members can customize the posters for the 2024 Best Picture nominees!\n\n" +
+					"Click on ‘Read notes’ to find the nominated recipients.",
+				Url: "https://letterboxd.com/oscars/list/the-96th-academy-award-nominees-for-best/",
 				Films: []*Film{
 					{Url: "https://letterboxd.com/film/oppenheimer-2023/", LBxdID: 784328, Title: "Oppenheimer", Year: 2023},
 					{Url: "https://letterboxd.com/film/american-fiction/", LBxdID: 952812, Title: "American Fiction", Year: 2023},
@@ -38,7 +41,7 @@ func TestScrapeList(t *testing.T) {
 				t.Errorf("Produced Error %s", err)
 			}
 			if !reflect.DeepEqual(test.expected, fl) {
-				t.Errorf("want=%v\n!= got=%v\n", test.expected, fl)
+				t.Errorf("want=%+v\n!= got=%+v\n", test.expected, fl)
 			}
 		})
 	}

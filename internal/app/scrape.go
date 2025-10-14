@@ -26,12 +26,18 @@ func ScapeUserLists(username string) ([]*FilmList, error) {
 	}
 	usersListUrls := []*FilmList{}
 	c := colly.NewCollector()
-	c.OnHTML("h2.name.prettify", func(h *colly.HTMLElement) {
-		h.ForEach("a[href]", func(_ int, h *colly.HTMLElement) {
-			if listUrl := h.Request.AbsoluteURL(h.Attr("href")); strings.Contains(listUrl, "/list/") {
-				usersListUrls = append(usersListUrls, &FilmList{Name: h.Text, Url: listUrl})
+	c.OnHTML("div.body", func(h *colly.HTMLElement) {
+		fl := &FilmList{}
+		h.ForEach("h2.name.prettify a[href]", func(_ int, link *colly.HTMLElement) {
+			if listUrl := link.Request.AbsoluteURL(link.Attr("href")); strings.Contains(listUrl, "/list/") {
+				fl.Name = strings.TrimSpace(link.Text)
+				fl.Url = listUrl
 			}
 		})
+		fl.Desc = parseDescription(h, "p")
+		if fl.Name != "" && fl.Url != "" {
+			usersListUrls = append(usersListUrls, fl)
+		}
 	})
 	var paginationErr error
 	c.OnHTML("a.next", func(h *colly.HTMLElement) {
@@ -67,6 +73,12 @@ func ScrapeFilmList(rawURL string) (fl FilmList, err error) {
 	c := colly.NewCollector()
 	c.OnHTML("h1.title-1.prettify", func(h *colly.HTMLElement) {
 		fl.Name = h.Text
+	})
+	c.OnHTML("div.body-text", func(h *colly.HTMLElement) {
+		if h.Attr("data-full-text-url") != "#list-notes" {
+			return
+		}
+		fl.Desc = parseDescription(h, "p")
 	})
 	posterScrapper := func(h *colly.HTMLElement) {
 		h.ForEach("div.react-component", func(_ int, h *colly.HTMLElement) {
@@ -145,4 +157,22 @@ func ScrapeFilmID(rawURL string) (id int, err error) {
 		err = fmt.Errorf("%w, did not find TMDB id when scraping %s", ErrInvalidUrl, rawURL)
 	}
 	return
+}
+
+func parseDescription(h *colly.HTMLElement, selector string) string {
+	var builder strings.Builder
+	first := true
+	h.ForEach(selector, func(_ int, node *colly.HTMLElement) {
+		text := strings.TrimSpace(node.Text)
+		if text == "" {
+			return
+		}
+		if !first {
+			builder.WriteString("\n\n")
+		} else {
+			first = false
+		}
+		builder.WriteString(text)
+	})
+	return builder.String()
 }

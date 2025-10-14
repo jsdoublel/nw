@@ -7,12 +7,9 @@ import (
 // User film list
 type FilmList struct {
 	Name  string  // name of list on letterboxd
+	Desc  string  // description of list
 	Url   string  // letterboxd list url
 	Films []*Film // films in list (can be nil)
-}
-
-func (fl FilmList) String() string {
-	return fmt.Sprintf("{%s: %s}", fl.Name, fl.Url)
 }
 
 // ---- Implement interfaces for bubbletea list
@@ -26,7 +23,7 @@ func (fl FilmList) Title() string {
 }
 
 func (fl FilmList) Description() string {
-	return fl.String()
+	return fl.Desc
 }
 
 // Struct storing data for film,
