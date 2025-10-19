@@ -11,7 +11,6 @@ import (
 const (
 	LatestSaveVersion = 0
 
-	saveDir = "nw"
 	saveExt = ".json"
 )
 
@@ -67,32 +66,5 @@ func Load(username string) (*Application, error) {
 
 // Get save path name from username
 func savePath(username string) string {
-	return filepath.Join(getSaveDirBase(), saveDir, username+saveExt)
-}
-
-// Look for save data directory location. First check custom NW_DATA_HOME
-// variable, then XDG location, then tries a Windows and macOS location.
-// Finally, if all of those fails it returns the default XDG location (i.e.,
-// ~/.local/share).
-//
-// Will panic if HOME is not set and it cannot find LOCALAPPDATA.
-func getSaveDirBase() string {
-	if dir, ok := os.LookupEnv("NW_DATA_HOME"); ok {
-		return dir
-	}
-	if dir, ok := os.LookupEnv("XDG_DATA_HOME"); ok {
-		return dir
-	}
-	home, ok := os.LookupEnv("HOME")
-	if !ok {
-		if dir, ok := os.LookupEnv("LOCALAPPDATA"); ok { // try a Windows location
-			return dir
-		}
-		panic("HOME is not set")
-	}
-	dir := filepath.Join(home, "Library", "Application Support") // try macOS location
-	if _, err := os.Stat(dir); err == nil {
-		return dir
-	}
-	return filepath.Join(home, ".local", "share")
+	return filepath.Join(NWDataPath, username+saveExt)
 }

@@ -10,20 +10,28 @@ import (
 	"github.com/jsdoublel/nw/internal/app"
 )
 
-var lsStyle = lipgloss.NewStyle().Margin(1, 2)
+const (
+	listPaneWidth  = 64
+	listPaneHeight = 36
+)
+
+var lsStyle = lipgloss.NewStyle().
+	Border(lipgloss.NormalBorder())
 
 // Window for scrolling and selecting from list
 type ListSelector struct {
-	list   list.Model
-	app    *app.Application
-	action func(it list.Item) error // action on pressing enter
+	list           list.Model
+	app            *app.Application
+	action         func(it list.Item) error // action on pressing enter
+	viewportWidth  int
+	viewportHeight int
 }
 
 // func MakeListSelector(app *app.Application) *ListSelector {
-func MakeListSelector(app *app.Application, items []list.Item, delegate list.ItemDelegate, action func(it list.Item) error) *ListSelector {
+func MakeListSelector(a *app.Application, items []list.Item, delegate list.ItemDelegate, action func(it list.Item) error) *ListSelector {
 	return &ListSelector{
 		list:   list.New(items, delegate, 0, 0),
-		app:    app,
+		app:    a,
 		action: action,
 	}
 }
@@ -35,17 +43,18 @@ func (lp *ListSelector) Init() tea.Cmd {
 func (lp *ListSelector) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyEsc:
-			return lp, tea.Quit
-		case tea.KeyEnter:
+		if msg.Type == tea.KeyEnter {
 			if err := lp.action(lp.list.SelectedItem()); err != nil {
 				log.Print(err.Error())
 			}
 		}
 	case tea.WindowSizeMsg:
-		h, v := lsStyle.GetFrameSize()
-		lp.list.SetSize(msg.Width-h, msg.Height-v)
+		frameW, frameH := lsStyle.GetFrameSize()
+		listWidth := max(listPaneWidth-frameW, 0)
+		listHeight := max(listPaneHeight-frameH, 0)
+		lp.viewportWidth = msg.Width
+		lp.viewportHeight = msg.Height
+		lp.list.SetSize(listWidth, listHeight)
 	}
 	var cmd tea.Cmd
 	lp.list, cmd = lp.list.Update(msg)
@@ -53,5 +62,9 @@ func (lp *ListSelector) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (lp *ListSelector) View() string {
-	return lsStyle.Render(lp.list.View())
+	content := lsStyle.Width(listPaneWidth).Height(listPaneHeight).Render(lp.list.View())
+	if lp.viewportWidth == 0 || lp.viewportHeight == 0 {
+		return content
+	}
+	return lipgloss.Place(lp.viewportWidth, lp.viewportHeight, lipgloss.Center, lipgloss.Center, content)
 }

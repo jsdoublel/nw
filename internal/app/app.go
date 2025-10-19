@@ -4,9 +4,18 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 )
 
-var ErrDuplicateList error = errors.New("duplicate list")
+var (
+	NWDataPath       string
+	ErrDuplicateList error = errors.New("duplicate list")
+)
+
+func init() {
+	NWDataPath = filepath.Join(getDirBase(), "nw")
+}
 
 type Application struct {
 
@@ -50,4 +59,30 @@ func (app *Application) AddList(filmList *FilmList) error {
 func (app *Application) IsListTracked(filmList *FilmList) bool {
 	_, ok := app.TrackedLists[filmList.Url]
 	return ok
+}
+
+// Look for data directory location. First check custom NW_DATA_HOME variable,
+// then XDG location, then tries a Windows and macOS location. Finally, if all
+// of those fails it returns the default XDG location (i.e., ~/.local/share).
+//
+// Will panic if HOME is not set and it cannot find LOCALAPPDATA.
+func getDirBase() string {
+	if dir, ok := os.LookupEnv("NW_DATA_HOME"); ok {
+		return dir
+	}
+	if dir, ok := os.LookupEnv("XDG_DATA_HOME"); ok {
+		return dir
+	}
+	home, ok := os.LookupEnv("HOME")
+	if !ok {
+		if dir, ok := os.LookupEnv("LOCALAPPDATA"); ok { // try a Windows location
+			return dir
+		}
+		panic("HOME is not set")
+	}
+	dir := filepath.Join(home, "Library", "Application Support") // try macOS location
+	if _, err := os.Stat(dir); err == nil {
+		return dir
+	}
+	return filepath.Join(home, ".local", "share")
 }
