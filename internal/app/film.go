@@ -1,8 +1,6 @@
 package app
 
-import (
-	"fmt"
-)
+import "fmt"
 
 // User film list
 type FilmList struct {

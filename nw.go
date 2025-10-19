@@ -32,8 +32,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("error: %s", err)
 	}
-	listSelector := tui.MakeListSelector(application)
-	p := tea.NewProgram(listSelector, tea.WithAltScreen())
+	addList := tui.MakeAddListPane(application)
+	p := tea.NewProgram(addList, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		log.Printf("error: %s", err)
 	}
