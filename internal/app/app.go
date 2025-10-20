@@ -9,8 +9,10 @@ import (
 )
 
 var (
-	NWDataPath       string
-	ErrDuplicateList error = errors.New("duplicate list")
+	NWDataPath string
+
+	ErrDuplicateList  error = errors.New("duplicate list")
+	ErrListNotTracked       = errors.New("list is not tracked")
 )
 
 func init() {
@@ -29,7 +31,7 @@ type Application struct {
 	// ----- tracked by app
 
 	TrackedLists map[string]*FilmList // lists tracked in this program; urls are keys
-	FilmStore    FilmStore            // centeral structure that stores local film information
+	FilmStore    FilmStore            // central structure that stores local film information
 }
 
 func (app *Application) Shutdown() {
@@ -53,6 +55,15 @@ func (app *Application) AddList(filmList *FilmList) error {
 	}
 	app.FilmStore.RegisterList(&list)
 	app.TrackedLists[filmList.Url] = &list
+	return nil
+}
+
+func (app *Application) RemoveList(filmList *FilmList) error {
+	fl, ok := app.TrackedLists[filmList.Url]
+	if !ok {
+		return ErrListNotTracked
+	}
+	delete(app.TrackedLists, fl.Url)
 	return nil
 }
 

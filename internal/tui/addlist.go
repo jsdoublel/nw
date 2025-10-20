@@ -1,7 +1,9 @@
 package tui
 
 import (
+	"fmt"
 	"io"
+	"log"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -15,17 +17,58 @@ type addFilmlistItem struct {
 	selected bool
 }
 
-type listHighlightorDelegate struct {
+type addFilmListDelegate struct {
 	list.DefaultDelegate
+	app *ApplicationTUI
 }
 
-// func (d listHighlightorDelegate) Height() int                             { return 1 }
-// func (d listHighlightorDelegate) Spaceing() int                           { return 0 }
-func (d listHighlightorDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return nil }
-func (d listHighlightorDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
+type removeListMsg struct {
+	ok bool
+}
+
+func (d addFilmListDelegate) Height() int   { return 1 }
+func (d addFilmListDelegate) Spaceing() int { return 0 }
+
+func (d addFilmListDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
+	// if msg, ok := msg.(tea.KeyMsg); ok && msg.Type == tea.KeyEnter {
+	fl, ok := ls.SelectedItem().(*addFilmlistItem)
+	if !ok {
+		panic("(Add List) ListSelector item should be addFilmlistItem")
+	}
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		if msg.Type == tea.KeyEnter {
+			if !fl.selected {
+				if err := d.app.AddList(&fl.FilmList); err != nil {
+					log.Print(err.Error())
+					return nil
+				}
+				fl.selected = true
+			} else {
+				d.app.AskYesNo(fmt.Sprintf("Stop tracking list %s?", fl.Title()), func(b bool) tea.Msg {
+					return removeListMsg{ok: b}
+				})
+			}
+		}
+	case removeListMsg:
+		if !fl.selected {
+			panic("should not ask to stop tracking untracked list")
+		}
+		if msg.ok {
+			if err := d.app.RemoveList(&fl.FilmList); err != nil {
+				log.Print(err.Error())
+				return nil
+			}
+			fl.selected = false
+		}
+	}
+	return nil
+}
+
+func (d addFilmListDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
 	fl, ok := listItem.(*addFilmlistItem)
 	if !ok {
-		panic("ListSelector item should be *addFilmlistItem")
+		panic("(Add List) ListSelector item should be *addFilmlistItem")
 	}
 	dd := d.DefaultDelegate
 	if fl.selected {
@@ -37,22 +80,10 @@ func (d listHighlightorDelegate) Render(w io.Writer, m list.Model, index int, li
 	dd.Render(w, m, index, listItem)
 }
 
-func MakeAddListPane(a *app.Application) *ListSelector {
+func MakeAddListPane(a *ApplicationTUI) *ListSelector {
 	items := make([]list.Item, 0, len(a.ListHeaders))
 	for _, lh := range a.ListHeaders {
 		items = append(items, &addFilmlistItem{*lh, a.IsListTracked(lh)})
 	}
-	return MakeListSelector(a, items, listHighlightorDelegate{list.NewDefaultDelegate()}, func(it list.Item) error {
-		fl, ok := it.(*addFilmlistItem)
-		if !ok {
-			panic("(Add List) ListSelector item should be addFilmlistItem")
-		}
-		if !fl.selected {
-			if err := a.AddList(&fl.FilmList); err != nil {
-				return err
-			}
-			fl.selected = true
-		}
-		return nil
-	})
+	return MakeListSelector(a, items, addFilmListDelegate{list.NewDefaultDelegate(), a})
 }
