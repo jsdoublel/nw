@@ -30,10 +30,13 @@ func (d addFilmListDelegate) Height() int   { return 1 }
 func (d addFilmListDelegate) Spaceing() int { return 0 }
 
 func (d addFilmListDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
-	// if msg, ok := msg.(tea.KeyMsg); ok && msg.Type == tea.KeyEnter {
-	fl, ok := ls.SelectedItem().(*addFilmlistItem)
+	item := ls.SelectedItem()
+	if item == nil {
+		return nil
+	}
+	fl, ok := item.(*addFilmlistItem)
 	if !ok {
-		panic("(Add List) ListSelector item should be addFilmlistItem")
+		panic(fmt.Sprintf("(Add List) ListSelector item should be addFilmlistItem, instead item is %T", ls.SelectedItem()))
 	}
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -68,7 +71,7 @@ func (d addFilmListDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
 func (d addFilmListDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
 	fl, ok := listItem.(*addFilmlistItem)
 	if !ok {
-		panic("(Add List) ListSelector item should be *addFilmlistItem")
+		panic(fmt.Sprintf("(Add List) ListSelector item should be addFilmlistItem, instead item is %T", listItem))
 	}
 	dd := d.DefaultDelegate
 	if fl.selected {

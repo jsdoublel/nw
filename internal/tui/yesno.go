@@ -4,7 +4,10 @@ import (
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
+
+var yesNoStyle = lipgloss.NewStyle().Border(lipgloss.NormalBorder())
 
 // Model for yes no question pop-up
 type YesNoPrompt struct {
@@ -14,8 +17,8 @@ type YesNoPrompt struct {
 func (p YesNoPrompt) Init() tea.Cmd { return nil }
 
 func (p YesNoPrompt) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if k, ok := msg.(tea.KeyMsg); ok {
-		switch k.String() {
+	if msg, ok := msg.(tea.KeyMsg); ok {
+		switch msg.String() {
 		case "enter", "y", "Y":
 			return p, func() tea.Msg { return YesNoResponse{true} }
 		case "esc", "n", "N", "q":
@@ -26,7 +29,7 @@ func (p YesNoPrompt) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (p YesNoPrompt) View() string {
-	return fmt.Sprintf("\n %s\n\n  [Yes]   [No]\n", p.question)
+	return yesNoStyle.Render(fmt.Sprintf("\n %s \n\n  [Yes]   [No]\n", p.question))
 }
 
 // Response to prompt: Yes [true] No [false]

@@ -16,10 +16,8 @@ var lsStyle = lipgloss.NewStyle().
 
 // Window for scrolling and selecting from list
 type ListSelector struct {
-	list           list.Model
-	app            *ApplicationTUI
-	viewportWidth  int
-	viewportHeight int
+	list list.Model
+	app  *ApplicationTUI
 }
 
 // func MakeListSelector(app *app.Application) *ListSelector {
@@ -35,13 +33,10 @@ func (ls *ListSelector) Init() tea.Cmd {
 }
 
 func (ls *ListSelector) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
+	if _, ok := msg.(tea.WindowSizeMsg); ok {
 		frameW, frameH := lsStyle.GetFrameSize()
 		listWidth := max(listPaneWidth-frameW, 0)
 		listHeight := max(listPaneHeight-frameH, 0)
-		ls.viewportWidth = msg.Width
-		ls.viewportHeight = msg.Height
 		ls.list.SetSize(listWidth, listHeight)
 	}
 	var cmd tea.Cmd
@@ -50,9 +45,5 @@ func (ls *ListSelector) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (ls *ListSelector) View() string {
-	content := lsStyle.Width(listPaneWidth).Height(listPaneHeight).Render(ls.list.View())
-	if ls.viewportWidth == 0 || ls.viewportHeight == 0 {
-		return content
-	}
-	return lipgloss.Place(ls.viewportWidth, ls.viewportHeight, lipgloss.Center, lipgloss.Center, content)
+	return lsStyle.Width(listPaneWidth).Height(listPaneHeight).Render(ls.list.View())
 }
