@@ -8,7 +8,7 @@ import (
 
 const (
 	listPaneWidth  = 64
-	listPaneHeight = 36
+	listPaneHeight = 28
 )
 
 var lsStyle = lipgloss.NewStyle().

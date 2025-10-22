@@ -83,10 +83,10 @@ func (d addFilmListDelegate) Render(w io.Writer, m list.Model, index int, listIt
 	dd.Render(w, m, index, listItem)
 }
 
-func MakeAddListPane(a *ApplicationTUI) *ListSelector {
+func MakeAddListPane(a *ApplicationTUI) *SearchModel {
 	items := make([]list.Item, 0, len(a.ListHeaders))
 	for _, lh := range a.ListHeaders {
 		items = append(items, &addFilmlistItem{*lh, a.IsListTracked(lh)})
 	}
-	return MakeListSelector(a, items, addFilmListDelegate{list.NewDefaultDelegate(), a})
+	return MakeSearchModel(a, items, "Search lists...", addFilmListDelegate{list.NewDefaultDelegate(), a})
 }

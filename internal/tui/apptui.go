@@ -11,6 +11,8 @@ import (
 	"github.com/jsdoublel/nw/internal/app"
 )
 
+var appViewStyle = lipgloss.NewStyle().PaddingTop(8)
+
 type ScreenStack []tea.Model
 
 func (ss *ScreenStack) push(m tea.Model)    { *ss = append(*ss, m) }
@@ -73,5 +75,6 @@ func (a *ApplicationTUI) View() string {
 	if a.width == 0 || a.height == 0 {
 		return content
 	}
-	return lipgloss.Place(a.width, a.height, lipgloss.Center, lipgloss.Center, content)
+	padded := appViewStyle.Render(content)
+	return lipgloss.Place(a.width, a.height, lipgloss.Center, lipgloss.Top, padded)
 }
