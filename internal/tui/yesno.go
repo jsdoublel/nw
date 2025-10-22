@@ -12,12 +12,21 @@ var yesNoStyle = lipgloss.NewStyle().Border(lipgloss.NormalBorder())
 // Model for yes no question pop-up
 type YesNoPrompt struct {
 	question string // question to be asked
+	callback func(bool) tea.Msg
+	app      *ApplicationTUI
 }
 
-func (p YesNoPrompt) Init() tea.Cmd { return nil }
+func (p *YesNoPrompt) Init() tea.Cmd { return nil }
 
-func (p YesNoPrompt) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if msg, ok := msg.(tea.KeyMsg); ok {
+func (p *YesNoPrompt) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case YesNoResponse:
+		if p.app.screens.cur() != p {
+			panic("model sending YesNoResponse should be top of stack YesNoPrompt")
+		}
+		p.app.screens.pop()
+		return p.app, func() tea.Msg { return p.callback(msg.response) }
+	case tea.KeyMsg:
 		switch msg.String() {
 		case "enter", "y", "Y":
 			return p, func() tea.Msg { return YesNoResponse{true} }
@@ -28,7 +37,7 @@ func (p YesNoPrompt) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return p, nil
 }
 
-func (p YesNoPrompt) View() string {
+func (p *YesNoPrompt) View() string {
 	return yesNoStyle.Render(fmt.Sprintf("\n %s \n\n  [Yes]   [No]\n", p.question))
 }
 
@@ -38,6 +47,5 @@ type YesNoResponse struct {
 }
 
 func (a *ApplicationTUI) AskYesNo(question string, callback func(bool) tea.Msg) {
-	a.screens.push(YesNoPrompt{question: question})
-	a.pending = callback
+	a.screens.push(&YesNoPrompt{question: question, callback: callback, app: a})
 }

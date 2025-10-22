@@ -69,13 +69,17 @@ func (sm *SearchModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		sm.list.SetSize(listWidth, listHeight)
 	case tea.KeyMsg:
 		switch msg.String() {
+		case "enter":
+			if sm.focus == searchMode {
+				sm.switchToNormal()
+				return sm, nil
+			}
 		case "esc":
 			if sm.focus == searchMode {
 				sm.switchToNormal()
 				return sm, nil
-			} else {
-				return sm, tea.Quit
 			}
+			return sm, GoBack
 		case "i", ":", "/":
 			if sm.focus == normalMode {
 				sm.switchToSearch()
