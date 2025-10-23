@@ -2,7 +2,6 @@ package app
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -39,37 +38,6 @@ func (app *Application) Shutdown() {
 	if err := app.Save(); err != nil {
 		log.Printf("application save had error %s", err)
 	}
-}
-
-// Saves list to be tracked
-func (app *Application) AddList(filmList *FilmList) error {
-	if _, ok := app.TrackedLists[filmList.Url]; ok {
-		return ErrDuplicateList
-	}
-	var list FilmList
-	if filmList.Films == nil {
-		var err error
-		if list, err = ScrapeFilmList(filmList.Url); err != nil { // TODO: make goroutine
-			return fmt.Errorf("could not add list %s, %w", list.Name, err)
-		}
-	}
-	app.FilmStore.RegisterList(&list)
-	app.TrackedLists[filmList.Url] = &list
-	return nil
-}
-
-func (app *Application) RemoveList(filmList *FilmList) error {
-	fl, ok := app.TrackedLists[filmList.Url]
-	if !ok {
-		return ErrListNotTracked
-	}
-	delete(app.TrackedLists, fl.Url)
-	return nil
-}
-
-func (app *Application) IsListTracked(filmList *FilmList) bool {
-	_, ok := app.TrackedLists[filmList.Url]
-	return ok
 }
 
 // Look for data directory location. First check custom NW_DATA_HOME variable,

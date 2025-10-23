@@ -21,7 +21,7 @@ func TestTMDBFilm(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			film, err := TMDBFilm(test.id)
 			if err != nil {
-				t.Errorf("Produced Error %s", err)
+				t.Errorf("Produced error %s", err)
 			}
 			if film.Title != test.expected {
 				t.Errorf("%s != %s", film.Title, test.expected)

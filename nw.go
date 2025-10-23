@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/jsdoublel/nw/internal/tui"
@@ -27,6 +26,6 @@ func parseArgs() string {
 func main() {
 	username := parseArgs()
 	if err := tui.RunApplicationTUI(username); err != nil {
-		log.Fatalf("nw failed with error, %s", err.Error())
+		fmt.Fprintf(os.Stderr, "nw failed with error, %s", err.Error())
 	}
 }

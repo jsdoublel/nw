@@ -17,27 +17,32 @@ const (
 )
 
 var (
-	searchInputStyle          = lipgloss.NewStyle().Border(lipgloss.NormalBorder())
-	unfocusedSearchInputStyle = lipgloss.NewStyle().Border(lipgloss.NormalBorder()).BorderForeground(lipgloss.Color("#5c5c5c"))
-	searchListStyle           = lipgloss.NewStyle().Border(lipgloss.NormalBorder())
-	unfocusedSearchListStyle  = lipgloss.NewStyle().Border(lipgloss.NormalBorder()).BorderForeground(lipgloss.Color("#5c5c5c"))
-	cursorStyle               = lipgloss.NewStyle()
+	searchInputStyle = lipgloss.NewStyle().Border(lipgloss.NormalBorder())
+	searchListStyle  = lipgloss.NewStyle().Border(lipgloss.NormalBorder())
+	cursorStyle      = lipgloss.NewStyle()
 )
 
+// Model with text search input and list of results below
 type SearchModel struct {
-	input textinput.Model
-	list  list.Model
-	focus mode
-	app   *ApplicationTUI
+	input       textinput.Model
+	list        list.Model
+	queryAction func(string)
+	focus       mode
+	app         *ApplicationTUI
 }
 
-func MakeSearchModel(a *ApplicationTUI, items []list.Item, searchText string, listDelegate list.ItemDelegate) *SearchModel {
+func MakeSearchModel(
+	a *ApplicationTUI,
+	items []list.Item,
+	searchText string,
+	listDelegate list.ItemDelegate,
+	queryAction func(string),
+) *SearchModel {
 	ti := textinput.New()
 	ti.Placeholder = searchText
 	ti.Cursor.Style = cursorStyle
-	ti.Focus()
 	frameW, _ := searchInputStyle.GetFrameSize()
-	ti.Width = max(max(listPaneWidth-frameW, 0), lipgloss.Width(searchText))
+	ti.Width = max(max(listPaneWidth-frameW-2, 0), lipgloss.Width(searchText))
 
 	list := list.New(items, listDelegate, 0, 0)
 	list.SetShowTitle(false)
@@ -45,7 +50,13 @@ func MakeSearchModel(a *ApplicationTUI, items []list.Item, searchText string, li
 	list.SetShowFilter(false)
 	list.SetShowStatusBar(false)
 	list.DisableQuitKeybindings()
-	return &SearchModel{input: ti, list: list, focus: searchMode, app: a}
+	return &SearchModel{
+		input:       ti,
+		list:        list,
+		queryAction: queryAction,
+		focus:       normalMode,
+		app:         a,
+	}
 }
 
 func (sm *SearchModel) Init() tea.Cmd {
@@ -71,6 +82,7 @@ func (sm *SearchModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "enter":
 			if sm.focus == searchMode {
+				sm.queryAction(query)
 				sm.switchToNormal()
 				return sm, nil
 			}
@@ -96,9 +108,9 @@ func (sm *SearchModel) View() string {
 	var inSty, listSty lipgloss.Style
 	if sm.focus == searchMode {
 		inSty = searchInputStyle
-		listSty = unfocusedSearchListStyle
+		listSty = searchListStyle.BorderForeground(lipgloss.Color("#5c5c5c"))
 	} else {
-		inSty = unfocusedSearchInputStyle
+		inSty = searchInputStyle.BorderForeground(lipgloss.Color("#5c5c5c"))
 		listSty = searchListStyle
 	}
 	return lipgloss.JoinVertical(

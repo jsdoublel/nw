@@ -38,7 +38,7 @@ func TestScrapeList(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			fl, err := ScrapeFilmList(test.expected.Url)
 			if err != nil {
-				t.Errorf("Produced Error %s", err)
+				t.Errorf("Produced error %s", err)
 			}
 			if !reflect.DeepEqual(test.expected, fl) {
 				t.Errorf("want=%+v\n!= got=%+v\n", test.expected, fl)
@@ -86,7 +86,7 @@ func TestScrapeFilmID(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			id, err := ScrapeFilmID(test.url)
 			if err != nil {
-				t.Errorf("Produced Error %s", err)
+				t.Errorf("Produced error %s", err)
 			}
 			if test.expected != id {
 				t.Errorf("%d != %d", test.expected, id)

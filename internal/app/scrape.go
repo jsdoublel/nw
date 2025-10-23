@@ -64,9 +64,10 @@ func ScapeUserLists(username string) ([]*FilmList, error) {
 func ScrapeFilmList(rawURL string) (fl FilmList, err error) {
 	url, err := url.Parse(rawURL)
 	if err != nil {
+		err = fmt.Errorf("%w, %w", ErrInvalidUrl, err)
 		return
 	} else if url.Hostname() != "letterboxd.com" {
-		err = fmt.Errorf("%s is not a letterboxd.com url", url)
+		err = fmt.Errorf("%w, %s is not a letterboxd.com url", ErrInvalidUrl, url)
 		return
 	}
 	fl.Url = rawURL

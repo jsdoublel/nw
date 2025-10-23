@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -88,5 +89,9 @@ func MakeAddListPane(a *ApplicationTUI) *SearchModel {
 	for _, lh := range a.ListHeaders {
 		items = append(items, &addFilmlistItem{*lh, a.IsListTracked(lh)})
 	}
-	return MakeSearchModel(a, items, "Search lists...", addFilmListDelegate{list.NewDefaultDelegate(), a})
+	return MakeSearchModel(a, items, "Enter URL or search lists...", addFilmListDelegate{list.NewDefaultDelegate(), a}, func(query string) {
+		if err := a.AddListFromUrl(query); !errors.Is(err, app.ErrInvalidUrl) {
+			log.Printf("could not add query as url, %s", err)
+		}
+	})
 }
