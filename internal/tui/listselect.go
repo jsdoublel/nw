@@ -8,7 +8,7 @@ import (
 
 const (
 	listPaneWidth  = 64
-	listPaneHeight = 38
+	listPaneHeight = 42
 )
 
 var lsStyle = lipgloss.NewStyle().
@@ -22,8 +22,14 @@ type ListSelector struct {
 }
 
 func MakeListSelector(a *ApplicationTUI, items []list.Item, delegate list.ItemDelegate) *ListSelector {
+	list := list.New(items, delegate, listPaneWidth, listPaneHeight)
+	list.SetShowTitle(false)
+	list.SetShowHelp(false)
+	list.SetShowFilter(false)
+	list.SetShowStatusBar(false)
+	list.DisableQuitKeybindings()
 	return &ListSelector{
-		list: list.New(items, delegate, listPaneWidth, listPaneHeight),
+		list: list,
 		app:  a,
 	}
 }

@@ -14,6 +14,8 @@ type mode int
 const (
 	searchMode mode = iota
 	normalMode
+
+	resultPainHeight = listPaneHeight - 3
 )
 
 var (
@@ -24,8 +26,8 @@ var (
 
 // Model with text search input and list of results below
 type SearchModel struct {
+	ListSelector
 	input       textinput.Model
-	list        list.Model
 	queryAction func(string)
 	mode        mode
 	focused     bool
@@ -33,31 +35,24 @@ type SearchModel struct {
 }
 
 func MakeSearchModel(a *ApplicationTUI, items []list.Item, searchText string, delegate list.ItemDelegate, queryAction func(string)) *SearchModel {
+	list := MakeListSelector(a, items, delegate)
+	list.list.SetHeight(resultPainHeight)
 	ti := textinput.New()
 	ti.Placeholder = searchText
 	ti.Cursor.Style = cursorStyle
 	frameW, _ := searchInputStyle.GetFrameSize()
-	ti.Width = max(max(listPaneWidth-frameW-2, 0), lipgloss.Width(searchText))
-
-	list := list.New(items, delegate, listPaneWidth, listPaneHeight)
-	list.SetShowTitle(false)
-	list.SetShowHelp(false)
-	list.SetShowFilter(false)
-	list.SetShowStatusBar(false)
-	list.DisableQuitKeybindings()
+	ti.Width = max(max(listPaneWidth-frameW-len(ti.Prompt), 0), lipgloss.Width(searchText))
 	return &SearchModel{
-		input:       ti,
-		list:        list,
-		queryAction: queryAction,
-		mode:        normalMode,
-		focused:     true,
-		app:         a,
+		ListSelector: *list,
+		input:        ti,
+		queryAction:  queryAction,
+		mode:         normalMode,
+		focused:      true,
+		app:          a,
 	}
 }
 
-func (sm *SearchModel) Init() tea.Cmd {
-	return nil
-}
+func (sm *SearchModel) Init() tea.Cmd { return nil }
 
 func (sm *SearchModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	prev := sm.input.Value()
@@ -105,7 +100,7 @@ func (sm *SearchModel) View() string {
 	return lipgloss.JoinVertical(
 		lipgloss.Center,
 		inSty.Width(listPaneWidth).Render(sm.input.View()),
-		listSty.Width(listPaneWidth).Height(listPaneHeight).Render(sm.list.View()),
+		listSty.Width(listPaneWidth).Height(resultPainHeight).Render(sm.list.View()),
 	)
 }
 
