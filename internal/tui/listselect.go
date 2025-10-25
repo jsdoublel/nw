@@ -8,7 +8,7 @@ import (
 
 const (
 	listPaneWidth  = 64
-	listPaneHeight = 28
+	listPaneHeight = 38
 )
 
 var lsStyle = lipgloss.NewStyle().
@@ -16,14 +16,14 @@ var lsStyle = lipgloss.NewStyle().
 
 // Window for scrolling and selecting from list
 type ListSelector struct {
-	list list.Model
-	app  *ApplicationTUI
+	list    list.Model
+	focused bool
+	app     *ApplicationTUI
 }
 
-// func MakeListSelector(app *app.Application) *ListSelector {
 func MakeListSelector(a *ApplicationTUI, items []list.Item, delegate list.ItemDelegate) *ListSelector {
 	return &ListSelector{
-		list: list.New(items, delegate, 0, 0),
+		list: list.New(items, delegate, listPaneWidth, listPaneHeight),
 		app:  a,
 	}
 }
@@ -33,17 +33,19 @@ func (ls *ListSelector) Init() tea.Cmd {
 }
 
 func (ls *ListSelector) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if _, ok := msg.(tea.WindowSizeMsg); ok {
-		frameW, frameH := lsStyle.GetFrameSize()
-		listWidth := max(listPaneWidth-frameW, 0)
-		listHeight := max(listPaneHeight-frameH, 0)
-		ls.list.SetSize(listWidth, listHeight)
-	}
 	var cmd tea.Cmd
 	ls.list, cmd = ls.list.Update(msg)
 	return ls, cmd
 }
 
 func (ls *ListSelector) View() string {
-	return lsStyle.Width(listPaneWidth).Height(listPaneHeight).Render(ls.list.View())
+	lsSty := lsStyle
+	if !ls.focused {
+		lsSty = lsStyle.BorderForeground(lipgloss.Color("#5c5c5c"))
+	}
+	return lsSty.Width(listPaneWidth).Height(listPaneHeight).Render(ls.list.View())
+}
+
+func (ls *ListSelector) Focus(focused bool) {
+	ls.focused = focused
 }

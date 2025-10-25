@@ -27,24 +27,19 @@ type SearchModel struct {
 	input       textinput.Model
 	list        list.Model
 	queryAction func(string)
-	focus       mode
+	mode        mode
+	focused     bool
 	app         *ApplicationTUI
 }
 
-func MakeSearchModel(
-	a *ApplicationTUI,
-	items []list.Item,
-	searchText string,
-	listDelegate list.ItemDelegate,
-	queryAction func(string),
-) *SearchModel {
+func MakeSearchModel(a *ApplicationTUI, items []list.Item, searchText string, delegate list.ItemDelegate, queryAction func(string)) *SearchModel {
 	ti := textinput.New()
 	ti.Placeholder = searchText
 	ti.Cursor.Style = cursorStyle
 	frameW, _ := searchInputStyle.GetFrameSize()
 	ti.Width = max(max(listPaneWidth-frameW-2, 0), lipgloss.Width(searchText))
 
-	list := list.New(items, listDelegate, 0, 0)
+	list := list.New(items, delegate, listPaneWidth, listPaneHeight)
 	list.SetShowTitle(false)
 	list.SetShowHelp(false)
 	list.SetShowFilter(false)
@@ -54,7 +49,8 @@ func MakeSearchModel(
 		input:       ti,
 		list:        list,
 		queryAction: queryAction,
-		focus:       normalMode,
+		mode:        normalMode,
+		focused:     true,
 		app:         a,
 	}
 }
@@ -72,30 +68,23 @@ func (sm *SearchModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		sm.list.SetFilterText(strings.TrimSpace(query))
 	}
 
-	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
-		frameW, frameH := searchListStyle.GetFrameSize()
-		listWidth := max(listPaneWidth-frameW, 0)
-		listHeight := max(listPaneHeight-frameH, 0)
-		sm.list.SetSize(listWidth, listHeight)
-	case tea.KeyMsg:
+	if msg, ok := msg.(tea.KeyMsg); ok {
 		switch msg.String() {
-		case "enter":
-			if sm.focus == searchMode {
+		case "enter", "ctrl+j":
+			if sm.mode == searchMode {
 				sm.queryAction(query)
 				sm.switchToNormal()
 				return sm, nil
 			}
 		case "esc":
-			if sm.focus == searchMode {
-				sm.switchToNormal()
+			if sm.mode == searchMode {
+				sm.input.SetValue("")
+				sm.list.ResetFilter()
 				return sm, nil
 			}
 			return sm, GoBack
-		case "i", ":", "/":
-			if sm.focus == normalMode {
-				sm.switchToSearch()
-			}
+		case "i", ":", "/", "ctrl+k":
+			sm.switchToSearch()
 		}
 	}
 
@@ -105,27 +94,31 @@ func (sm *SearchModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (sm *SearchModel) View() string {
-	var inSty, listSty lipgloss.Style
-	if sm.focus == searchMode {
-		inSty = searchInputStyle
+	inSty := searchInputStyle
+	listSty := searchListStyle
+	if sm.mode == searchMode || !sm.focused {
 		listSty = searchListStyle.BorderForeground(lipgloss.Color("#5c5c5c"))
-	} else {
+	}
+	if sm.mode == normalMode || !sm.focused {
 		inSty = searchInputStyle.BorderForeground(lipgloss.Color("#5c5c5c"))
-		listSty = searchListStyle
 	}
 	return lipgloss.JoinVertical(
-		lipgloss.Left,
+		lipgloss.Center,
 		inSty.Width(listPaneWidth).Render(sm.input.View()),
-		listSty.Width(listPaneWidth).Render(sm.list.View()),
+		listSty.Width(listPaneWidth).Height(listPaneHeight).Render(sm.list.View()),
 	)
 }
 
 func (sm *SearchModel) switchToSearch() {
 	sm.input.Focus()
-	sm.focus = searchMode
+	sm.mode = searchMode
 }
 
 func (sm *SearchModel) switchToNormal() {
 	sm.input.Blur()
-	sm.focus = normalMode
+	sm.mode = normalMode
+}
+
+func (sm *SearchModel) Focus(focused bool) {
+	sm.focused = focused
 }

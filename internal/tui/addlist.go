@@ -13,12 +13,130 @@ import (
 	"github.com/jsdoublel/nw/internal/app"
 )
 
-type addFilmlistItem struct {
+type TrackedChangedMsg struct{} // message sent indicating the tracked lists have changed
+
+func TrackedChanged() tea.Msg { return TrackedChangedMsg{} }
+
+type pane int // panes in the window
+
+const (
+	searchList pane = iota
+	viewLists
+)
+
+type AddListsScreen struct {
+	panes []tea.Model
+	focus pane
+	app   *ApplicationTUI
+}
+
+func MakeAddListScreen(a *ApplicationTUI) AddListsScreen {
+	return AddListsScreen{
+		panes: []tea.Model{MakeSearchListPane(a), MakeViewListPane(a)},
+		focus: searchList,
+		app:   a,
+	}
+}
+
+func (al *AddListsScreen) Init() tea.Cmd { return nil }
+
+func (al *AddListsScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	m, cmd := al.panes[al.focus].Update(msg)
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+l":
+			al.focusView()
+		case "ctrl+h":
+			al.focusSearch()
+		}
+	case TrackedChangedMsg:
+		m, cmd = al.viewPane().Update(msg)
+	}
+	return m, cmd
+}
+
+func (al *AddListsScreen) View() string {
+	return lipgloss.JoinHorizontal(lipgloss.Top,
+		al.searchPane().View(),
+		al.viewPane().View(),
+	)
+}
+
+func (al *AddListsScreen) searchPane() tea.Model {
+	return al.panes[searchList]
+}
+
+func (al *AddListsScreen) viewPane() tea.Model {
+	return al.panes[viewLists]
+}
+
+func (al *AddListsScreen) focusView() {
+	al.focus = viewLists
+	sp, ok := al.searchPane().(*SearchModel)
+	if !ok {
+		panic("First pane on add list screen should be *SearchModel")
+	}
+	sp.Focus(false)
+	vp, ok := al.viewPane().(*ListSelector)
+	if !ok {
+		panic("Second pane on add list screen should be *ListSelector")
+	}
+	vp.Focus(true)
+}
+
+func (al *AddListsScreen) focusSearch() {
+	al.focus = searchList
+	sp, ok := al.searchPane().(*SearchModel)
+	if !ok {
+		panic("First pane on add list screen should be *SearchModel")
+	}
+	sp.Focus(true)
+	vp, ok := al.viewPane().(*ListSelector)
+	if !ok {
+		panic("Second pane on add list screen should be *ListSelector")
+	}
+	vp.Focus(false)
+}
+
+// ----- View Pane
+
+type viewListsDelegate struct {
+	list.DefaultDelegate
+	app *ApplicationTUI
+}
+
+func (d viewListsDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
+	if _, ok := msg.(TrackedChangedMsg); ok {
+		items := make([]list.Item, 0, len(d.app.TrackedLists))
+		for _, v := range d.app.TrackedLists {
+			items = append(items, v)
+		}
+		ls.SetItems(items)
+	}
+	return nil
+}
+
+// func (d viewListsDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
+// 	d.DefaultDelegate.Render(w, m, index, listItem)
+// }
+
+func MakeViewListPane(a *ApplicationTUI) *ListSelector {
+	items := make([]list.Item, 0, len(a.TrackedLists))
+	for _, v := range a.TrackedLists {
+		items = append(items, v)
+	}
+	return MakeListSelector(a, items, viewListsDelegate{DefaultDelegate: list.NewDefaultDelegate(), app: a})
+}
+
+// ----- Search Pane
+
+type searchListsItem struct {
 	app.FilmList
 	selected bool
 }
 
-type addFilmListDelegate struct {
+type searchListsDelegate struct {
 	list.DefaultDelegate
 	app *ApplicationTUI
 }
@@ -27,15 +145,12 @@ type removeListMsg struct {
 	ok bool
 }
 
-func (d addFilmListDelegate) Height() int   { return 1 }
-func (d addFilmListDelegate) Spaceing() int { return 0 }
-
-func (d addFilmListDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
+func (d searchListsDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
 	item := ls.SelectedItem()
 	if item == nil {
 		return nil
 	}
-	fl, ok := item.(*addFilmlistItem)
+	fl, ok := item.(*searchListsItem)
 	if !ok {
 		panic(fmt.Sprintf("(Add List) ListSelector item should be addFilmlistItem, instead item is %T", ls.SelectedItem()))
 	}
@@ -48,6 +163,7 @@ func (d addFilmListDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
 					return nil
 				}
 				fl.selected = true
+				return TrackedChanged
 			} else {
 				d.app.AskYesNo(fmt.Sprintf("Stop tracking list %s?", fl.Title()), func(b bool) tea.Msg {
 					return removeListMsg{ok: b}
@@ -64,13 +180,14 @@ func (d addFilmListDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
 				return nil
 			}
 			fl.selected = false
+			return TrackedChanged
 		}
 	}
 	return nil
 }
 
-func (d addFilmListDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
-	fl, ok := listItem.(*addFilmlistItem)
+func (d searchListsDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
+	fl, ok := listItem.(*searchListsItem)
 	if !ok {
 		panic(fmt.Sprintf("(Add List) ListSelector item should be addFilmlistItem, instead item is %T", listItem))
 	}
@@ -84,12 +201,12 @@ func (d addFilmListDelegate) Render(w io.Writer, m list.Model, index int, listIt
 	dd.Render(w, m, index, listItem)
 }
 
-func MakeAddListPane(a *ApplicationTUI) *SearchModel {
+func MakeSearchListPane(a *ApplicationTUI) *SearchModel {
 	items := make([]list.Item, 0, len(a.ListHeaders))
 	for _, lh := range a.ListHeaders {
-		items = append(items, &addFilmlistItem{*lh, a.IsListTracked(lh)})
+		items = append(items, &searchListsItem{*lh, a.IsListTracked(lh)})
 	}
-	return MakeSearchModel(a, items, "Enter URL or search lists...", addFilmListDelegate{list.NewDefaultDelegate(), a}, func(query string) {
+	return MakeSearchModel(a, items, "Enter URL or search lists...", searchListsDelegate{list.NewDefaultDelegate(), a}, func(query string) {
 		if err := a.AddListFromUrl(query); !errors.Is(err, app.ErrInvalidUrl) {
 			log.Printf("could not add query as url, %s", err)
 		}

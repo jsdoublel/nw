@@ -11,8 +11,6 @@ import (
 	"github.com/jsdoublel/nw/internal/app"
 )
 
-var appViewStyle = lipgloss.NewStyle().PaddingTop(8)
-
 type GoBackMsg struct{}
 
 func GoBack() tea.Msg { return GoBackMsg{} }
@@ -44,7 +42,8 @@ func RunApplicationTUI(username string) error {
 	}
 	defer application.Shutdown()
 	aModel := ApplicationTUI{Application: *application}
-	aModel.screens.push(MakeAddListPane(&aModel))
+	startScreen := MakeAddListScreen(&aModel)
+	aModel.screens.push(&startScreen)
 	p := tea.NewProgram(&aModel, tea.WithAltScreen())
 	_, err = p.Run()
 	return err
@@ -68,10 +67,5 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (a *ApplicationTUI) View() string {
-	content := a.screens.cur().View()
-	if a.width == 0 || a.height == 0 {
-		return content
-	}
-	padded := appViewStyle.Render(content)
-	return lipgloss.Place(a.width, a.height, lipgloss.Center, lipgloss.Top, padded)
+	return lipgloss.Place(a.width, a.height, lipgloss.Center, lipgloss.Center, a.screens.cur().View())
 }
