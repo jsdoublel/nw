@@ -10,20 +10,6 @@ type FilmList struct {
 	Films []*Film // films in list (can be nil)
 }
 
-// ---- Implement interfaces for bubbletea list
-
-func (fl FilmList) FilterValue() string {
-	return fl.Name
-}
-
-func (fl FilmList) Title() string {
-	return fl.Name
-}
-
-func (fl FilmList) Description() string {
-	return fl.Desc
-}
-
 // Struct storing data for film,
 type Film struct {
 	LBxdID int    // letterboxd film id (used as unique identifier here)

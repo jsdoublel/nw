@@ -3,16 +3,12 @@ package tui
 import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 const (
 	listPaneWidth  = 64
 	listPaneHeight = 42
 )
-
-var lsStyle = lipgloss.NewStyle().
-	Border(lipgloss.NormalBorder())
 
 // Window for scrolling and selecting from list
 type ListSelector struct {
@@ -47,7 +43,7 @@ func (ls *ListSelector) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (ls *ListSelector) View() string {
 	lsSty := lsStyle
 	if !ls.focused {
-		lsSty = lsStyle.BorderForeground(lipgloss.Color("#5c5c5c"))
+		lsSty = lsStyle.BorderForeground(gray5)
 	}
 	return lsSty.Width(listPaneWidth).Height(listPaneHeight).Render(ls.list.View())
 }

@@ -4,10 +4,7 @@ import (
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
-
-var yesNoStyle = lipgloss.NewStyle().Border(lipgloss.NormalBorder())
 
 // Model for yes no question pop-up
 type YesNoPrompt struct {

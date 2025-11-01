@@ -18,12 +18,6 @@ const (
 	resultPainHeight = listPaneHeight - 3
 )
 
-var (
-	searchInputStyle = lipgloss.NewStyle().Border(lipgloss.NormalBorder())
-	searchListStyle  = lipgloss.NewStyle().Border(lipgloss.NormalBorder())
-	cursorStyle      = lipgloss.NewStyle()
-)
-
 // Model with text search input and list of results below
 type SearchModel struct {
 	ListSelector
@@ -92,10 +86,10 @@ func (sm *SearchModel) View() string {
 	inSty := searchInputStyle
 	listSty := searchListStyle
 	if sm.mode == searchMode || !sm.focused {
-		listSty = searchListStyle.BorderForeground(lipgloss.Color("#5c5c5c"))
+		listSty = searchListStyle.BorderForeground(gray4)
 	}
 	if sm.mode == normalMode || !sm.focused {
-		inSty = searchInputStyle.BorderForeground(lipgloss.Color("#5c5c5c"))
+		inSty = searchInputStyle.BorderForeground(gray4)
 	}
 	return lipgloss.JoinVertical(
 		lipgloss.Center,

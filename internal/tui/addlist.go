@@ -106,27 +106,39 @@ type viewListsDelegate struct {
 	app *ApplicationTUI
 }
 
+type viewListItem struct {
+	app.FilmList
+}
+
+func (li viewListItem) FilterValue() string {
+	return li.Name
+}
+
+func (li viewListItem) Title() string {
+	return li.Name
+}
+
+func (li viewListItem) Description() string {
+	return li.Desc
+}
+
 func (d viewListsDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
 	if _, ok := msg.(TrackedChangedMsg); ok {
 		items := make([]list.Item, 0, len(d.app.TrackedLists))
 		for _, v := range d.app.TrackedLists {
-			items = append(items, v)
+			items = append(items, viewListItem{*v})
 		}
 		ls.SetItems(items)
 	}
 	return nil
 }
 
-// func (d viewListsDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
-// 	d.DefaultDelegate.Render(w, m, index, listItem)
-// }
-
 func MakeViewListPane(a *ApplicationTUI) *ListSelector {
 	items := make([]list.Item, 0, len(a.TrackedLists))
 	for _, v := range a.TrackedLists {
-		items = append(items, v)
+		items = append(items, viewListItem{*v})
 	}
-	return MakeListSelector(a, items, viewListsDelegate{DefaultDelegate: list.NewDefaultDelegate(), app: a})
+	return MakeListSelector(a, items, viewListsDelegate{DefaultDelegate: listStyleDelegate(), app: a})
 }
 
 // ----- Search Pane
@@ -134,6 +146,18 @@ func MakeViewListPane(a *ApplicationTUI) *ListSelector {
 type searchListsItem struct {
 	app.FilmList
 	selected bool
+}
+
+func (li searchListsItem) FilterValue() string {
+	return li.Name
+}
+
+func (li searchListsItem) Title() string {
+	return li.Name
+}
+
+func (li searchListsItem) Description() string {
+	return li.Desc
 }
 
 type searchListsDelegate struct {
@@ -194,9 +218,9 @@ func (d searchListsDelegate) Render(w io.Writer, m list.Model, index int, listIt
 	dd := d.DefaultDelegate
 	if fl.selected {
 		dd.Styles.NormalTitle = dd.Styles.NormalTitle.
-			Foreground(lipgloss.Color("205")).Bold(true)
+			Foreground(luster).Bold(true)
 		dd.Styles.NormalDesc = dd.Styles.NormalDesc.
-			Foreground(lipgloss.Color("205"))
+			Foreground(lack)
 	}
 	dd.Render(w, m, index, listItem)
 }
@@ -206,7 +230,7 @@ func MakeSearchListPane(a *ApplicationTUI) *SearchModel {
 	for _, lh := range a.ListHeaders {
 		items = append(items, &searchListsItem{*lh, a.IsListTracked(lh)})
 	}
-	return MakeSearchModel(a, items, "Enter URL or search lists...", searchListsDelegate{list.NewDefaultDelegate(), a}, func(query string) {
+	return MakeSearchModel(a, items, "Enter URL or search lists...", searchListsDelegate{listStyleDelegate(), a}, func(query string) {
 		if err := a.AddListFromUrl(query); !errors.Is(err, app.ErrInvalidUrl) {
 			log.Printf("could not add query as url, %s", err)
 		}
