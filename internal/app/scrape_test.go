@@ -17,7 +17,9 @@ func TestScrapeList(t *testing.T) {
 				Desc: "All the nominees in the Best Motion Picture of the Year category at the 2024 Oscars, hosted on Sunday, March 10th at 4pm PST.\n\n" +
 					"With The Academy partnering with Letterboxd again this year, all members can customize the posters for the 2024 Best Picture nominees!\n\n" +
 					"Click on ‘Read notes’ to find the nominated recipients.",
-				Url: "https://letterboxd.com/oscars/list/the-96th-academy-award-nominees-for-best/",
+				Url:      "https://letterboxd.com/oscars/list/the-96th-academy-award-nominees-for-best/",
+				Ordered:  false,
+				NumFilms: 10,
 				Films: []*Film{
 					{Url: "https://letterboxd.com/film/oppenheimer-2023/", LBxdID: 784328, Title: "Oppenheimer", Year: 2023},
 					{Url: "https://letterboxd.com/film/american-fiction/", LBxdID: 952812, Title: "American Fiction", Year: 2023},

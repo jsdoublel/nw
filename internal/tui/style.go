@@ -28,6 +28,8 @@ var (
 	gray8 = lipgloss.Color("#cccccc")
 	gray9 = lipgloss.Color("#dddddd")
 
+	unfocusedColor = gray6
+
 	mainStyle = lipgloss.NewStyle().
 			Border(lipgloss.NormalBorder()).Foreground(gray9)
 

@@ -34,6 +34,14 @@ func ScapeUserLists(username string) ([]*FilmList, error) {
 				fl.Url = listUrl
 			}
 		})
+		h.ForEach("span.value", func(i int, h *colly.HTMLElement) {
+			parts := strings.Split(h.Text, "\u00A0")
+			num, err := strconv.Atoi(parts[0])
+			if err != nil {
+				log.Printf("couldn't parse number of films in list %s from %s", fl.Name, parts[0])
+			}
+			fl.NumFilms = num
+		})
 		fl.Desc = parseDescription(h, "p")
 		if fl.Name != "" && fl.Url != "" {
 			usersListUrls = append(usersListUrls, fl)
@@ -102,6 +110,10 @@ func ScrapeFilmList(rawURL string) (fl FilmList, err error) {
 				}
 			}
 		})
+		h.ForEachWithBreak("li.posteritem.numbered-list-item", func(i int, h *colly.HTMLElement) bool {
+			fl.Ordered = true
+			return false
+		})
 	}
 	c.OnHTML("ul.poster-list", posterScrapper)
 	c.OnHTML("ul.poster-grid", posterScrapper)
@@ -123,6 +135,7 @@ func ScrapeFilmList(rawURL string) (fl FilmList, err error) {
 		err = paginationErr
 		return
 	}
+	fl.NumFilms = len(fl.Films)
 	return
 }
 

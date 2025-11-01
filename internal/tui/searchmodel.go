@@ -90,10 +90,10 @@ func (sm *SearchModel) View() string {
 	inSty := searchInputStyle
 	listSty := searchListStyle
 	if sm.mode == searchMode || !sm.focused {
-		listSty = searchListStyle.BorderForeground(gray4)
+		listSty = searchListStyle.BorderForeground(unfocusedColor)
 	}
 	if sm.mode == normalMode || !sm.focused {
-		inSty = searchInputStyle.BorderForeground(gray4)
+		inSty = searchInputStyle.BorderForeground(unfocusedColor)
 	}
 	return lipgloss.JoinVertical(
 		lipgloss.Center,

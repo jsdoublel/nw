@@ -43,7 +43,7 @@ func (ls *ListSelector) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (ls *ListSelector) View() string {
 	lsSty := lsStyle
 	if !ls.focused {
-		lsSty = lsStyle.BorderForeground(gray5)
+		lsSty = lsStyle.BorderForeground(unfocusedColor)
 	}
 	return lsSty.Width(listPaneWidth).Height(listPaneHeight).Render(ls.list.View())
 }

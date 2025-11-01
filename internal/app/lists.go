@@ -11,6 +11,7 @@ func (app *Application) AddList(filmList *FilmList) error {
 		if err := app.AddListFromUrl(filmList.Url); err != nil {
 			return err
 		}
+		return nil
 	}
 	app.FilmStore.RegisterList(filmList)
 	app.TrackedLists[filmList.Url] = filmList

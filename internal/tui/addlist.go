@@ -120,7 +120,11 @@ func (li viewListItem) Title() string {
 }
 
 func (li viewListItem) Description() string {
-	return li.Desc
+	if li.Ordered {
+		return "Ordered"
+	} else {
+		return "Unordered"
+	}
 }
 
 func (d viewListsDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
@@ -158,7 +162,11 @@ func (li searchListsItem) Title() string {
 }
 
 func (li searchListsItem) Description() string {
-	return li.Desc
+	desc := fmt.Sprintf("%d films", li.NumFilms)
+	if len(li.Desc) != 0 {
+		desc += fmt.Sprintf(" :: %s", li.Desc)
+	}
+	return desc
 }
 
 type searchListsDelegate struct {
