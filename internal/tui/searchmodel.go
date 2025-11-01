@@ -3,6 +3,7 @@ package tui
 import (
 	"strings"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -58,21 +59,24 @@ func (sm *SearchModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	if msg, ok := msg.(tea.KeyMsg); ok {
-		switch msg.String() {
-		case "enter", "ctrl+j":
+		switch {
+		case msg.Type == tea.KeyEnter || key.Matches(msg, keys.MoveDown):
 			if sm.mode == searchMode {
 				sm.queryAction(query)
 				sm.switchToNormal()
 				return sm, nil
 			}
-		case "esc":
-			if sm.mode == searchMode {
+		case key.Matches(msg, keys.Back):
+			if sm.mode == searchMode && sm.input.Value() != "" {
 				sm.input.SetValue("")
 				sm.list.ResetFilter()
 				return sm, nil
+			} else if sm.mode == searchMode {
+				sm.switchToNormal()
+				return sm, nil
 			}
 			return sm, GoBack
-		case "i", ":", "/", "ctrl+k":
+		case key.Matches(msg, keys.Search), key.Matches(msg, keys.MoveUp):
 			sm.switchToSearch()
 		}
 	}

@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -44,10 +45,10 @@ func (al *AddListsScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m, cmd := al.panes[al.focus].Update(msg)
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+l":
+		switch {
+		case key.Matches(msg, keys.MoveRight):
 			al.focusView()
-		case "ctrl+h":
+		case key.Matches(msg, keys.MoveLeft):
 			al.focusSearch()
 		}
 	case TrackedChangedMsg:
