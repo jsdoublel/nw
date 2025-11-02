@@ -17,12 +17,13 @@ type ListSelector struct {
 	app     *ApplicationTUI
 }
 
-func MakeListSelector(a *ApplicationTUI, items []list.Item, delegate list.ItemDelegate) *ListSelector {
+func MakeListSelector(a *ApplicationTUI, title string, items []list.Item, delegate list.ItemDelegate) *ListSelector {
 	list := list.New(items, delegate, listPaneWidth, listPaneHeight)
-	list.SetShowTitle(false)
+	list.Title = title
+	list.Styles.Title = list.Styles.Title.Background(addListTitleColor)
 	list.SetShowHelp(false)
 	list.SetShowFilter(false)
-	list.SetShowStatusBar(false)
+	list.SetFilteringEnabled(false)
 	list.DisableQuitKeybindings()
 	return &ListSelector{
 		list: list,

@@ -34,10 +34,11 @@ var (
 			Border(lipgloss.NormalBorder()).Foreground(gray9)
 
 	// ----- Add List Screen
-	searchInputStyle = lipgloss.NewStyle().Inherit(mainStyle)
-	searchListStyle  = lipgloss.NewStyle().Inherit(mainStyle)
-	cursorStyle      = lipgloss.NewStyle()
-	lsStyle          = lipgloss.NewStyle().Inherit(mainStyle)
+	addListTitleColor = lack
+	searchInputStyle  = lipgloss.NewStyle().Inherit(mainStyle)
+	searchListStyle   = lipgloss.NewStyle().Inherit(mainStyle)
+	cursorStyle       = lipgloss.NewStyle()
+	lsStyle           = lipgloss.NewStyle().Inherit(mainStyle)
 
 	listStyleDele = list.NewDefaultDelegate()
 

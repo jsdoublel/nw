@@ -7,6 +7,7 @@ type keyMap struct {
 	Quit      key.Binding
 	Help      key.Binding
 	Search    key.Binding
+	Delete    key.Binding
 	Left      key.Binding
 	Right     key.Binding
 	Up        key.Binding
@@ -29,7 +30,7 @@ func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Left, k.Right, k.Up, k.Down},
 		{k.MoveLeft, k.MoveRight, k.MoveUp, k.MoveDown},
-		{k.Search, k.Back, k.Help, k.Quit},
+		{k.Search, k.Delete, k.Back, k.Help, k.Quit},
 	}
 }
 
@@ -81,5 +82,9 @@ var keys = keyMap{
 	Search: key.NewBinding(
 		key.WithKeys("i", ":", "/"),
 		key.WithHelp("i/:", "enter text"),
+	),
+	Delete: key.NewBinding(
+		key.WithKeys("ctrl+d"),
+		key.WithHelp("ctrl+d", "delete"),
 	),
 }

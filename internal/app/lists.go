@@ -48,3 +48,11 @@ func (app *Application) AddListFromUrl(url string) error {
 	app.TrackedLists[url] = &list
 	return nil
 }
+
+func (app *Application) ToggleOrderedList(filmList FilmList) {
+	if fl, ok := app.TrackedLists[filmList.Url]; ok {
+		fl.Ordered = !fl.Ordered
+		return
+	}
+	panic(fmt.Sprintf("Tried to toggle ordered on untracked film list %s", filmList.Name))
+}

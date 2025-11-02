@@ -30,8 +30,11 @@ type SearchModel struct {
 }
 
 func MakeSearchModel(a *ApplicationTUI, items []list.Item, searchText string, delegate list.ItemDelegate, queryAction func(string)) *SearchModel {
-	list := MakeListSelector(a, items, delegate)
+	list := MakeListSelector(a, "", items, delegate)
 	list.list.SetHeight(resultPainHeight)
+	list.list.SetShowStatusBar(false)
+	list.list.SetShowTitle(false)
+	list.list.SetFilteringEnabled(true)
 	ti := textinput.New()
 	ti.Placeholder = searchText
 	ti.Cursor.Style = cursorStyle

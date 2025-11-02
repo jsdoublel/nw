@@ -46,6 +46,10 @@ func (al *AddListsScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
+		case key.Matches(msg, keys.Back):
+			if al.focus == viewLists {
+				return m, GoBack
+			}
 		case key.Matches(msg, keys.MoveRight):
 			al.focusView()
 		case key.Matches(msg, keys.MoveLeft):
@@ -128,12 +132,35 @@ func (li viewListItem) Description() string {
 }
 
 func (d viewListsDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
-	if _, ok := msg.(TrackedChangedMsg); ok {
+	fl, ok := ls.SelectedItem().(viewListItem)
+	if !ok {
+		panic(fmt.Sprintf("(Add List) viewListDelegate item should be viewListItem, instead item is %T", ls.SelectedItem()))
+	}
+	switch msg := msg.(type) {
+	case TrackedChangedMsg:
 		items := make([]list.Item, 0, len(d.app.TrackedLists))
 		for _, v := range d.app.TrackedLists {
 			items = append(items, viewListItem{*v})
 		}
 		ls.SetItems(items)
+		return nil // early return to avoid possible stale reference
+	case tea.KeyMsg:
+		if msg.Type == tea.KeyEnter {
+			d.app.ToggleOrderedList(fl.FilmList)
+			return TrackedChanged
+		} else if key.Matches(msg, keys.Delete) {
+			d.app.AskYesNo(fmt.Sprintf("Stop tracking list %s?", fl.Title()), func(b bool) tea.Msg {
+				return removeListMsg{ok: b}
+			})
+		}
+	case removeListMsg:
+		if msg.ok {
+			if err := d.app.RemoveList(&fl.FilmList); err != nil {
+				log.Print(err.Error())
+				return nil
+			}
+			return TrackedChanged
+		}
 	}
 	return nil
 }
@@ -143,7 +170,7 @@ func MakeViewListPane(a *ApplicationTUI) *ListSelector {
 	for _, v := range a.TrackedLists {
 		items = append(items, viewListItem{*v})
 	}
-	return MakeListSelector(a, items, viewListsDelegate{DefaultDelegate: listStyleDelegate(), app: a})
+	return MakeListSelector(a, "Tracked Lists", items, viewListsDelegate{DefaultDelegate: listStyleDelegate(), app: a})
 }
 
 // ----- Search Pane
@@ -189,7 +216,7 @@ func (d searchListsDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
 	}
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if msg.Type == tea.KeyEnter {
+		if msg.Type == tea.KeyEnter || key.Matches(msg, keys.Delete) {
 			if !fl.selected {
 				if err := d.app.AddList(&fl.FilmList); err != nil {
 					log.Print(err.Error())
