@@ -1,8 +1,17 @@
 package app
 
 import (
+	"errors"
 	"fmt"
+	"math/rand"
 	"strings"
+)
+
+var (
+	ErrDuplicateList  = errors.New("duplicate list")
+	ErrListEmpty      = errors.New("list is empty")
+	ErrNoValidFilm    = errors.New("no valid film")
+	ErrListNotTracked = errors.New("list not tracked")
 )
 
 // Saves list to be tracked
@@ -28,8 +37,8 @@ func (app *Application) RemoveList(filmList *FilmList) error {
 	return nil
 }
 
-func (app *Application) IsListTracked(filmList *FilmList) bool {
-	_, ok := app.TrackedLists[filmList.Url]
+func (app *Application) IsListTracked(url string) bool {
+	_, ok := app.TrackedLists[url]
 	return ok
 }
 
@@ -51,8 +60,40 @@ func (app *Application) AddListFromUrl(url string) error {
 
 func (app *Application) ToggleOrderedList(filmList FilmList) {
 	if fl, ok := app.TrackedLists[filmList.Url]; ok {
-		fl.Ordered = !fl.Ordered
+		fl.ToggleOrdered()
 		return
 	}
 	panic(fmt.Sprintf("Tried to toggle ordered on untracked film list %s", filmList.Name))
+}
+
+// Get next film to watch from list
+func (app *Application) NextWatchFromList(filmList FilmList) (Film, error) {
+	fl, ok := app.TrackedLists[filmList.Url]
+	if !ok {
+		return Film{}, ErrListNotTracked
+	}
+	if len(fl.Films) == 0 {
+		return Film{}, ErrListEmpty
+	}
+	if fl.NextFilm != nil && !app.Watched(fl.NextFilm) {
+		return *fl.NextFilm, nil
+	}
+	var tmpList []*Film
+	if !fl.Ordered {
+		tmpList = make([]*Film, len(fl.Films))
+		copy(tmpList, fl.Films)
+		rand.Shuffle(len(fl.Films), func(i, j int) {
+			tmpList[i], tmpList[j] = tmpList[j], tmpList[i]
+		})
+	} else {
+		tmpList = fl.Films
+	}
+	for _, f := range tmpList {
+		if _, ok := app.WatchedFilms[f.LBxdID]; !ok {
+			fl.NextFilm = f
+			return *f, nil
+		}
+	}
+	fl.NextFilm = nil
+	return Film{}, fmt.Errorf("%w, no unwatched films in %s", ErrNoValidFilm, fl.Name)
 }

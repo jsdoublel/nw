@@ -10,10 +10,10 @@ import (
 
 func parseArgs() string {
 	flag.Usage = func() {
-		fmt.Fprintf(flag.CommandLine.Output(), "Usage of %s [flags] <positional args>\n", os.Args[0])
-		fmt.Fprint(flag.CommandLine.Output(), "Flags:\n")
+		fmt.Fprint(os.Stderr, "Usage of nw [flags] <positional args>\n")
+		fmt.Fprint(os.Stderr, "Flags:\n")
 		flag.PrintDefaults()
-		fmt.Fprint(flag.CommandLine.Output(), "\nPositional:\n\t[url] letterboxd list url\n")
+		fmt.Fprint(os.Stderr, "\nPositional:\n\t[username] letterboxd username\n")
 	}
 	flag.Parse()
 	if flag.NArg() != 1 {

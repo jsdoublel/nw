@@ -39,6 +39,21 @@ func (fs *FilmStore) DeregisterList(filmList *FilmList) {
 	}
 }
 
+// Add film list to be tracked. Films in registered lists will be saved/stored
+// in save data as long as they have references.
+func (fs *FilmStore) RegisterSet(filmSet map[int]*Film) {
+	for _, film := range filmSet {
+		fs.register(*film)
+	}
+}
+
+// Stop tracking list and decrement ref counts as necessary.
+func (fs *FilmStore) DeregisterSet(filmSet map[int]*Film) {
+	for _, film := range filmSet {
+		fs.deregister(*film)
+	}
+}
+
 // Get cached film record, retrieve if necessary
 //
 // Returns error if it needs to retrieve details and fails.

@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"strings"
+
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -46,7 +48,13 @@ func (ls *ListSelector) View() string {
 	if !ls.focused {
 		lsSty = lsStyle.BorderForeground(unfocusedColor)
 	}
-	return lsSty.Width(listPaneWidth).Height(listPaneHeight).Render(ls.list.View())
+	view := ls.list.View()
+	if len(ls.list.Items()) == 0 {
+		_, plural := ls.list.StatusBarItemName()
+		placeholder := ls.list.Styles.NoItems.Render("No " + plural + ".")
+		view = strings.Replace(view, placeholder, "", 1)
+	}
+	return lsSty.Width(listPaneWidth).Height(listPaneHeight).Render(view)
 }
 
 func (ls *ListSelector) Focus(focused bool) {

@@ -41,15 +41,17 @@ func RunApplicationTUI(username string) error {
 		return fmt.Errorf("could not load application data, %w", err)
 	}
 	defer application.Shutdown()
-	aModel := ApplicationTUI{Application: *application}
-	startScreen := MakeAddListScreen(&aModel)
-	aModel.screens.push(&startScreen)
-	p := tea.NewProgram(&aModel, tea.WithAltScreen())
+	a := ApplicationTUI{Application: *application}
+	p := tea.NewProgram(&a, tea.WithAltScreen())
 	_, err = p.Run()
 	return err
 }
 
-func (a *ApplicationTUI) Init() tea.Cmd { return nil }
+func (a *ApplicationTUI) Init() tea.Cmd {
+	startScreen := MakeAddListScreen(a)
+	a.screens.push(&startScreen)
+	return nil
+}
 
 func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	_, cmd := a.screens.cur().Update(msg)

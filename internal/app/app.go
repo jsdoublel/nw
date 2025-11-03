@@ -1,7 +1,6 @@
 package app
 
 import (
-	"errors"
 	"log"
 	"os"
 	"path/filepath"
@@ -9,9 +8,6 @@ import (
 
 var (
 	NWDataPath string
-
-	ErrDuplicateList  error = errors.New("duplicate list")
-	ErrListNotTracked       = errors.New("list is not tracked")
 )
 
 func init() {
@@ -22,10 +18,10 @@ type Application struct {
 
 	// ----- stuff from letterboxd
 
-	Username     string      // username on letterboxd
-	ListHeaders  []*FilmList // lists that belong to user on letterboxd (without scrapped films)
-	Watchlist    *FilmList   // users letterboxd watchlist
-	WatchedFilms *FilmList   // users list of watched films on letterboxd
+	Username     string        // username on letterboxd
+	ListHeaders  []*FilmList   // lists that belong to user on letterboxd (without scrapped films)
+	Watchlist    map[int]*Film // users letterboxd watchlist
+	WatchedFilms map[int]*Film // users list of watched films on letterboxd
 
 	// ----- tracked by app
 

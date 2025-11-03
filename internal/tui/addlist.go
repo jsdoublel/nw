@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"sort"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
@@ -113,6 +115,7 @@ type viewListsDelegate struct {
 
 type viewListItem struct {
 	app.FilmList
+	app *ApplicationTUI
 }
 
 func (li viewListItem) FilterValue() string {
@@ -124,27 +127,34 @@ func (li viewListItem) Title() string {
 }
 
 func (li viewListItem) Description() string {
+	var ordered string
 	if li.Ordered {
-		return "Ordered"
+		ordered = "Ordered"
 	} else {
-		return "Unordered"
+		ordered = "Unordered"
 	}
+	var suffix string
+	nw, err := li.app.NextWatchFromList(li.FilmList)
+	switch {
+	case errors.Is(err, app.ErrListEmpty):
+		suffix = "List Empty"
+	case errors.Is(err, app.ErrNoValidFilm):
+		suffix = "List Complete"
+	default:
+		suffix = fmt.Sprintf("Next Watch : %s", nw)
+	}
+	return fmt.Sprintf("%s :: %s", ordered, suffix)
 }
 
 func (d viewListsDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
-	fl, ok := ls.SelectedItem().(viewListItem)
-	if !ok {
-		panic(fmt.Sprintf("(Add List) viewListDelegate item should be viewListItem, instead item is %T", ls.SelectedItem()))
-	}
 	switch msg := msg.(type) {
 	case TrackedChangedMsg:
-		items := make([]list.Item, 0, len(d.app.TrackedLists))
-		for _, v := range d.app.TrackedLists {
-			items = append(items, viewListItem{*v})
-		}
-		ls.SetItems(items)
-		return nil // early return to avoid possible stale reference
+		ls.SetItems(creatViewListItems(d.app))
 	case tea.KeyMsg:
+		fl, ok := ls.SelectedItem().(viewListItem)
+		if !ok { // SelectedItem will return nil when list is empty
+			return nil
+		}
 		if msg.Type == tea.KeyEnter {
 			d.app.ToggleOrderedList(fl.FilmList)
 			return TrackedChanged
@@ -154,6 +164,10 @@ func (d viewListsDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
 			})
 		}
 	case removeListMsg:
+		fl, ok := ls.SelectedItem().(viewListItem)
+		if !ok {
+			panic(fmt.Sprintf("(Add List) viewListDelegate item should be viewListItem, instead item is %T", ls.SelectedItem()))
+		}
 		if msg.ok {
 			if err := d.app.RemoveList(&fl.FilmList); err != nil {
 				log.Print(err.Error())
@@ -165,19 +179,26 @@ func (d viewListsDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
 	return nil
 }
 
-func MakeViewListPane(a *ApplicationTUI) *ListSelector {
+// Create list of view-list items for view-list pane.
+func creatViewListItems(a *ApplicationTUI) []list.Item {
 	items := make([]list.Item, 0, len(a.TrackedLists))
 	for _, v := range a.TrackedLists {
-		items = append(items, viewListItem{*v})
+		items = append(items, viewListItem{*v, a})
 	}
-	return MakeListSelector(a, "Tracked Lists", items, viewListsDelegate{DefaultDelegate: listStyleDelegate(), app: a})
+	sort.Slice(items, func(i, j int) bool {
+		return strings.Compare(items[i].FilterValue(), items[j].FilterValue()) < 0
+	})
+	return items
+}
+
+func MakeViewListPane(a *ApplicationTUI) *ListSelector {
+	return MakeListSelector(a, "Tracked Lists", creatViewListItems(a), viewListsDelegate{DefaultDelegate: listStyleDelegate(), app: a})
 }
 
 // ----- Search Pane
 
 type searchListsItem struct {
 	app.FilmList
-	selected bool
 }
 
 func (li searchListsItem) FilterValue() string {
@@ -217,12 +238,11 @@ func (d searchListsDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if msg.Type == tea.KeyEnter || key.Matches(msg, keys.Delete) {
-			if !fl.selected {
+			if !d.app.IsListTracked(fl.Url) {
 				if err := d.app.AddList(&fl.FilmList); err != nil {
 					log.Print(err.Error())
 					return nil
 				}
-				fl.selected = true
 				return TrackedChanged
 			} else {
 				d.app.AskYesNo(fmt.Sprintf("Stop tracking list %s?", fl.Title()), func(b bool) tea.Msg {
@@ -231,7 +251,7 @@ func (d searchListsDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
 			}
 		}
 	case removeListMsg:
-		if !fl.selected {
+		if !d.app.IsListTracked(fl.Url) {
 			panic("should not ask to stop tracking untracked list")
 		}
 		if msg.ok {
@@ -239,7 +259,6 @@ func (d searchListsDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
 				log.Print(err.Error())
 				return nil
 			}
-			fl.selected = false
 			return TrackedChanged
 		}
 	}
@@ -252,7 +271,7 @@ func (d searchListsDelegate) Render(w io.Writer, m list.Model, index int, listIt
 		panic(fmt.Sprintf("(Add List) ListSelector item should be addFilmlistItem, instead item is %T", listItem))
 	}
 	dd := d.DefaultDelegate
-	if fl.selected {
+	if d.app.IsListTracked(fl.Url) {
 		dd.Styles.NormalTitle = dd.Styles.NormalTitle.
 			Foreground(luster).Bold(true)
 		dd.Styles.NormalDesc = dd.Styles.NormalDesc.
@@ -264,7 +283,7 @@ func (d searchListsDelegate) Render(w io.Writer, m list.Model, index int, listIt
 func MakeSearchListPane(a *ApplicationTUI) *SearchModel {
 	items := make([]list.Item, 0, len(a.ListHeaders))
 	for _, lh := range a.ListHeaders {
-		items = append(items, &searchListsItem{*lh, a.IsListTracked(lh)})
+		items = append(items, &searchListsItem{*lh})
 	}
 	return MakeSearchModel(a, items, "Enter URL or search lists...", searchListsDelegate{listStyleDelegate(), a}, func(query string) {
 		if err := a.AddListFromUrl(query); !errors.Is(err, app.ErrInvalidUrl) {

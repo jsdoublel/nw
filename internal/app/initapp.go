@@ -26,8 +26,8 @@ func createApp(username string) (*Application, error) {
 		return nil, err
 	}
 	fs := FilmStore{Films: make(map[int]*FilmRecord)}
-	fs.RegisterList(watchlist)
-	fs.RegisterList(films)
+	fs.RegisterSet(watchlist)
+	fs.RegisterSet(films)
 	return &Application{
 		Username:     username,
 		ListHeaders:  headers,
@@ -38,7 +38,7 @@ func createApp(username string) (*Application, error) {
 	}, nil
 }
 
-func CreateWatchlist(username string) (*FilmList, error) {
+func CreateWatchlist(username string) (map[int]*Film, error) {
 	wlUrl, err := url.JoinPath(LetterboxdUrl, username, "watchlist")
 	if err != nil {
 		return nil, err
@@ -50,10 +50,10 @@ func CreateWatchlist(username string) (*FilmList, error) {
 		return nil, fmt.Errorf("watchlist had unexpected name %s", watchlist.Name)
 	}
 	watchlist.Name = "Watchlist"
-	return &watchlist, nil
+	return filmListToMap(&watchlist), nil
 }
 
-func CreateWatchedFilms(username string) (*FilmList, error) {
+func CreateWatchedFilms(username string) (map[int]*Film, error) {
 	fUrl, err := url.JoinPath(LetterboxdUrl, username, "films")
 	if err != nil {
 		return nil, err
@@ -65,5 +65,13 @@ func CreateWatchedFilms(username string) (*FilmList, error) {
 		return nil, fmt.Errorf("films list had unexpected name %s", films.Name)
 	}
 	films.Name = "Watched"
-	return &films, nil
+	return filmListToMap(&films), nil
+}
+
+func filmListToMap(filmList *FilmList) map[int]*Film {
+	filmSet := make(map[int]*Film)
+	for _, f := range filmList.Films {
+		filmSet[f.LBxdID] = f
+	}
+	return filmSet
 }
