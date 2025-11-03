@@ -4,11 +4,10 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 )
 
-var (
-	NWDataPath string
-)
+var NWDataPath string
 
 func init() {
 	NWDataPath = filepath.Join(getDirBase(), "nw")
@@ -25,10 +24,23 @@ type Application struct {
 
 	// ----- tracked by app
 
-	TrackedLists map[string]*FilmList // lists tracked in this program; urls are keys
-	FilmStore    FilmStore            // central structure that stores local film information
+	TrackedLists    map[string]*FilmList // lists tracked in this program; urls are keys
+	FilmStore       FilmStore            // central structure that stores local film information
+	UserDataChecked time.Time            // last time watchlist, watched films, etc. were checked
 }
 
+// Tasks to run on application startup goes here (e.g., checking letterboxd for updated data).
+func (app *Application) Init() error {
+	if time.Since(app.UserDataChecked) > userDataExpireTime {
+		if err := app.CheckUserData(); err != nil {
+			return err
+		}
+		app.UserDataChecked = time.Now()
+	}
+	return nil
+}
+
+// Run application shutdown tasks (e.g., write save).
 func (app *Application) Shutdown() {
 	app.FilmStore.Clean()
 	if err := app.Save(); err != nil {

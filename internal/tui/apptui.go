@@ -41,6 +41,9 @@ func RunApplicationTUI(username string) error {
 		return fmt.Errorf("could not load application data, %w", err)
 	}
 	defer application.Shutdown()
+	if err := application.Init(); err != nil {
+		return err
+	}
 	a := ApplicationTUI{Application: *application}
 	p := tea.NewProgram(&a, tea.WithAltScreen())
 	_, err = p.Run()

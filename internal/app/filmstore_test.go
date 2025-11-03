@@ -148,7 +148,7 @@ func TestFilmStoreClean(t *testing.T) {
 		},
 		{
 			name:   "retains expired film with refs",
-			record: map[int]*FilmRecord{1: {Film: Film{LBxdID: 1}, NRefs: 1, Checked: time.Now().Add(-expireTime - time.Second)}},
+			record: map[int]*FilmRecord{1: {Film: Film{LBxdID: 1}, NRefs: 1, Checked: time.Now().Add(-filmExpireTime - time.Second)}},
 			want:   map[int]bool{1: true},
 		},
 		{

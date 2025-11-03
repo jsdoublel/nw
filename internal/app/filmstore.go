@@ -7,7 +7,7 @@ import (
 	tmdb "github.com/cyruzin/golang-tmdb"
 )
 
-const expireTime = 30 * 24 * time.Hour // film records are deleted after 30 days
+const filmExpireTime = 30 * 24 * time.Hour // film records are deleted after 30 days
 
 // Keeps track of all films that are currently in memory so we do not duplicate
 // scraping TMDB ids and TMDB api calls.
@@ -19,7 +19,9 @@ type FilmRecord struct {
 	Film
 	TMDBID  int                // tmdb id number
 	Details *tmdb.MovieDetails // film details from tmdb
+
 	// These fields are only exported so they can be martialed. Please don't mutate.
+
 	Checked time.Time // last time details were checked
 	NRefs   uint      // number of list references
 }
@@ -39,15 +41,16 @@ func (fs *FilmStore) DeregisterList(filmList *FilmList) {
 	}
 }
 
-// Add film list to be tracked. Films in registered lists will be saved/stored
-// in save data as long as they have references.
+// Add film set to be tracked (such as watchlist or watched films). Films in
+// registered set will be saved/stored in save data as long as they have
+// references.
 func (fs *FilmStore) RegisterSet(filmSet map[int]*Film) {
 	for _, film := range filmSet {
 		fs.register(*film)
 	}
 }
 
-// Stop tracking list and decrement ref counts as necessary.
+// Stop tracking set and decrement ref counts as necessary.
 func (fs *FilmStore) DeregisterSet(filmSet map[int]*Film) {
 	for _, film := range filmSet {
 		fs.deregister(*film)
@@ -58,7 +61,7 @@ func (fs *FilmStore) DeregisterSet(filmSet map[int]*Film) {
 //
 // Returns error if it needs to retrieve details and fails.
 func (fs *FilmStore) Lookup(film Film) (*FilmRecord, error) {
-	if f, ok := fs.Films[film.LBxdID]; ok && time.Since(f.Checked) < expireTime {
+	if f, ok := fs.Films[film.LBxdID]; ok && time.Since(f.Checked) < filmExpireTime {
 		return f, nil
 	}
 	if err := fs.retrieve(film); err != nil {
@@ -120,7 +123,7 @@ func (fs *FilmStore) retrieve(film Film) error {
 		}
 		fs.Films[film.LBxdID] = fr
 	}
-	if fr.Details != nil && time.Since(fr.Checked) < expireTime {
+	if fr.Details != nil && time.Since(fr.Checked) < filmExpireTime {
 		return nil
 	}
 	if fr.TMDBID == 0 {
