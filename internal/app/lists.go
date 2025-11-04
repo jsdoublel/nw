@@ -14,68 +14,42 @@ var (
 	ErrListNotTracked = errors.New("list not tracked")
 )
 
-// Saves list to be tracked
-func (app *Application) AddList(filmList *FilmList) error {
-	if filmList.Films == nil {
-		if err := app.AddListFromUrl(filmList.Url); err != nil {
-			return err
-		}
-		return nil
-	}
-	app.FilmStore.RegisterList(filmList)
-	app.TrackedLists[filmList.Url] = filmList
-	return nil
+type WatchChecker interface {
+	Watched(*Film) bool
 }
 
-func (app *Application) RemoveList(filmList *FilmList) error {
-	fl, ok := app.TrackedLists[filmList.Url]
-	if !ok {
-		return ErrListNotTracked
-	}
-	delete(app.TrackedLists, fl.Url)
-	app.FilmStore.DeregisterList(fl)
-	return nil
+// Film list that user might track
+type FilmList struct {
+	Name     string       // name of list on letterboxd
+	Desc     string       // description of list
+	Url      string       // letterboxd list url
+	NumFilms int          // number of films in list
+	Ordered  bool         // is the list ordered
+	NextFilm *Film        // the next film to be suggested
+	Films    []*Film      // films in list (can be nil)
+	store    WatchChecker // for checking whether film is watched
 }
 
-func (app *Application) IsListTracked(url string) bool {
-	_, ok := app.TrackedLists[url]
-	return ok
+// Changed Ordered status; clears NextFilm
+func (fl *FilmList) ToggleOrdered() {
+	fl.Ordered = !fl.Ordered
+	fl.NextFilm = nil // next film needs to be recalculated
 }
 
-func (app *Application) AddListFromUrl(url string) error {
-	if _, ok := app.TrackedLists[url]; ok {
-		return ErrDuplicateList
-	}
-	if !strings.Contains(url, "/list/") {
-		return fmt.Errorf("%w, not a regular letterboxd list", ErrInvalidUrl)
-	}
-	list, err := ScrapeFilmList(url)
-	if err != nil { // TODO: make goroutine
-		return fmt.Errorf("could not add list %s, %w", list.Name, err)
-	}
-	app.FilmStore.RegisterList(&list)
-	app.TrackedLists[url] = &list
-	return nil
-}
-
-func (app *Application) ToggleOrderedList(filmList FilmList) {
-	if fl, ok := app.TrackedLists[filmList.Url]; ok {
-		fl.ToggleOrdered()
-		return
-	}
-	panic(fmt.Sprintf("Tried to toggle ordered on untracked film list %s", filmList.Name))
-}
-
-// Get next film to watch from list
-func (app *Application) NextWatchFromList(filmList FilmList) (Film, error) {
-	fl, ok := app.TrackedLists[filmList.Url]
-	if !ok {
-		return Film{}, ErrListNotTracked
-	}
+// Suggest next unwatched film to watch from list.
+//
+// Returns NextFilm if it has not been watched and it has been set. Otherwise
+// recalculate the next film to watch. If ordered, it is simply the first
+// unwatched film; otherwise, list is shuffled and first unwatched film is
+// selected.
+//
+// If the list is empty, the function returns ErrListEmpty. If all the films
+// are watched, then ErrNoValidFilm is returned.
+func (fl *FilmList) NextWatch() (Film, error) {
 	if len(fl.Films) == 0 {
 		return Film{}, ErrListEmpty
 	}
-	if fl.NextFilm != nil && !app.Watched(fl.NextFilm) {
+	if fl.NextFilm != nil && !fl.store.Watched(fl.NextFilm) {
 		return *fl.NextFilm, nil
 	}
 	var tmpList []*Film
@@ -89,11 +63,59 @@ func (app *Application) NextWatchFromList(filmList FilmList) (Film, error) {
 		tmpList = fl.Films
 	}
 	for _, f := range tmpList {
-		if _, ok := app.WatchedFilms[f.LBxdID]; !ok {
+		if !fl.store.Watched(f) {
 			fl.NextFilm = f
 			return *f, nil
 		}
 	}
 	fl.NextFilm = nil
 	return Film{}, fmt.Errorf("%w, no unwatched films in %s", ErrNoValidFilm, fl.Name)
+}
+
+// ----- Global list tracking
+
+// Saves list in map of list tracked by the user.
+func (app *Application) AddList(filmList *FilmList) error {
+	if filmList.Films == nil && filmList.NumFilms > 0 {
+		if err := app.AddListFromUrl(filmList.Url); err != nil {
+			return err
+		}
+		return nil
+	}
+	filmList.store = app.WatchedFilms
+	app.FilmStore.RegisterList(filmList)
+	app.TrackedLists[filmList.Url] = filmList
+	return nil
+}
+
+// Remove list from the map of list traced by the user.
+func (app *Application) RemoveList(filmList *FilmList) error {
+	fl, ok := app.TrackedLists[filmList.Url]
+	if !ok {
+		return ErrListNotTracked
+	}
+	delete(app.TrackedLists, fl.Url)
+	app.FilmStore.DeregisterList(fl)
+	return nil
+}
+
+// Checks if list is traced by user.
+func (app *Application) IsListTracked(url string) bool {
+	_, ok := app.TrackedLists[url]
+	return ok
+}
+
+// Starts tracking the list corresponding to the given url.
+func (app *Application) AddListFromUrl(url string) error {
+	if _, ok := app.TrackedLists[url]; ok {
+		return ErrDuplicateList
+	}
+	if !strings.Contains(url, "/list/") {
+		return fmt.Errorf("%w, not a regular letterboxd list", ErrInvalidUrl)
+	}
+	list, err := ScrapeFilmList(url) // TODO: make goroutine
+	if err != nil {
+		return fmt.Errorf("could not add list %s, %w", list.Name, err)
+	}
+	return app.AddList(&list)
 }

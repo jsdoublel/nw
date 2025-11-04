@@ -20,7 +20,7 @@ type Application struct {
 	Username     string        // username on letterboxd
 	ListHeaders  []*FilmList   // lists that belong to user on letterboxd (without scrapped films)
 	Watchlist    map[int]*Film // users letterboxd watchlist
-	WatchedFilms map[int]*Film // users list of watched films on letterboxd
+	WatchedFilms WatchedFilms  // users list of watched films on letterboxd
 
 	// ----- tracked by app
 
@@ -32,7 +32,7 @@ type Application struct {
 // Tasks to run on application startup goes here (e.g., checking letterboxd for updated data).
 func (app *Application) Init() error {
 	if time.Since(app.UserDataChecked) > userDataExpireTime {
-		if err := app.CheckUserData(); err != nil {
+		if err := app.UpdateUserData(); err != nil {
 			return err
 		}
 		app.UserDataChecked = time.Now()

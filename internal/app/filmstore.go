@@ -19,6 +19,7 @@ type FilmRecord struct {
 	Film
 	TMDBID  int                // tmdb id number
 	Details *tmdb.MovieDetails // film details from tmdb
+	Watched bool               // film is recorded as watched
 
 	// These fields are only exported so they can be martialed. Please don't mutate.
 

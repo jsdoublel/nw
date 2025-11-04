@@ -114,27 +114,27 @@ type viewListsDelegate struct {
 }
 
 type viewListItem struct {
-	app.FilmList
+	fl  *app.FilmList
 	app *ApplicationTUI
 }
 
 func (li viewListItem) FilterValue() string {
-	return li.Name
+	return li.fl.Name
 }
 
 func (li viewListItem) Title() string {
-	return li.Name
+	return li.fl.Name
 }
 
 func (li viewListItem) Description() string {
 	var ordered string
-	if li.Ordered {
+	if li.fl.Ordered {
 		ordered = "Ordered"
 	} else {
 		ordered = "Unordered"
 	}
 	var suffix string
-	nw, err := li.app.NextWatchFromList(li.FilmList)
+	nw, err := li.fl.NextWatch()
 	switch {
 	case errors.Is(err, app.ErrListEmpty):
 		suffix = "List Empty"
@@ -151,25 +151,25 @@ func (d viewListsDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
 	case TrackedChangedMsg:
 		ls.SetItems(creatViewListItems(d.app))
 	case tea.KeyMsg:
-		fl, ok := ls.SelectedItem().(viewListItem)
+		li, ok := ls.SelectedItem().(viewListItem)
 		if !ok { // SelectedItem will return nil when list is empty
 			return nil
 		}
 		if msg.Type == tea.KeyEnter {
-			d.app.ToggleOrderedList(fl.FilmList)
+			li.fl.ToggleOrdered()
 			return TrackedChanged
 		} else if key.Matches(msg, keys.Delete) {
-			d.app.AskYesNo(fmt.Sprintf("Stop tracking list %s?", fl.Title()), func(b bool) tea.Msg {
+			d.app.AskYesNo(fmt.Sprintf("Stop tracking list %s?", li.Title()), func(b bool) tea.Msg {
 				return removeListMsg{ok: b}
 			})
 		}
 	case removeListMsg:
-		fl, ok := ls.SelectedItem().(viewListItem)
+		li, ok := ls.SelectedItem().(viewListItem)
 		if !ok {
 			panic(fmt.Sprintf("(Add List) viewListDelegate item should be viewListItem, instead item is %T", ls.SelectedItem()))
 		}
 		if msg.ok {
-			if err := d.app.RemoveList(&fl.FilmList); err != nil {
+			if err := d.app.RemoveList(li.fl); err != nil {
 				log.Print(err.Error())
 				return nil
 			}
@@ -183,7 +183,7 @@ func (d viewListsDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
 func creatViewListItems(a *ApplicationTUI) []list.Item {
 	items := make([]list.Item, 0, len(a.TrackedLists))
 	for _, v := range a.TrackedLists {
-		items = append(items, viewListItem{*v, a})
+		items = append(items, viewListItem{v, a})
 	}
 	sort.Slice(items, func(i, j int) bool {
 		return strings.Compare(items[i].FilterValue(), items[j].FilterValue()) < 0
