@@ -41,7 +41,7 @@ func (app *Application) MakeNextWatch() (NextWatch, error) {
 	stacks := make([][]*Film, NumberOfStacks+1)
 	stacks[0] = []*Film{pool[0]}
 	for i := range NumberOfStacks {
-		stacks[i] = make([]*Film, StackSize)
+		stacks[i+1] = make([]*Film, StackSize)
 		for j := range StackSize {
 			stacks[i+1][j] = pool[StackSize*i+j+1]
 		}
@@ -76,6 +76,9 @@ func (nw *NextWatch) deleteWatched() {
 
 // Fill empty spots in queue as per random stack logic.
 func (nw *NextWatch) update() error {
+	if nw.Full() { // do nothing if nw is already full
+		return nil
+	}
 	pool := make([]*Film, 0, len(nw.watchlist))
 	for _, f := range nw.watchlist {
 		if !nw.watchedFilms.Watched(f) && !nw.ContainsFilm(*f) {
