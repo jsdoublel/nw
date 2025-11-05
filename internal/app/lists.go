@@ -14,10 +14,6 @@ var (
 	ErrListNotTracked = errors.New("list not tracked")
 )
 
-type WatchChecker interface {
-	Watched(*Film) bool
-}
-
 // Film list that user might track
 type FilmList struct {
 	Name     string       // name of list on letterboxd
@@ -27,7 +23,7 @@ type FilmList struct {
 	Ordered  bool         // is the list ordered
 	NextFilm *Film        // the next film to be suggested
 	Films    []*Film      // films in list (can be nil)
-	store    WatchChecker // for checking whether film is watched
+	store    WatchedFilms // for checking whether film is watched
 }
 
 // Changed Ordered status; clears NextFilm
