@@ -15,6 +15,10 @@ type GoBackMsg struct{}
 
 func GoBack() tea.Msg { return GoBackMsg{} }
 
+type UpdateScreenMsg struct{}
+
+func UpdateScreen() tea.Msg { return UpdateScreenMsg{} }
+
 type ScreenStack []tea.Model
 
 func (ss *ScreenStack) push(m tea.Model) { *ss = append(*ss, m) }
@@ -51,8 +55,7 @@ func RunApplicationTUI(username string) error {
 }
 
 func (a *ApplicationTUI) Init() tea.Cmd {
-	startScreen := MakeAddListScreen(a)
-	a.screens.push(&startScreen)
+	a.screens.push(MakeMainScreen(a))
 	return nil
 }
 
@@ -67,6 +70,7 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return a, tea.Quit
 		}
 		a.screens.pop()
+		return a, UpdateScreen
 	}
 	return a, cmd
 }

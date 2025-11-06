@@ -8,6 +8,8 @@ type keyMap struct {
 	Help      key.Binding
 	Search    key.Binding
 	Delete    key.Binding
+	Yes       key.Binding
+	No        key.Binding
 	Left      key.Binding
 	Right     key.Binding
 	Up        key.Binding
@@ -16,6 +18,7 @@ type keyMap struct {
 	MoveRight key.Binding
 	MoveUp    key.Binding
 	MoveDown  key.Binding
+	AddList   key.Binding
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
@@ -86,5 +89,17 @@ var keys = keyMap{
 	Delete: key.NewBinding(
 		key.WithKeys("ctrl+d"),
 		key.WithHelp("ctrl+d", "delete"),
+	),
+	Yes: key.NewBinding(
+		key.WithKeys("y", "Y"),
+		key.WithHelp("y", "Yes"),
+	),
+	No: key.NewBinding(
+		key.WithKeys("n", "N"),
+		key.WithHelp("n", "No"),
+	),
+	AddList: key.NewBinding(
+		key.WithKeys("a"),
+		key.WithHelp("a", "add lists"),
 	),
 }

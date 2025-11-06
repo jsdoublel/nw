@@ -28,10 +28,11 @@ var (
 	gray8 = lipgloss.Color("#cccccc")
 	gray9 = lipgloss.Color("#dddddd")
 
-	unfocusedColor = gray6
+	unfocused = gray6
+	focused   = gray9
 
 	mainStyle = lipgloss.NewStyle().
-			Border(lipgloss.NormalBorder()).Foreground(gray9)
+			Border(lipgloss.NormalBorder()).Foreground(focused)
 
 	// ----- Add List Screen
 	addListTitleColor = lack
@@ -40,14 +41,20 @@ var (
 	cursorStyle       = lipgloss.NewStyle()
 	lsStyle           = lipgloss.NewStyle().Inherit(mainStyle)
 
-	listStyleDele = list.NewDefaultDelegate()
-
 	// ----- Misc. Prompts
-	yesNoStyle = lipgloss.NewStyle().Inherit(mainStyle)
+	yesNoStyle    = lipgloss.NewStyle().Inherit(mainStyle)
+	yesNoSelected = lipgloss.NewStyle().
+			Foreground(black).
+			Background(focused).
+			Padding(0, 2)
+	yesNoUnselected = lipgloss.NewStyle().
+			Foreground(gray9).
+			Padding(0, 2)
 )
 
 // Returns styled list.DefaultDelegate
 func listStyleDelegate() list.DefaultDelegate {
+	listStyleDele := list.NewDefaultDelegate()
 	listStyleDele.Styles.NormalTitle = listStyleDele.Styles.NormalTitle.
 		Foreground(gray8)
 	listStyleDele.Styles.NormalDesc = listStyleDele.Styles.NormalDesc.

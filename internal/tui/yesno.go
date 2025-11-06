@@ -1,14 +1,15 @@
 package tui
 
 import (
-	"fmt"
-
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 // Model for yes no question pop-up
 type YesNoPrompt struct {
 	question string // question to be asked
+	selected bool   // true is yes
 	callback func(bool) tea.Msg
 	app      *ApplicationTUI
 }
@@ -24,10 +25,16 @@ func (p *YesNoPrompt) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		p.app.screens.pop()
 		return p.app, func() tea.Msg { return p.callback(msg.response) }
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "enter", "y", "Y":
+		switch {
+		case key.Matches(msg, keys.Left):
+			p.selected = true
+		case key.Matches(msg, keys.Right):
+			p.selected = false
+		case msg.String() == "enter":
+			return p, func() tea.Msg { return YesNoResponse{p.selected} }
+		case key.Matches(msg, keys.Yes):
 			return p, func() tea.Msg { return YesNoResponse{true} }
-		case "esc", "n", "N", "q":
+		case key.Matches(msg, keys.No) || msg.String() == "esc":
 			return p, func() tea.Msg { return YesNoResponse{false} }
 		}
 	}
@@ -35,7 +42,19 @@ func (p *YesNoPrompt) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (p *YesNoPrompt) View() string {
-	return yesNoStyle.Render(fmt.Sprintf("\n %s \n\n  [Yes]   [No]\n", p.question))
+	var yes, no string
+	if p.selected {
+		yes = yesNoSelected.Render("Yes")
+		no = yesNoUnselected.Render("No")
+	} else {
+		yes = yesNoUnselected.Render("Yes")
+		no = yesNoSelected.Render("No")
+	}
+	sep := lipgloss.NewStyle().Width(3).Render("")
+	buttons := lipgloss.JoinHorizontal(lipgloss.Center, yes, sep, no)
+	question := lipgloss.NewStyle().Render(p.question)
+	content := lipgloss.JoinVertical(lipgloss.Center, "", question, "", buttons, "")
+	return yesNoStyle.Render(content)
 }
 
 // Response to prompt: Yes [true] No [false]
@@ -44,5 +63,5 @@ type YesNoResponse struct {
 }
 
 func (a *ApplicationTUI) AskYesNo(question string, callback func(bool) tea.Msg) {
-	a.screens.push(&YesNoPrompt{question: question, callback: callback, app: a})
+	a.screens.push(&YesNoPrompt{question: question, selected: true, callback: callback, app: a})
 }

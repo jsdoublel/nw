@@ -1,9 +1,7 @@
 /*
 NW - Next Watch: A TUI utility for selecting films to watch from letterboxd.
 
-# Copyright (C) 2025 James Willson
-
-Email: jamessw156@gmail.com
+Copyright (C) 2025 James Willson <jamessw156@gmail.com>
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
