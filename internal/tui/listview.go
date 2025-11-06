@@ -27,15 +27,15 @@ type ListSelector struct {
 }
 
 func MakeListSelector(a *ApplicationTUI, title string, items []list.Item, delegate list.ItemDelegate) *ListSelector {
-	list := list.New(items, delegate, listPaneWidth, listPaneHeight)
-	list.Title = title
-	list.Styles.Title = list.Styles.Title.Background(addListTitleColor)
-	list.SetShowHelp(false)
-	list.SetShowFilter(false)
-	list.SetFilteringEnabled(false)
-	list.DisableQuitKeybindings()
+	l := list.New(items, delegate, listPaneWidth, listPaneHeight)
+	l.Title = title
+	l.Styles.Title = l.Styles.Title.Background(addListTitleColor)
+	l.SetShowHelp(false)
+	l.SetShowFilter(false)
+	l.SetFilteringEnabled(false)
+	l.DisableQuitKeybindings()
 	return &ListSelector{
-		list: list,
+		list: l,
 		app:  a,
 	}
 }

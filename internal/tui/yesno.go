@@ -30,11 +30,11 @@ func (p *YesNoPrompt) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			p.selected = true
 		case key.Matches(msg, keys.Right):
 			p.selected = false
-		case msg.String() == "enter":
+		case msg.Type == tea.KeyEnter:
 			return p, func() tea.Msg { return YesNoResponse{p.selected} }
 		case key.Matches(msg, keys.Yes):
 			return p, func() tea.Msg { return YesNoResponse{true} }
-		case key.Matches(msg, keys.No) || msg.String() == "esc":
+		case key.Matches(msg, keys.No) || msg.Type == tea.KeyEsc:
 			return p, func() tea.Msg { return YesNoResponse{false} }
 		}
 	}

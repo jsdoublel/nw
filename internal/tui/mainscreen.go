@@ -45,15 +45,21 @@ func (ms *MainScreen) View() string {
 }
 
 func (ms *MainScreen) focusRight() {
+	if int(ms.focus) != len(ms.panes)-1 {
+		ms.focus++
+	}
 }
 
 func (ms *MainScreen) focusLeft() {
+	if int(ms.focus) != 0 {
+		ms.focus--
+	}
 }
 
 func MakeMainScreen(a *ApplicationTUI) *MainScreen {
 	return &MainScreen{
 		panes: []tea.Model{MakeNWModel(a), MakeViewListPane(a)},
-		focus: mainScreenViewList,
+		focus: mainScreenNW,
 		app:   a,
 	}
 }

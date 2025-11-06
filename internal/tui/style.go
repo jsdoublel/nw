@@ -28,7 +28,7 @@ var (
 	gray8 = lipgloss.Color("#cccccc")
 	gray9 = lipgloss.Color("#dddddd")
 
-	unfocused = gray6
+	unfocused = gray4
 	focused   = gray9
 
 	mainStyle = lipgloss.NewStyle().
@@ -40,6 +40,15 @@ var (
 	searchListStyle   = lipgloss.NewStyle().Inherit(mainStyle)
 	cursorStyle       = lipgloss.NewStyle()
 	lsStyle           = lipgloss.NewStyle().Inherit(mainStyle)
+
+	// ----- NW Queue
+	nwStyle = lipgloss.NewStyle().Inherit(mainStyle).
+		UnsetBorderLeft().
+		UnsetBorderRight().
+		UnsetBorderBottom()
+	nwItemStyle         = lipgloss.NewStyle()
+	nwSelectedItemStyle = lipgloss.NewStyle().Background(lack).Foreground(gray9)
+	nwSeparatorStyle    = lipgloss.NewStyle().Foreground(focused)
 
 	// ----- Misc. Prompts
 	yesNoStyle    = lipgloss.NewStyle().Inherit(mainStyle)
