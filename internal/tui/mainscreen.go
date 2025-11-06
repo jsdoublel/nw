@@ -3,10 +3,12 @@ package tui
 import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 const (
-	mainScreenViewList mainScreenPane = iota
+	mainScreenNW mainScreenPane = iota
+	mainScreenViewList
 )
 
 type mainScreenPane int
@@ -39,7 +41,7 @@ func (ms *MainScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (ms *MainScreen) View() string {
-	return ms.panes[ms.focus].View()
+	return lipgloss.JoinHorizontal(lipgloss.Center, ms.panes[mainScreenNW].View(), ms.panes[mainScreenViewList].View())
 }
 
 func (ms *MainScreen) focusRight() {
@@ -50,7 +52,7 @@ func (ms *MainScreen) focusLeft() {
 
 func MakeMainScreen(a *ApplicationTUI) *MainScreen {
 	return &MainScreen{
-		panes: []tea.Model{MakeViewListPane(a)},
+		panes: []tea.Model{MakeNWModel(a), MakeViewListPane(a)},
 		focus: mainScreenViewList,
 		app:   a,
 	}

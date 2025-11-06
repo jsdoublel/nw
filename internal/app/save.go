@@ -82,6 +82,8 @@ func (app *Application) rehydrate() {
 	for _, list := range app.TrackedLists {
 		list.store = app.WatchedFilms
 	}
+	app.NWQueue.watchedFilms = app.WatchedFilms
+	app.NWQueue.watchlist = app.Watchlist
 }
 
 // ----- Update user data etc.
@@ -94,6 +96,10 @@ func CreateApp(username string) (*Application, error) {
 		FilmStore:    FilmStore{Films: make(map[int]*FilmRecord)},
 	}
 	if err := app.UpdateUserData(); err != nil {
+		return nil, err
+	}
+	var err error
+	if app.NWQueue, err = app.MakeNextWatch(); err != nil {
 		return nil, err
 	}
 	return app, nil
@@ -110,6 +116,11 @@ func (app *Application) UpdateUserData() error {
 	}
 	if err := app.updateWatchedFilms(); err != nil {
 		return err
+	}
+	if app.NWQueue.Stacks != nil {
+		if err := app.NWQueue.UpdateWatched(); err != nil {
+			log.Print(err)
+		}
 	}
 	app.UserDataChecked = time.Now()
 	return nil
