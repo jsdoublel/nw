@@ -92,8 +92,9 @@ func (d nwItemDelegate) Render(w io.Writer, m list.Model, index int, listItem li
 }
 
 type NWModel struct {
-	list list.Model
-	app  *ApplicationTUI
+	list    list.Model
+	focused bool
+	app     *ApplicationTUI
 }
 
 func (nw *NWModel) Init() tea.Cmd { return nil }
@@ -107,7 +108,7 @@ func (nw *NWModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		if key.Matches(msg, keys.Delete) {
 			nw.app.AskYesNo(
-				fmt.Sprintf("Remove %s from queue?\nCannot be undone!", li.film.Title),
+				fmt.Sprintf("Remove \"%s\" from queue?\nCannot be undone!", li.film),
 				func(b bool) tea.Msg { return nwDeleteFilmMsg{ok: b} },
 			)
 		}
@@ -130,6 +131,18 @@ func (nw *NWModel) View() string {
 	return nwStyle.Width(listPaneWidth).Render(nw.list.View())
 }
 
+func (nw *NWModel) Focus() {
+	nw.focused = true
+	nwSeparatorStyle = nwSeparatorStyle.Foreground(focused)
+	nwStyle = nwStyle.BorderForeground(focused)
+}
+
+func (nw *NWModel) Unfocus() {
+	nw.focused = false
+	nwSeparatorStyle = nwSeparatorStyle.Foreground(unfocused)
+	nwStyle = nwStyle.BorderForeground(unfocused)
+}
+
 func MakeNWModel(a *ApplicationTUI) *NWModel {
 	l := list.New(makeNWItemsList(a), nwItemDelegate{}, listPaneWidth, listPaneHeight)
 	l.SetFilteringEnabled(false)
@@ -137,8 +150,9 @@ func MakeNWModel(a *ApplicationTUI) *NWModel {
 	l.SetShowStatusBar(false)
 	l.SetShowHelp(false)
 	return &NWModel{
-		list: l,
-		app:  a,
+		list:    l,
+		app:     a,
+		focused: true,
 	}
 }
 

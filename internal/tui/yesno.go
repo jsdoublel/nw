@@ -52,7 +52,7 @@ func (p *YesNoPrompt) View() string {
 	}
 	sep := lipgloss.NewStyle().Width(3).Render("")
 	buttons := lipgloss.JoinHorizontal(lipgloss.Center, yes, sep, no)
-	question := lipgloss.NewStyle().Render(p.question)
+	question := questionStyle.Render(p.question)
 	content := lipgloss.JoinVertical(lipgloss.Center, "", question, "", buttons, "")
 	return yesNoStyle.Render(content)
 }

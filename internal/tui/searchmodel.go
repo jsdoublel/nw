@@ -40,6 +40,8 @@ func MakeSearchModel(a *ApplicationTUI, items []list.Item, searchText string, de
 	ti.Cursor.Style = cursorStyle
 	frameW, _ := searchInputStyle.GetFrameSize()
 	ti.Width = max(max(listPaneWidth-frameW-len(ti.Prompt), 0), lipgloss.Width(searchText))
+	searchListStyle = searchListStyle.BorderForeground(focused)
+	searchInputStyle = searchInputStyle.BorderForeground(unfocused)
 	return &SearchModel{
 		ListSelector: *list,
 		input:        ti,
@@ -90,31 +92,39 @@ func (sm *SearchModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (sm *SearchModel) View() string {
-	inSty := searchInputStyle
-	listSty := searchListStyle
-	if sm.mode == searchMode || !sm.focused {
-		listSty = searchListStyle.BorderForeground(unfocused)
-	}
-	if sm.mode == normalMode || !sm.focused {
-		inSty = searchInputStyle.BorderForeground(unfocused)
-	}
 	return lipgloss.JoinVertical(
 		lipgloss.Center,
-		inSty.Width(listPaneWidth).Render(sm.input.View()),
-		listSty.Width(listPaneWidth).Height(resultPainHeight).Render(sm.list.View()),
+		searchInputStyle.Width(listPaneWidth).Render(sm.input.View()),
+		searchListStyle.Width(listPaneWidth).Height(resultPainHeight).
+			Render(sm.list.View()),
 	)
 }
 
 func (sm *SearchModel) switchToSearch() {
 	sm.input.Focus()
 	sm.mode = searchMode
+	searchListStyle = searchListStyle.BorderForeground(unfocused)
+	searchInputStyle = searchInputStyle.BorderForeground(focused)
 }
 
 func (sm *SearchModel) switchToNormal() {
 	sm.input.Blur()
 	sm.mode = normalMode
+	searchListStyle = searchListStyle.BorderForeground(focused)
+	searchInputStyle = searchInputStyle.BorderForeground(unfocused)
 }
 
-func (sm *SearchModel) Focus(focused bool) {
-	sm.focused = focused
+func (sm *SearchModel) Focus() {
+	sm.focused = true
+	if sm.mode == normalMode {
+		searchListStyle = searchListStyle.BorderForeground(focused)
+	} else {
+		searchInputStyle = searchInputStyle.BorderForeground(focused)
+	}
+}
+
+func (sm *SearchModel) Unfocus() {
+	sm.focused = false
+	searchListStyle = searchListStyle.BorderForeground(unfocused)
+	searchInputStyle = searchInputStyle.BorderForeground(unfocused)
 }

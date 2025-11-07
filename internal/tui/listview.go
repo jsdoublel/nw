@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/jsdoublel/nw/internal/app"
 )
 
@@ -23,6 +24,7 @@ const (
 type ListSelector struct {
 	list    list.Model
 	focused bool // window is focused (changes how it's drawn)
+	style   lipgloss.Style
 	app     *ApplicationTUI
 }
 
@@ -35,8 +37,9 @@ func MakeListSelector(a *ApplicationTUI, title string, items []list.Item, delega
 	l.SetFilteringEnabled(false)
 	l.DisableQuitKeybindings()
 	return &ListSelector{
-		list: l,
-		app:  a,
+		list:  l,
+		app:   a,
+		style: lsStyle.BorderForeground(unfocused),
 	}
 }
 
@@ -51,21 +54,23 @@ func (ls *ListSelector) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (ls *ListSelector) View() string {
-	lsSty := lsStyle
-	if !ls.focused {
-		lsSty = lsStyle.BorderForeground(unfocused)
-	}
 	view := ls.list.View()
 	if len(ls.list.Items()) == 0 {
 		_, plural := ls.list.StatusBarItemName()
 		placeholder := ls.list.Styles.NoItems.Render("No " + plural + ".")
 		view = strings.Replace(view, placeholder, "", 1)
 	}
-	return lsSty.Width(listPaneWidth).Height(listPaneHeight).Render(view)
+	return ls.style.Width(listPaneWidth).Height(listPaneHeight).Render(view)
 }
 
-func (ls *ListSelector) Focus(focused bool) {
-	ls.focused = focused
+func (ls *ListSelector) Focus() {
+	ls.focused = true
+	ls.style = lsStyle.BorderForeground(focused)
+}
+
+func (ls *ListSelector) Unfocus() {
+	ls.focused = false
+	ls.style = lsStyle.BorderForeground(unfocused)
 }
 
 // ----- View Pane

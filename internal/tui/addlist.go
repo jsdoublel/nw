@@ -78,12 +78,12 @@ func (al *AddListsScreen) focusView() {
 	if !ok {
 		panic("First pane on add list screen should be *SearchModel")
 	}
-	sp.Focus(false)
+	sp.Unfocus()
 	vp, ok := al.viewPane().(*ListSelector)
 	if !ok {
 		panic("Second pane on add list screen should be *ListSelector")
 	}
-	vp.Focus(true)
+	vp.Focus()
 }
 
 func (al *AddListsScreen) focusSearch() {
@@ -92,12 +92,12 @@ func (al *AddListsScreen) focusSearch() {
 	if !ok {
 		panic("First pane on add list screen should be *SearchModel")
 	}
-	sp.Focus(true)
+	sp.Focus()
 	vp, ok := al.viewPane().(*ListSelector)
 	if !ok {
 		panic("Second pane on add list screen should be *ListSelector")
 	}
-	vp.Focus(false)
+	vp.Unfocus()
 }
 
 // ----- Search Pane

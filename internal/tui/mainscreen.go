@@ -11,6 +11,11 @@ const (
 	mainScreenViewList
 )
 
+type focusable interface {
+	Focus()
+	Unfocus()
+}
+
 type mainScreenPane int
 
 type MainScreen struct {
@@ -50,14 +55,26 @@ func (ms *MainScreen) View() string {
 }
 
 func (ms *MainScreen) focusRight() {
+	if m, ok := ms.panes[ms.focus].(focusable); ok {
+		m.Unfocus()
+	}
 	if int(ms.focus) != len(ms.panes)-1 {
 		ms.focus++
+	}
+	if m, ok := ms.panes[ms.focus].(focusable); ok {
+		m.Focus()
 	}
 }
 
 func (ms *MainScreen) focusLeft() {
+	if m, ok := ms.panes[ms.focus].(focusable); ok {
+		m.Unfocus()
+	}
 	if int(ms.focus) != 0 {
 		ms.focus--
+	}
+	if m, ok := ms.panes[ms.focus].(focusable); ok {
+		m.Focus()
 	}
 }
 

@@ -53,6 +53,9 @@ var (
 
 	// ----- Misc. Prompts
 	yesNoStyle    = lipgloss.NewStyle().Inherit(mainStyle)
+	questionStyle = lipgloss.NewStyle().
+			AlignHorizontal(lipgloss.Center).
+			Padding(0, 2)
 	yesNoSelected = lipgloss.NewStyle().
 			Foreground(black).
 			Background(focused).
