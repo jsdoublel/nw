@@ -5,6 +5,29 @@ import (
 	"testing"
 )
 
+func makeTestNextWatch(t *testing.T, totalFilms int, watched map[int]*Film) NextWatch {
+	t.Helper()
+	if totalFilms < NumberOfStacks*StackSize+1 {
+		t.Fatalf("not enough films to build NextWatch: got %d need %d", totalFilms, NumberOfStacks*StackSize+1)
+	}
+	if watched == nil {
+		watched = make(map[int]*Film)
+	}
+	watchlist := make(map[int]*Film, totalFilms)
+	for id := 1; id <= totalFilms; id++ {
+		watchlist[id] = &Film{LBxdID: id}
+	}
+	app := Application{
+		Watchlist:    watchlist,
+		WatchedFilms: WatchedFilms{Films: watched},
+	}
+	nw, err := app.MakeNextWatch()
+	if err != nil {
+		t.Fatalf("MakeNextWatch returned error: %v", err)
+	}
+	return nw
+}
+
 func TestApplicationMakeNextWatch(t *testing.T) {
 	testCases := []struct {
 		name      string
@@ -119,26 +142,8 @@ func TestNextWatchDeleteFilm(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			nw := NextWatch{
-				Stacks:       make([][]*Film, NumberOfStacks+1),
-				watchedFilms: WatchedFilms{Films: map[int]*Film{}},
-				watchlist:    make(map[int]*Film),
-			}
-			nextID := 1
-			nw.Stacks[0] = []*Film{{LBxdID: nextID}}
-			nw.watchlist[nextID] = nw.Stacks[0][0]
-			for i := 1; i <= NumberOfStacks; i++ {
-				nw.Stacks[i] = make([]*Film, StackSize)
-				for j := range StackSize {
-					nextID++
-					f := &Film{LBxdID: nextID}
-					nw.Stacks[i][j] = f
-					nw.watchlist[nextID] = f
-				}
-			}
-			nextID++
-			extra := &Film{LBxdID: nextID}
-			nw.watchlist[nextID] = extra
+			const totalFilms = NumberOfStacks*StackSize + 2
+			nw := makeTestNextWatch(t, totalFilms, nil)
 			removed := nw.Stacks[tc.stackNum][tc.stackIndex]
 			if err := nw.DeleteFilm(*nw.Stacks[tc.stackNum][tc.stackIndex]); err != nil {
 				t.Fatalf("DeleteFilm returned error: %v", err)
@@ -169,34 +174,18 @@ func TestNextWatchUpdateWatched(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			target := &Film{LBxdID: 99}
 			watched := make(map[int]*Film)
+			const totalFilms = NumberOfStacks*StackSize + 2
+			nw := makeTestNextWatch(t, totalFilms, watched)
+			target := nw.Stacks[NumberOfStacks][StackSize-1]
+			if target == nil {
+				t.Fatal("expected target film to exist in queue")
+			}
 			if tc.watchedTarget {
 				watched[target.LBxdID] = target
+			} else {
+				delete(watched, target.LBxdID)
 			}
-			nw := NextWatch{
-				Stacks:       make([][]*Film, NumberOfStacks+1),
-				watchedFilms: WatchedFilms{Films: watched},
-				watchlist:    make(map[int]*Film),
-			}
-			nw.Stacks[0] = []*Film{{LBxdID: 1}}
-			nw.watchlist[1] = nw.Stacks[0][0]
-			for i := 1; i <= NumberOfStacks; i++ {
-				nw.Stacks[i] = make([]*Film, StackSize)
-				for j := range StackSize {
-					var f *Film
-					if i == NumberOfStacks && j == StackSize-1 {
-						f = target
-					} else {
-						id := (i*StackSize + j + 1) * 10
-						f = &Film{LBxdID: id}
-					}
-					nw.Stacks[i][j] = f
-					nw.watchlist[f.LBxdID] = f
-				}
-			}
-			extra := &Film{LBxdID: 1000}
-			nw.watchlist[1000] = extra
 			if err := nw.UpdateWatched(); err != nil {
 				t.Fatalf("UpdateWatched returned error: %v", err)
 			}
