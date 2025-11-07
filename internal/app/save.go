@@ -82,6 +82,7 @@ func (app *Application) rehydrate() {
 	for _, list := range app.TrackedLists {
 		list.store = app.WatchedFilms
 	}
+	app.NWQueue.makeLastUpdate()
 	app.NWQueue.watchedFilms = app.WatchedFilms
 	app.NWQueue.watchlist = app.Watchlist
 }

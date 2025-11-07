@@ -19,6 +19,7 @@ var (
 
 type NextWatch struct {
 	Stacks       [][]*Film
+	lastUpdated  [][]bool // position changed in last update
 	watchedFilms WatchedFilms
 	watchlist    map[int]*Film
 }
@@ -49,11 +50,13 @@ func (app *Application) MakeNextWatch() (NextWatch, error) {
 			stacks[i+1][j] = pool[StackSize*i+j+1]
 		}
 	}
-	return NextWatch{
+	nw := NextWatch{
 		Stacks:       stacks,
 		watchedFilms: app.WatchedFilms,
 		watchlist:    app.Watchlist,
-	}, nil
+	}
+	nw.makeLastUpdate()
+	return nw, nil
 }
 
 // Remove stack from Next Watch queue from given stack and stack index.
@@ -92,6 +95,7 @@ func (nw *NextWatch) update() error {
 	if nw.Full() { // do nothing if nw is already full
 		return nil
 	}
+	nw.ClearLastUpdated()
 	pool := make([]*Film, 0, len(nw.watchlist))
 	for _, f := range nw.watchlist {
 		if !nw.watchedFilms.Watched(f) && !nw.ContainsFilm(*f) {
@@ -108,11 +112,13 @@ func (nw *NextWatch) update() error {
 				r := rand.Intn(StackSize)
 				nw.Stacks[i][j] = nw.Stacks[i+1][r]
 				nw.Stacks[i+1][r] = nil
+				nw.lastUpdated[i][j] = true
 			} else if nw.Stacks[i][j] == nil {
 				if poolIdx >= len(pool) {
 					return fmt.Errorf("%w, %d required", ErrNotEnoughFilms, NumberOfStacks*StackSize+1)
 				}
 				nw.Stacks[i][j] = pool[poolIdx]
+				nw.lastUpdated[i][j] = true
 				poolIdx++
 			}
 		}
@@ -138,6 +144,24 @@ func (nw *NextWatch) ContainsFilm(film Film) bool {
 		}
 	}
 	return false
+}
+
+func (nw *NextWatch) LastUpdated(i, j int) bool {
+	return nw.lastUpdated[i][j]
+}
+
+func (nw *NextWatch) ClearLastUpdated() {
+	for i, j := range nw.Positions() {
+		nw.lastUpdated[i][j] = false
+	}
+}
+
+func (nw *NextWatch) makeLastUpdate() {
+	nw.lastUpdated = make([][]bool, NumberOfStacks+1)
+	nw.lastUpdated[0] = []bool{false}
+	for i := range NumberOfStacks {
+		nw.lastUpdated[i+1] = make([]bool, StackSize)
+	}
 }
 
 // Iterator over valid i, j pairs in Stacks

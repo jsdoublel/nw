@@ -48,6 +48,7 @@ var (
 		UnsetBorderBottom()
 	nwItemStyle         = lipgloss.NewStyle()
 	nwSelectedItemStyle = lipgloss.NewStyle().Background(lack).Foreground(gray9)
+	nwUpdatedItemStyle  = lipgloss.NewStyle().Foreground(green)
 	nwSeparatorStyle    = lipgloss.NewStyle().Foreground(focused)
 
 	// ----- Misc. Prompts

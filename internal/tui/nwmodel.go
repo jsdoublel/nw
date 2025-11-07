@@ -20,19 +20,23 @@ func NWDeleteFilm() tea.Msg { return nwDeleteFilmMsg{} }
 
 type itemTitle interface {
 	Title() string
+	Updated() bool
 	FilterValue() string
 }
 
 type nwListItem struct {
-	film *app.Film
+	film    *app.Film
+	updated bool
 }
 
 func (li nwListItem) Title() string       { return li.film.String() }
+func (li nwListItem) Updated() bool       { return li.updated }
 func (li nwListItem) FilterValue() string { return "" }
 
 type stackSeparator int
 
 func (li stackSeparator) Title() string       { return "" }
+func (li stackSeparator) Updated() bool       { return false }
 func (li stackSeparator) FilterValue() string { return "" }
 
 type nwItemDelegate struct{}
@@ -58,7 +62,16 @@ func (d nwItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 
 func (d nwItemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
 	it := listItem.(itemTitle)
+	prefix := "   "
 	fn := func(strs ...string) string { return nwItemStyle.Render(strings.Join(strs, "")) }
+	if it.Updated() {
+		fn = func(s ...string) string {
+			return nwUpdatedItemStyle.Render(strings.Join(s, ""))
+		}
+		if index != 0 {
+			prefix = " + "
+		}
+	}
 	if index == m.Index() {
 		fn = func(s ...string) string {
 			return nwSelectedItemStyle.Render(strings.Join(s, ""))
@@ -69,11 +82,11 @@ func (d nwItemDelegate) Render(w io.Writer, m list.Model, index int, listItem li
 			return nwSeparatorStyle.Render(strings.Repeat("\u2500", listPaneWidth))
 		}
 	}
-	var prefix string
 	if index == 0 {
 		prefix = " Next Watch: "
 	}
-	if _, err := fmt.Fprint(w, fn(prefix, "   ", it.Title(), strings.Repeat(" ", listPaneWidth-len(it.Title())-len(prefix)-3))); err != nil {
+	paddingLen := listPaneWidth - len(it.Title()) - len(prefix)
+	if _, err := fmt.Fprint(w, fn(prefix, it.Title(), strings.Repeat(" ", paddingLen))); err != nil {
 		log.Printf("error rendering NW queue, %s", err)
 	}
 }
@@ -131,15 +144,14 @@ func MakeNWModel(a *ApplicationTUI) *NWModel {
 
 func makeNWItemsList(a *ApplicationTUI) []list.Item {
 	items := make([]list.Item, app.StackSize*app.NumberOfStacks+1+app.NumberOfStacks)
-	count := 0
-	prevI := 0
+	var count, prevI int
 	for i, j := range a.NWQueue.Positions() {
 		if i != prevI {
 			items[count] = stackSeparator(i)
 			prevI = i
 			count++
 		}
-		items[count] = nwListItem{film: a.NWQueue.Stacks[i][j]}
+		items[count] = nwListItem{film: a.NWQueue.Stacks[i][j], updated: a.NWQueue.LastUpdated(i, j)}
 		count++
 	}
 	return items
