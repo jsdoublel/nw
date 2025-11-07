@@ -12,6 +12,12 @@ import (
 	"github.com/jsdoublel/nw/internal/app"
 )
 
+type nwDeleteFilmMsg struct {
+	ok bool
+}
+
+func NWDeleteFilm() tea.Msg { return nwDeleteFilmMsg{} }
+
 type itemTitle interface {
 	Title() string
 	FilterValue() string
@@ -80,6 +86,28 @@ type NWModel struct {
 func (nw *NWModel) Init() tea.Cmd { return nil }
 
 func (nw *NWModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	li, ok := nw.list.SelectedItem().(nwListItem)
+	if !ok {
+		return nil, nil
+	}
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		if key.Matches(msg, keys.Delete) {
+			nw.app.AskYesNo(
+				fmt.Sprintf("Remove %s from queue?\nCannot be undone!", li.film.Title),
+				func(b bool) tea.Msg { return nwDeleteFilmMsg{ok: b} },
+			)
+		}
+	case nwDeleteFilmMsg:
+		if msg.ok {
+			if err := nw.app.NWQueue.DeleteFilm(*li.film); err != nil {
+				log.Printf("error after deleting film, %s", err)
+			}
+			return nil, UpdateScreen
+		}
+	case UpdateScreenMsg:
+		nw.list.SetItems(makeNWItemsList(nw.app))
+	}
 	var cmd tea.Cmd
 	nw.list, cmd = nw.list.Update(msg)
 	return nil, cmd

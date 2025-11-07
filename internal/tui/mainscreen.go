@@ -25,7 +25,8 @@ func (ms *MainScreen) Init() tea.Cmd {
 
 func (ms *MainScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m, cmd := ms.panes[ms.focus].Update(msg)
-	if msg, ok := msg.(tea.KeyMsg); ok {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, keys.Back):
 			return m, GoBack
@@ -35,6 +36,10 @@ func (ms *MainScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			ms.focusLeft()
 		case key.Matches(msg, keys.AddList):
 			ms.app.screens.push(MakeAddListScreen(ms.app))
+		}
+	case UpdateScreenMsg:
+		for _, p := range ms.panes {
+			p.Update(msg)
 		}
 	}
 	return m, cmd

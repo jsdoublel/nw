@@ -140,7 +140,7 @@ func TestNextWatchDeleteFilm(t *testing.T) {
 			extra := &Film{LBxdID: nextID}
 			nw.watchlist[nextID] = extra
 			removed := nw.Stacks[tc.stackNum][tc.stackIndex]
-			if err := nw.DeleteFilm(tc.stackNum, tc.stackIndex); err != nil {
+			if err := nw.DeleteFilm(*nw.Stacks[tc.stackNum][tc.stackIndex]); err != nil {
 				t.Fatalf("DeleteFilm returned error: %v", err)
 			}
 			if !nw.Full() {

@@ -12,7 +12,10 @@ const (
 	StackSize      = 5
 )
 
-var ErrNotEnoughFilms = errors.New("not enough films in watchlist")
+var (
+	ErrNotEnoughFilms = errors.New("not enough films in watchlist")
+	ErrFilmNotFound   = errors.New("film not found")
+)
 
 type NextWatch struct {
 	Stacks       [][]*Film
@@ -54,8 +57,18 @@ func (app *Application) MakeNextWatch() (NextWatch, error) {
 }
 
 // Remove stack from Next Watch queue from given stack and stack index.
-func (nw *NextWatch) DeleteFilm(stackNum, stackIdx int) error {
-	nw.Stacks[stackNum][stackIdx] = nil
+func (nw *NextWatch) DeleteFilm(film Film) error {
+	deleted := false
+	for i, j := range nw.Positions() {
+		if nw.Stacks[i][j].LBxdID == film.LBxdID {
+			nw.Stacks[i][j] = nil
+			deleted = true
+			break
+		}
+	}
+	if !deleted {
+		return fmt.Errorf("%w, %s", ErrFilmNotFound, film.Title)
+	}
 	return nw.update()
 }
 
