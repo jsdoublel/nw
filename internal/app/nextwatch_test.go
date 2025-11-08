@@ -3,6 +3,7 @@ package app
 import (
 	"errors"
 	"testing"
+	"time"
 )
 
 func makeTestNextWatch(t *testing.T, totalFilms int, watched map[int]*Film) NextWatch {
@@ -20,12 +21,30 @@ func makeTestNextWatch(t *testing.T, totalFilms int, watched map[int]*Film) Next
 	app := Application{
 		Watchlist:    watchlist,
 		WatchedFilms: WatchedFilms{Films: watched},
+		FilmStore:    FilmStore{},
 	}
+	seedFilmStore(t, &app.FilmStore, watchlist)
 	nw, err := app.MakeNextWatch()
 	if err != nil {
 		t.Fatalf("MakeNextWatch returned error: %v", err)
 	}
 	return nw
+}
+
+func seedFilmStore(t *testing.T, store *FilmStore, films map[int]*Film) {
+	t.Helper()
+	if store.Films == nil {
+		store.Films = make(map[int]*FilmRecord, len(films))
+	}
+	now := time.Now()
+	released := now.Add(-24 * time.Hour)
+	for _, film := range films {
+		store.Films[film.LBxdID] = &FilmRecord{
+			Film:        *film,
+			ReleaseDate: released,
+			Checked:     now,
+		}
+	}
 }
 
 func TestApplicationMakeNextWatch(t *testing.T) {
@@ -67,11 +86,13 @@ func TestApplicationMakeNextWatch(t *testing.T) {
 			app := Application{
 				Watchlist:    make(map[int]*Film),
 				WatchedFilms: WatchedFilms{Films: watched},
+				FilmStore:    FilmStore{},
 			}
 			for i := 0; i < tc.films; i++ {
 				id := i + 1
 				app.Watchlist[id] = &Film{LBxdID: id}
 			}
+			seedFilmStore(t, &app.FilmStore, app.Watchlist)
 			defer func() {
 				if r := recover(); r != nil {
 					t.Fatalf("MakeNextWatch panicked: %v", r)

@@ -4,7 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"iter"
+	"log"
 	"math/rand"
+	"time"
 )
 
 const (
@@ -22,6 +24,7 @@ type NextWatch struct {
 	lastUpdated  [][]bool // position changed in last update
 	watchedFilms WatchedFilms
 	watchlist    map[int]*Film
+	store        *FilmStore
 }
 
 // Create NextWatch queue data structure, selecting NumberOfStacks*StackSize+1
@@ -30,32 +33,22 @@ type NextWatch struct {
 //
 // Returns an error if there is not enough unwatched films in the watchlist.
 func (app *Application) MakeNextWatch() (NextWatch, error) {
-	pool := make([]*Film, 0, len(app.Watchlist))
-	for _, f := range app.Watchlist {
-		if _, ok := app.WatchedFilms.Films[f.LBxdID]; !ok {
-			pool = append(pool, f)
-		}
-	}
-	if len(pool) < NumberOfStacks*StackSize+1 {
-		return NextWatch{}, fmt.Errorf("%w, %d required", ErrNotEnoughFilms, NumberOfStacks*StackSize+1)
-	}
-	rand.Shuffle(len(pool), func(i, j int) {
-		pool[i], pool[j] = pool[j], pool[i]
-	})
 	stacks := make([][]*Film, NumberOfStacks+1)
-	stacks[0] = []*Film{pool[0]}
+	stacks[0] = make([]*Film, 1)
 	for i := range NumberOfStacks {
 		stacks[i+1] = make([]*Film, StackSize)
-		for j := range StackSize {
-			stacks[i+1][j] = pool[StackSize*i+j+1]
-		}
 	}
 	nw := NextWatch{
 		Stacks:       stacks,
 		watchedFilms: app.WatchedFilms,
 		watchlist:    app.Watchlist,
+		store:        &app.FilmStore,
 	}
 	nw.makeLastUpdate()
+	if err := nw.update(); err != nil {
+		return NextWatch{}, err
+	}
+	nw.ClearLastUpdated()
 	return nw, nil
 }
 
@@ -114,8 +107,14 @@ func (nw *NextWatch) update() error {
 				nw.Stacks[i+1][r] = nil
 				nw.lastUpdated[i][j] = true
 			} else if nw.Stacks[i][j] == nil {
-				if poolIdx >= len(pool) {
-					return fmt.Errorf("%w, %d required", ErrNotEnoughFilms, NumberOfStacks*StackSize+1)
+				for {
+					if poolIdx >= len(pool) {
+						return fmt.Errorf("%w, %d required", ErrNotEnoughFilms, NumberOfStacks*StackSize+1)
+					}
+					if nw.filterFilm(*pool[poolIdx]) {
+						break
+					}
+					poolIdx++
 				}
 				nw.Stacks[i][j] = pool[poolIdx]
 				nw.lastUpdated[i][j] = true
@@ -124,6 +123,29 @@ func (nw *NextWatch) update() error {
 		}
 	}
 	return nil
+}
+
+// Filter out films we don't want in the Next Watch queue by checking details
+// from TMDB.
+//
+// Filters out TV shows, and unreleased films. Also filters anything that
+// cannot be retrieve for any other reason (excluding API errors).
+func (nw *NextWatch) filterFilm(film Film) bool {
+	f, err := nw.store.Lookup(film)
+	if errors.Is(err, ErrFailedTMDBLookup) { // TV shows fail by default
+		log.Printf("%s, excluding film %s", err, film)
+		return false
+	}
+	if f.ReleaseDate.IsZero() {
+		log.Printf("invalid release date for %s, %s, excluding film", film, err)
+		return false
+	}
+	if f.ReleaseDate.After(time.Now()) {
+		log.Printf("excluding film %s, it has not been released", film)
+		return false
+	}
+	log.Printf("%s added to next watch queue", film)
+	return true
 }
 
 // Checks if all stack positions have a film in them

@@ -85,6 +85,7 @@ func (app *Application) rehydrate() {
 	app.NWQueue.makeLastUpdate()
 	app.NWQueue.watchedFilms = app.WatchedFilms
 	app.NWQueue.watchlist = app.Watchlist
+	app.NWQueue.store = &app.FilmStore
 }
 
 // ----- Update user data etc.

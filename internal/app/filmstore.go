@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	tmdb "github.com/cyruzin/golang-tmdb"
@@ -17,9 +18,10 @@ type FilmStore struct {
 
 type FilmRecord struct {
 	Film
-	TMDBID  int                // tmdb id number
-	Details *tmdb.MovieDetails // film details from tmdb
-	Watched bool               // film is recorded as watched
+	TMDBID      int                // tmdb id number
+	Details     *tmdb.MovieDetails // film details from tmdb
+	ReleaseDate time.Time          // release date (according to tmdb)
+	Watched     bool               // film is recorded as watched
 
 	// These fields are only exported so they can be martialed. Please don't mutate.
 
@@ -138,6 +140,10 @@ func (fs *FilmStore) retrieve(film Film) error {
 	fr.Details, err = TMDBFilm(fr.TMDBID)
 	if err != nil {
 		return err
+	}
+	fr.ReleaseDate, err = time.Parse("2006-01-02", fr.Details.ReleaseDate)
+	if err != nil {
+		log.Printf("failed to parse release date %s as time", fr.Details.ReleaseDate)
 	}
 	fr.Checked = time.Now()
 	return nil
