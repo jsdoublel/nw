@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"fmt"
+
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -50,11 +52,9 @@ func (p *YesNoPrompt) View() string {
 		yes = yesNoUnselected.Render("Yes")
 		no = yesNoSelected.Render("No")
 	}
-	sep := lipgloss.NewStyle().Width(3).Render("")
-	buttons := lipgloss.JoinHorizontal(lipgloss.Center, yes, sep, no)
+	buttons := lipgloss.JoinHorizontal(lipgloss.Center, fmt.Sprintf("%s   %s", yes, no))
 	question := questionStyle.Render(p.question)
-	content := lipgloss.JoinVertical(lipgloss.Center, "", question, "", buttons, "")
-	return yesNoStyle.Render(content)
+	return yesNoStyle.Render(lipgloss.JoinVertical(lipgloss.Center, "", question, "", buttons, ""))
 }
 
 // Response to prompt: Yes [true] No [false]

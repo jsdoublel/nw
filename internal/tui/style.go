@@ -34,10 +34,13 @@ var (
 	gray9 = lipgloss.Color("#dddddd")
 
 	unfocused = gray4
-	focused   = gray9
+	focused   = gray7
+	text      = gray9
 
 	mainStyle = lipgloss.NewStyle().
-			Border(lipgloss.NormalBorder()).Foreground(focused)
+			Border(lipgloss.NormalBorder()).
+			BorderForeground(focused).
+			Foreground(text)
 
 	// ----- Add List Screen
 	addListTitleColor = lack
@@ -58,9 +61,18 @@ var (
 
 	// ----- Film Details
 	filmDetailsStyle    = lipgloss.NewStyle().Inherit(mainStyle)
-	filmTitleStyle      = lipgloss.NewStyle().Bold(true)
-	flimDirStyle        = lipgloss.NewStyle().Italic(true)
-	filmCastHeaderStyle = lipgloss.NewStyle().Underline(true)
+	filmTextStyle       = lipgloss.NewStyle().Width(paneWidth).Foreground(text)
+	filmTitleStyle      = lipgloss.NewStyle().Inherit(filmTextStyle).Bold(true)
+	flimDirStyle        = lipgloss.NewStyle().Inherit(filmTextStyle).Italic(true)
+	filmCastHeaderStyle = lipgloss.NewStyle().Inherit(filmTextStyle).Underline(true)
+	filmActionSelected  = lipgloss.NewStyle().
+				Foreground(black).
+				Background(focused).
+				Padding(0, 2)
+	filmActionUnselected = lipgloss.NewStyle().
+				Foreground(text).
+				Background(gray3).
+				Padding(0, 2)
 
 	// ----- Misc. Prompts
 	yesNoStyle    = lipgloss.NewStyle().Inherit(mainStyle)
@@ -72,7 +84,8 @@ var (
 			Background(focused).
 			Padding(0, 2)
 	yesNoUnselected = lipgloss.NewStyle().
-			Foreground(gray9).
+			Foreground(text).
+			Background(gray3).
 			Padding(0, 2)
 )
 

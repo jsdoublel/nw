@@ -21,9 +21,9 @@ type nwDeleteFilmMsg struct {
 func NWDeleteFilm() tea.Msg { return nwDeleteFilmMsg{} }
 
 type itemTitle interface {
+	list.Item
 	Title() string
 	Updated() bool
-	FilterValue() string
 }
 
 type nwListItem struct {
@@ -50,24 +50,27 @@ func (d nwItemDelegate) Spacing() int { return 0 }
 // movement occurs.
 func (d nwItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 	_, ssOk := m.SelectedItem().(stackSeparator)
-	moved := false // movement key pressed
+	update := false
 	if msg, ok := msg.(tea.KeyMsg); ok {
 		switch {
 		case key.Matches(msg, keys.Up):
 			if ssOk {
 				m.Select(m.Index() - 1)
 			}
-			moved = true
+			update = true
 		case key.Matches(msg, keys.Down):
 			if ssOk {
 				m.Select(m.Index() + 1)
 			}
-			moved = true
+			update = true
 		case msg.String() == "g" || msg.String() == "G": // other characters that cause movement
-			moved = true
+			update = true
 		}
 	}
-	if li, ok := m.SelectedItem().(nwListItem); moved && ok {
+	if _, ok := msg.(UpdateScreenMsg); ok {
+		update = true
+	}
+	if li, ok := m.SelectedItem().(nwListItem); update && ok {
 		return func() tea.Msg { return NewFilmDetailsMsg{film: *li.film} }
 	}
 	return nil
@@ -173,6 +176,7 @@ func MakeNWModel(a *ApplicationTUI) *NWModel {
 	l.SetShowTitle(false)
 	l.SetShowStatusBar(false)
 	l.SetShowHelp(false)
+	nwStyle = nwStyle.BorderForeground(focused)
 	return &NWModel{
 		list:    l,
 		app:     a,

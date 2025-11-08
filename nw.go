@@ -43,6 +43,6 @@ func parseArgs() string {
 func main() {
 	username := parseArgs()
 	if err := tui.RunApplicationTUI(username); err != nil {
-		fmt.Fprintf(os.Stderr, "nw failed with error, %s", err.Error())
+		fmt.Fprintf(os.Stderr, "nw failed with error, %s\n", err.Error())
 	}
 }

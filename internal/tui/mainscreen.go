@@ -4,25 +4,26 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+
 	"github.com/jsdoublel/nw/internal/app"
 )
 
+const joinDetailsPos = 0
+
 const (
-	mainScreenDetails mainScreenPane = iota
-	mainScreenNW
-	mainScreenViewList
+	mainScreenNWPos = iota
+	mainScreenViewListPos
 )
 
 type focusable interface {
+	tea.Model
 	Focus()
 	Unfocus()
 }
 
-type mainScreenPane int
-
 type MainScreen struct {
-	panes []tea.Model
-	focus mainScreenPane
+	panes []focusable
+	focus int
 	app   *ApplicationTUI
 }
 
@@ -57,44 +58,42 @@ func (ms *MainScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (ms *MainScreen) View() string {
 	return lipgloss.JoinHorizontal(
 		lipgloss.Center,
-		ms.panes[mainScreenDetails].View(),
-		ms.panes[mainScreenNW].View(),
-		ms.panes[mainScreenViewList].View(),
+		ms.panes[mainScreenNWPos].View(),
+		ms.panes[mainScreenViewListPos].View(),
 	)
 }
 
 func (ms *MainScreen) focusRight() {
-	if m, ok := ms.panes[ms.focus].(focusable); ok {
-		m.Unfocus()
-	}
+	ms.panes[ms.focus].Unfocus()
 	if int(ms.focus) != len(ms.panes)-1 {
 		ms.focus++
 	}
-	if m, ok := ms.panes[ms.focus].(focusable); ok {
-		m.Focus()
-	}
+	ms.panes[ms.focus].Focus()
 }
 
 func (ms *MainScreen) focusLeft() {
-	if m, ok := ms.panes[ms.focus].(focusable); ok {
-		m.Unfocus()
-	}
+	ms.panes[ms.focus].Unfocus()
 	if int(ms.focus) != 0 {
 		ms.focus--
 	}
-	if m, ok := ms.panes[ms.focus].(focusable); ok {
-		m.Focus()
-	}
+	ms.panes[ms.focus].Focus()
 }
 
 func (ms *MainScreen) NewFilmDetails(film app.Film) {
-	ms.panes[mainScreenDetails] = MakeFilmDetailsModel(&film, ms.app)
+	if jm, ok := ms.panes[mainScreenNWPos].(*JoinModel); ok {
+		jm.models[joinDetailsPos] = MakeFilmDetailsModel(&film, ms.app)
+		return
+	}
+	panic("film details not in correct position in JoinModel")
 }
 
 func MakeMainScreen(a *ApplicationTUI) *MainScreen {
 	return &MainScreen{
-		panes: []tea.Model{MakeFilmDetailsModel(a.NWQueue.Stacks[0][0], a), MakeNWModel(a), MakeViewListPane(a)},
-		focus: mainScreenNW,
+		panes: []focusable{&JoinModel{
+			models: []focusable{MakeFilmDetailsModel(a.NWQueue.Stacks[0][0], a), MakeNWModel(a)},
+			pos:    lipgloss.Top,
+		}, MakeViewListPane(a)},
+		focus: mainScreenNWPos,
 		app:   a,
 	}
 }

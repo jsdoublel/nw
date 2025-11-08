@@ -11,6 +11,11 @@ var NWDataPath string
 
 func init() {
 	NWDataPath = filepath.Join(getDirBase(), "nw")
+	if _, err := os.Stat(NWDataPath); os.IsNotExist(err) {
+		if err := os.MkdirAll(NWDataPath, 0o755); err != nil {
+			log.Printf("could not create directory at %s", NWDataPath)
+		}
+	}
 }
 
 type Application struct {
