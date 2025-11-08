@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
@@ -44,32 +45,43 @@ type nwItemDelegate struct{}
 func (d nwItemDelegate) Height() int  { return 1 }
 func (d nwItemDelegate) Spacing() int { return 0 }
 
-// Skips stack separators when scrolling
+// Skips stack separators when scrolling. Also, sends updated film details when
+// movement occurs
 func (d nwItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
-	if _, ok := m.SelectedItem().(stackSeparator); !ok {
-		return nil
-	}
+	_, ssOk := m.SelectedItem().(stackSeparator)
+	moved := false // movement key pressed
 	if msg, ok := msg.(tea.KeyMsg); ok {
 		switch {
 		case key.Matches(msg, keys.Up):
-			m.Select(m.Index() - 1)
+			if ssOk {
+				m.Select(m.Index() - 1)
+			}
+			moved = true
 		case key.Matches(msg, keys.Down):
-			m.Select(m.Index() + 1)
+			if ssOk {
+				m.Select(m.Index() + 1)
+			}
+			moved = true
 		}
+	}
+	if li, ok := m.SelectedItem().(nwListItem); moved && ok {
+		return func() tea.Msg { return NewFilmDetailsMsg{film: *li.film} }
 	}
 	return nil
 }
 
 func (d nwItemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
 	it := listItem.(itemTitle)
-	prefix := "   "
+	var b strings.Builder
+	b.WriteString("   ")
 	fn := func(strs ...string) string { return nwItemStyle.Render(strings.Join(strs, "")) }
 	if it.Updated() {
 		fn = func(s ...string) string {
 			return nwUpdatedItemStyle.Render(strings.Join(s, ""))
 		}
 		if index != 0 {
-			prefix = " + "
+			b.Reset()
+			b.WriteString(" + ")
 		}
 	}
 	if index == m.Index() {
@@ -83,10 +95,19 @@ func (d nwItemDelegate) Render(w io.Writer, m list.Model, index int, listItem li
 		}
 	}
 	if index == 0 {
-		prefix = " Next Watch: "
+		b.Reset()
+		b.WriteString(" Next Watch: ")
 	}
-	paddingLen := listPaneWidth - len(it.Title()) - len(prefix)
-	if _, err := fmt.Fprint(w, fn(prefix, it.Title(), strings.Repeat(" ", paddingLen))); err != nil {
+	paddingLen := listPaneWidth - utf8.RuneCountInString(it.Title()) - utf8.RuneCountInString(b.String())
+	b.WriteString(it.Title())
+	var content string
+	if paddingLen < 0 {
+		content = string(append([]rune(b.String())[:utf8.RuneCountInString(b.String())+paddingLen-2], rune('…')))
+	} else {
+		b.WriteString(strings.Repeat(" ", paddingLen))
+		content = b.String()
+	}
+	if _, err := fmt.Fprint(w, fn(content)); err != nil {
 		log.Printf("error rendering NW queue, %s", err)
 	}
 }

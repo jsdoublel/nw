@@ -18,7 +18,7 @@ func (p *YesNoPrompt) Init() tea.Cmd { return nil }
 
 func (p *YesNoPrompt) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case YesNoResponse:
+	case YesNoResponseMsg:
 		if p.app.screens.cur() != p {
 			panic("model sending YesNoResponse should be top of stack YesNoPrompt")
 		}
@@ -31,11 +31,11 @@ func (p *YesNoPrompt) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, keys.Right):
 			p.selected = false
 		case msg.Type == tea.KeyEnter:
-			return p, func() tea.Msg { return YesNoResponse{p.selected} }
+			return p, func() tea.Msg { return YesNoResponseMsg{p.selected} }
 		case key.Matches(msg, keys.Yes):
-			return p, func() tea.Msg { return YesNoResponse{true} }
+			return p, func() tea.Msg { return YesNoResponseMsg{true} }
 		case key.Matches(msg, keys.No) || msg.Type == tea.KeyEsc:
-			return p, func() tea.Msg { return YesNoResponse{false} }
+			return p, func() tea.Msg { return YesNoResponseMsg{false} }
 		}
 	}
 	return p, nil
@@ -58,7 +58,7 @@ func (p *YesNoPrompt) View() string {
 }
 
 // Response to prompt: Yes [true] No [false]
-type YesNoResponse struct {
+type YesNoResponseMsg struct {
 	response bool
 }
 

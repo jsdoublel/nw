@@ -9,10 +9,12 @@ import (
 	"github.com/cyruzin/golang-tmdb"
 )
 
-var TMDBClient *tmdb.Client = nil
+var (
+	TMDBClient *tmdb.Client = nil
 
-var ErrNoAPI error = errors.New("could not connect to TMDB API")
-var ErrFailedTMDBLookup error = errors.New("failed TMDB lookup")
+	ErrNoAPI            = errors.New("could not connect to TMDB API")
+	ErrFailedTMDBLookup = errors.New("failed TMDB lookup")
+)
 
 func init() {
 	var err error
@@ -26,9 +28,11 @@ func TMDBFilm(id int) (*tmdb.MovieDetails, error) {
 	if TMDBClient == nil {
 		return nil, ErrNoAPI
 	}
-	film, err := TMDBClient.GetMovieDetails(id, nil)
+	film, err := TMDBClient.GetMovieDetails(id, map[string]string{
+		"append_to_response": "credits",
+	})
 	if err != nil {
-		return nil, fmt.Errorf("%w, %w", ErrFailedTMDBLookup, err)
+		return nil, fmt.Errorf("%w, with id %d, %w", ErrFailedTMDBLookup, id, err)
 	}
 	return film, nil
 }

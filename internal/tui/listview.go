@@ -14,11 +14,6 @@ import (
 	"github.com/jsdoublel/nw/internal/app"
 )
 
-const (
-	listPaneWidth  = 64
-	listPaneHeight = 42
-)
-
 // Model for viewing and selecting film lists. It is used for both view and
 // searching through lists.
 type ListSelector struct {

@@ -5,6 +5,11 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+const (
+	listPaneWidth  = 64
+	listPaneHeight = 42
+)
+
 var (
 
 	// ----- Colors
@@ -50,6 +55,13 @@ var (
 	nwSelectedItemStyle = lipgloss.NewStyle().Background(lack).Foreground(gray9)
 	nwUpdatedItemStyle  = lipgloss.NewStyle().Foreground(green)
 	nwSeparatorStyle    = lipgloss.NewStyle().Foreground(focused)
+
+	// ----- Film Details
+	filmDetailsStyle    = lipgloss.NewStyle().Inherit(mainStyle)
+	filmTitleStyle      = lipgloss.NewStyle().Bold(true)
+	flimDirStyle        = lipgloss.NewStyle().Italic(true)
+	filmCastHeaderStyle = lipgloss.NewStyle().Underline(true)
+	filmDetailsErrStyle = lipgloss.NewStyle().Inherit(mainStyle).Foreground(red)
 
 	// ----- Misc. Prompts
 	yesNoStyle    = lipgloss.NewStyle().Inherit(mainStyle)

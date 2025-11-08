@@ -4,10 +4,12 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/jsdoublel/nw/internal/app"
 )
 
 const (
-	mainScreenNW mainScreenPane = iota
+	mainScreenDetails mainScreenPane = iota
+	mainScreenNW
 	mainScreenViewList
 )
 
@@ -42,6 +44,8 @@ func (ms *MainScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, keys.AddList):
 			ms.app.screens.push(MakeAddListScreen(ms.app))
 		}
+	case NewFilmDetailsMsg:
+		ms.NewFilmDetails(msg.film)
 	case UpdateScreenMsg:
 		for _, p := range ms.panes {
 			p.Update(msg)
@@ -51,7 +55,12 @@ func (ms *MainScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (ms *MainScreen) View() string {
-	return lipgloss.JoinHorizontal(lipgloss.Center, ms.panes[mainScreenNW].View(), ms.panes[mainScreenViewList].View())
+	return lipgloss.JoinHorizontal(
+		lipgloss.Center,
+		ms.panes[mainScreenDetails].View(),
+		ms.panes[mainScreenNW].View(),
+		ms.panes[mainScreenViewList].View(),
+	)
 }
 
 func (ms *MainScreen) focusRight() {
@@ -78,9 +87,13 @@ func (ms *MainScreen) focusLeft() {
 	}
 }
 
+func (ms *MainScreen) NewFilmDetails(film app.Film) {
+	ms.panes[mainScreenDetails] = MakeFilmDetailsModel(&film, ms.app)
+}
+
 func MakeMainScreen(a *ApplicationTUI) *MainScreen {
 	return &MainScreen{
-		panes: []tea.Model{MakeNWModel(a), MakeViewListPane(a)},
+		panes: []tea.Model{MakeFilmDetailsModel(a.NWQueue.Stacks[0][0], a), MakeNWModel(a), MakeViewListPane(a)},
 		focus: mainScreenNW,
 		app:   a,
 	}
