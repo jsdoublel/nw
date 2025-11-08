@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+
 	"github.com/jsdoublel/nw/internal/app"
 )
 
@@ -34,7 +35,7 @@ func (li nwListItem) Title() string       { return li.film.String() }
 func (li nwListItem) Updated() bool       { return li.updated }
 func (li nwListItem) FilterValue() string { return "" }
 
-type stackSeparator int
+type stackSeparator struct{}
 
 func (li stackSeparator) Title() string       { return "" }
 func (li stackSeparator) Updated() bool       { return false }
@@ -46,7 +47,7 @@ func (d nwItemDelegate) Height() int  { return 1 }
 func (d nwItemDelegate) Spacing() int { return 0 }
 
 // Skips stack separators when scrolling. Also, sends updated film details when
-// movement occurs
+// movement occurs.
 func (d nwItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 	_, ssOk := m.SelectedItem().(stackSeparator)
 	moved := false // movement key pressed
@@ -61,6 +62,8 @@ func (d nwItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 			if ssOk {
 				m.Select(m.Index() + 1)
 			}
+			moved = true
+		case msg.String() == "g" || msg.String() == "G": // other characters that cause movement
 			moved = true
 		}
 	}
@@ -91,18 +94,18 @@ func (d nwItemDelegate) Render(w io.Writer, m list.Model, index int, listItem li
 	}
 	if _, ok := listItem.(stackSeparator); ok {
 		fn = func(_ ...string) string {
-			return nwSeparatorStyle.Render(strings.Repeat("\u2500", listPaneWidth))
+			return nwSeparatorStyle.Render(strings.Repeat("\u2500", paneWidth))
 		}
 	}
 	if index == 0 {
 		b.Reset()
 		b.WriteString(" Next Watch: ")
 	}
-	paddingLen := listPaneWidth - utf8.RuneCountInString(it.Title()) - utf8.RuneCountInString(b.String())
+	paddingLen := paneWidth - utf8.RuneCountInString(it.Title()) - utf8.RuneCountInString(b.String())
 	b.WriteString(it.Title())
 	var content string
 	if paddingLen < 0 {
-		content = string(append([]rune(b.String())[:utf8.RuneCountInString(b.String())+paddingLen-2], rune('…')))
+		content = string(append([]rune(b.String())[:utf8.RuneCountInString(b.String())+paddingLen-2], '\u2026'))
 	} else {
 		b.WriteString(strings.Repeat(" ", paddingLen))
 		content = b.String()
@@ -149,7 +152,7 @@ func (nw *NWModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (nw *NWModel) View() string {
-	return nwStyle.Width(listPaneWidth).Render(nw.list.View())
+	return nwStyle.Width(paneWidth).Render(nw.list.View())
 }
 
 func (nw *NWModel) Focus() {
@@ -165,7 +168,7 @@ func (nw *NWModel) Unfocus() {
 }
 
 func MakeNWModel(a *ApplicationTUI) *NWModel {
-	l := list.New(makeNWItemsList(a), nwItemDelegate{}, listPaneWidth, listPaneHeight)
+	l := list.New(makeNWItemsList(a), nwItemDelegate{}, paneWidth, paneHeight)
 	l.SetFilteringEnabled(false)
 	l.SetShowTitle(false)
 	l.SetShowStatusBar(false)
@@ -182,7 +185,7 @@ func makeNWItemsList(a *ApplicationTUI) []list.Item {
 	var count, prevI int
 	for i, j := range a.NWQueue.Positions() {
 		if i != prevI {
-			items[count] = stackSeparator(i)
+			items[count] = stackSeparator{}
 			prevI = i
 			count++
 		}

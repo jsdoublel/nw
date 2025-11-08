@@ -16,7 +16,7 @@ const (
 	searchMode mode = iota
 	normalMode
 
-	resultPainHeight = listPaneHeight - 3
+	resultPainHeight = paneHeight - 3
 )
 
 // Model with text search input and list of results below
@@ -39,7 +39,7 @@ func MakeSearchModel(a *ApplicationTUI, items []list.Item, searchText string, de
 	ti.Placeholder = searchText
 	ti.Cursor.Style = cursorStyle
 	frameW, _ := searchInputStyle.GetFrameSize()
-	ti.Width = max(max(listPaneWidth-frameW-len(ti.Prompt), 0), lipgloss.Width(searchText))
+	ti.Width = max(max(paneWidth-frameW-len(ti.Prompt), 0), lipgloss.Width(searchText))
 	searchListStyle = searchListStyle.BorderForeground(focused)
 	searchInputStyle = searchInputStyle.BorderForeground(unfocused)
 	return &SearchModel{
@@ -94,8 +94,8 @@ func (sm *SearchModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (sm *SearchModel) View() string {
 	return lipgloss.JoinVertical(
 		lipgloss.Center,
-		searchInputStyle.Width(listPaneWidth).Render(sm.input.View()),
-		searchListStyle.Width(listPaneWidth).Height(resultPainHeight).
+		searchInputStyle.Width(paneWidth).Render(sm.input.View()),
+		searchListStyle.Width(paneWidth).Height(resultPainHeight).
 			Render(sm.list.View()),
 	)
 }

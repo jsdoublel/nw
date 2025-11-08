@@ -24,7 +24,7 @@ type ListSelector struct {
 }
 
 func MakeListSelector(a *ApplicationTUI, title string, items []list.Item, delegate list.ItemDelegate) *ListSelector {
-	l := list.New(items, delegate, listPaneWidth, listPaneHeight)
+	l := list.New(items, delegate, paneWidth, paneHeight)
 	l.Title = title
 	l.Styles.Title = l.Styles.Title.Background(addListTitleColor)
 	l.SetShowHelp(false)
@@ -55,7 +55,7 @@ func (ls *ListSelector) View() string {
 		placeholder := ls.list.Styles.NoItems.Render("No " + plural + ".")
 		view = strings.Replace(view, placeholder, "", 1)
 	}
-	return ls.style.Width(listPaneWidth).Height(listPaneHeight).Render(view)
+	return ls.style.Width(paneWidth).Height(paneHeight).Render(view)
 }
 
 func (ls *ListSelector) Focus() {

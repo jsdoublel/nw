@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	listPaneWidth  = 64
-	listPaneHeight = 42
+	paneWidth  = 64
+	paneHeight = 42
 )
 
 var (
@@ -61,7 +61,6 @@ var (
 	filmTitleStyle      = lipgloss.NewStyle().Bold(true)
 	flimDirStyle        = lipgloss.NewStyle().Italic(true)
 	filmCastHeaderStyle = lipgloss.NewStyle().Underline(true)
-	filmDetailsErrStyle = lipgloss.NewStyle().Inherit(mainStyle).Foreground(red)
 
 	// ----- Misc. Prompts
 	yesNoStyle    = lipgloss.NewStyle().Inherit(mainStyle)

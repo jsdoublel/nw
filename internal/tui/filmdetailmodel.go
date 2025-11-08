@@ -31,9 +31,9 @@ func (fd *FilmDetailsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (fd *FilmDetailsModel) View() string {
 	if fd.err != nil {
-		return filmDetailsErrStyle.Width(listPaneWidth).Render(fd.errorText())
+		return filmDetailsStyle.Foreground(red).Width(paneWidth).Render(fd.errorText())
 	}
-	return filmDetailsStyle.Width(listPaneWidth).Render(fd.renderDetails())
+	return filmDetailsStyle.Width(paneWidth).Render(fd.renderDetails())
 }
 
 func (fd *FilmDetailsModel) Focus() {
@@ -55,16 +55,19 @@ func (fd *FilmDetailsModel) errorText() string {
 
 func (fd *FilmDetailsModel) renderDetails() string {
 	title := filmTitleStyle.Render(fd.film.String())
-	colWidth := listPaneWidth/2 - 1
+	colWidth := paneWidth/2 - 1
 	rightText := lipgloss.NewStyle().Width(colWidth).Render(fd.film.Details.Overview)
-	castLimit := max(minCast, lipgloss.Height(rightText)-4)
+	limitAdj := 2
 	var b strings.Builder
 	if directors := fd.directorLine(); directors != "" {
 		b.WriteString(flimDirStyle.Render(directors))
+		limitAdj++
 	}
 	if runtime := fd.film.Details.Runtime; runtime > 0 {
 		b.WriteString(fmt.Sprintf("\n%d minutes", runtime))
+		limitAdj++
 	}
+	castLimit := max(minCast, lipgloss.Height(rightText)-limitAdj)
 	if cast := fd.castLine(castLimit); cast != "" {
 		b.WriteString("\n\n")
 		b.WriteString(filmCastHeaderStyle.Render("Cast"))
