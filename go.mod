@@ -3,11 +3,13 @@ module github.com/jsdoublel/nw
 go 1.24.0
 
 require (
+	github.com/adrg/xdg v0.5.3
 	github.com/charmbracelet/bubbles v0.21.1-0.20250623103423-23b8fd6302d7
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/cyruzin/golang-tmdb v1.8.2
 	github.com/gocolly/colly v1.2.0
+	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 )
 
 require (

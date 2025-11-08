@@ -2,12 +2,14 @@ package tui
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/pkg/browser"
 
 	"github.com/jsdoublel/nw/internal/app"
 )
@@ -29,13 +31,18 @@ type FilmDetailsModel struct {
 
 type FilmAction struct {
 	label  string
-	action func(app.Film) error
+	action func(app.FilmRecord) error
 }
 
 var filmActions = []FilmAction{
-	{label: "Watch", action: func(f app.Film) error { return nil }},
-	{label: "Poster", action: func(f app.Film) error { return nil }},
-	{label: "Letterboxd", action: func(f app.Film) error { return nil }},
+	{label: "Watch", action: app.SetDiscordRPC},
+	{label: "Poster", action: app.DownloadPoster},
+	{label: "Letterboxd", action: func(f app.FilmRecord) error { return browser.OpenURL(f.Url) }},
+}
+
+func init() { // discrads output from calling OpenURL which messes with View
+	browser.Stdout = io.Discard
+	browser.Stderr = io.Discard
 }
 
 func (fd *FilmDetailsModel) Init() tea.Cmd { return nil }
@@ -48,8 +55,8 @@ func (fd *FilmDetailsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, keys.Left):
 			fd.actionLeft()
 		case msg.Type == tea.KeyEnter:
-			if err := fd.actions[fd.selectedAction].action(fd.film.Film); err != nil {
-				log.Printf("action for film %s failed, %s", fd.film, err)
+			if err := fd.actions[fd.selectedAction].action(*fd.film); err != nil {
+				log.Printf("action \"%s\" failed for film %s, %s", fd.actions[fd.selectedAction].label, fd.film, err)
 			}
 		}
 	}
