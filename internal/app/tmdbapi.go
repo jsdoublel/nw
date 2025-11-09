@@ -12,16 +12,17 @@ import (
 var (
 	TMDBClient *tmdb.Client = nil
 
-	ErrNoAPI            = errors.New("could not connect to TMDB API")
+	ErrNoAPI            = errors.New("could not connect to TMDB api")
 	ErrFailedTMDBLookup = errors.New("failed TMDB lookup")
 )
 
 func init() {
 	var err error
 	if TMDBClient, err = tmdb.Init(os.Getenv("TMDB_API")); err != nil {
-		log.Printf("could not connect to TMDB API, %s", err)
+		log.Printf("%s, %s", ErrNoAPI, err)
+	} else {
+		TMDBClient.SetClientAutoRetry()
 	}
-	TMDBClient.SetClientAutoRetry()
 }
 
 func TMDBFilm(id int) (*tmdb.MovieDetails, error) {

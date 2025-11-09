@@ -138,6 +138,10 @@ func (nw *NextWatch) filterFilm(film Film) bool {
 		log.Printf("%s, excluding film %s", err, film)
 		return false
 	}
+	if errors.Is(err, ErrNoAPI) {
+		log.Printf("%s, proceeding without checks to add film %s to next watch queue", err, film)
+		return true
+	}
 	if f.ReleaseDate.IsZero() {
 		log.Printf("invalid release date for %s, %s, excluding film", film, err)
 		return false

@@ -48,7 +48,7 @@ func (fd *FilmDetailsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			fd.actionRight()
 		case key.Matches(msg, keys.Left):
 			fd.actionLeft()
-		case msg.Type == tea.KeyEnter:
+		case msg.Type == tea.KeyEnter && fd.err == nil:
 			if err := fd.actions[fd.selectedAction].action(*fd.film); err != nil {
 				log.Printf("action \"%s\" failed for film %s, %s", fd.actions[fd.selectedAction].label, fd.film, err)
 			}
