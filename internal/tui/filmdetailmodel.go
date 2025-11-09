@@ -34,12 +34,6 @@ type FilmAction struct {
 	action func(app.FilmRecord) error
 }
 
-var filmActions = []FilmAction{
-	{label: "Watch", action: app.SetDiscordRPC},
-	{label: "Poster", action: app.DownloadPoster},
-	{label: "Letterboxd", action: func(f app.FilmRecord) error { return browser.OpenURL(f.Url) }},
-}
-
 func init() { // discrads output from calling OpenURL which messes with View
 	browser.Stdout = io.Discard
 	browser.Stderr = io.Discard
@@ -161,13 +155,13 @@ func (fd *FilmDetailsModel) renderActions() string {
 }
 
 func (fd *FilmDetailsModel) actionRight() {
-	if fd.selectedAction < len(fd.actions) {
+	if fd.selectedAction < len(fd.actions)-1 {
 		fd.selectedAction++
 	}
 }
 
 func (fd *FilmDetailsModel) actionLeft() {
-	if fd.selectedAction != 0 {
+	if fd.selectedAction > 0 {
 		fd.selectedAction--
 	}
 }
@@ -175,6 +169,11 @@ func (fd *FilmDetailsModel) actionLeft() {
 func MakeFilmDetailsModel(f *app.Film, a *ApplicationTUI) *FilmDetailsModel {
 	fr, err := a.FilmStore.Lookup(*f)
 	filmDetailsStyle = filmDetailsStyle.BorderForeground(focused)
+	filmActions := []FilmAction{
+		{label: "Watch", action: a.StartDiscordRPC},
+		{label: "Poster", action: app.DownloadPoster},
+		{label: "Letterboxd", action: func(f app.FilmRecord) error { return browser.OpenURL(f.Url) }},
+	}
 	return &FilmDetailsModel{
 		film:    fr,
 		focused: false,

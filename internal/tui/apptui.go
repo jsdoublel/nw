@@ -5,6 +5,7 @@ import (
 	"log"
 	"path/filepath"
 
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
@@ -71,6 +72,16 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		a.screens.pop()
 		return a, UpdateScreen
+	case tea.KeyMsg:
+		switch {
+		case key.Matches(msg, keys.Update):
+			if err := a.UpdateUserData(); err != nil {
+				log.Printf("failed to update user data, %s", err)
+			}
+			return a, UpdateScreen
+		case key.Matches(msg, keys.StopWatch):
+			a.StopDiscordRPC()
+		}
 	}
 	return a, cmd
 }

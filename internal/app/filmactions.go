@@ -1,20 +1,24 @@
 package app
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/adrg/xdg"
+	"github.com/hugolgst/rich-go/client"
 )
 
 const (
 	PosterPathPrefix = "https://image.tmdb.org/t/p/original/"
-	RpcID            = "1223146234538360906"
+	DiscordRPCid     = "1223146234538360906"
 )
 
 var (
@@ -34,7 +38,7 @@ func DownloadPoster(fr FilmRecord) error {
 		return fmt.Errorf("%w for film %s, %w", ErrRetreivingPoster, fr.Title, err)
 	}
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("%s for film %s, status code %d != %d", ErrRetreivingPoster, fr.Title, resp.StatusCode, http.StatusOK)
+		return fmt.Errorf("%w for film %s, status code %d != %d", ErrRetreivingPoster, fr.Title, resp.StatusCode, http.StatusOK)
 	}
 	content, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -48,6 +52,34 @@ func posterFileName(f Film) string {
 	return filepath.Join(xdg.UserDirs.Download, fName)
 }
 
-func SetDiscordRPC(fr FilmRecord) error {
+func (app *Application) StartDiscordRPC(fr FilmRecord) error {
+	ctx, cancel := context.WithCancel(context.Background())
+	app.rpcCancel = cancel
+	go func() {
+		defer cancel()
+		if err := client.Login(DiscordRPCid); err != nil {
+			log.Printf("discord rpc login failed, %s", err)
+			return
+		}
+		defer client.Logout()
+		startT := time.Now()
+		if err := client.SetActivity(client.Activity{
+			Details:    fr.String(),
+			LargeImage: PosterPathPrefix + fr.Details.PosterPath,
+			LargeText:  fr.String(),
+			SmallImage: "tmdb_logo",
+			SmallText:  "The Movie Database",
+			Timestamps: &client.Timestamps{Start: &startT},
+		}); err != nil {
+			log.Printf("discord rpc update failed, %s", err)
+		}
+		<-ctx.Done()
+	}()
 	return nil
+}
+
+func (app *Application) StopDiscordRPC() {
+	if app.rpcCancel != nil {
+		app.rpcCancel()
+	}
 }

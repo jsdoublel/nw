@@ -19,6 +19,8 @@ type keyMap struct {
 	MoveUp    key.Binding
 	MoveDown  key.Binding
 	AddList   key.Binding
+	Update    key.Binding
+	StopWatch key.Binding
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
@@ -101,5 +103,13 @@ var keys = keyMap{
 	AddList: key.NewBinding(
 		key.WithKeys("a"),
 		key.WithHelp("a", "add lists"),
+	),
+	Update: key.NewBinding(
+		key.WithKeys("U"),
+		key.WithHelp("U", "update"),
+	),
+	StopWatch: key.NewBinding(
+		key.WithKeys("ctrl+w"),
+		key.WithHelp("ctrl+w", "stop watching"),
 	),
 }

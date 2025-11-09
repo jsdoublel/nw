@@ -9,8 +9,11 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/cyruzin/golang-tmdb v1.8.2
 	github.com/gocolly/colly v1.2.0
+	github.com/hugolgst/rich-go v0.0.0-20240715122152-74618cc1ace2
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 )
+
+replace github.com/hugolgst/rich-go => github.com/jsdoublel/rich-go v0.0.0-20251109204316-02ce5e317ce0
 
 require (
 	github.com/PuerkitoBio/goquery v1.10.3 // indirect
@@ -48,4 +51,5 @@ require (
 	golang.org/x/text v0.29.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
+	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 )

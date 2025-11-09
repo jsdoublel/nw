@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"log"
 	"os"
 	"path/filepath"
@@ -33,6 +34,9 @@ type Application struct {
 	TrackedLists    map[string]*FilmList // lists tracked in this program; urls are keys
 	FilmStore       FilmStore            // central structure that stores local film information
 	UserDataChecked time.Time            // last time watchlist, watched films, etc. were checked
+
+	// ----- tracked processes
+	rpcCancel context.CancelFunc
 }
 
 // Tasks to run on application startup goes here (e.g., checking letterboxd for updated data).
@@ -41,13 +45,13 @@ func (app *Application) Init() error {
 		if err := app.UpdateUserData(); err != nil {
 			return err
 		}
-		app.UserDataChecked = time.Now()
 	}
 	return nil
 }
 
 // Run application shutdown tasks (e.g., write save).
 func (app *Application) Shutdown() {
+	app.StopDiscordRPC()
 	app.FilmStore.Clean()
 	if err := app.Save(); err != nil {
 		log.Printf("application save had error %s", err)
