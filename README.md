@@ -25,9 +25,9 @@ Tui utitlity for selecting films to watch from letterboxd.
 
 ### Misc 
 
-- [ ] Download posters
-- [ ] Go to TMDB site (or letterboxd)
-- [ ] Set Discord Rich Presence
+- [x] Download posters
+- [x] Go to TMDB site (or letterboxd)
+- [x] Set Discord Rich Presence
 - [ ] Search all films (maybe on letterboxd, but probably TMDB)
 
 ## Screens 

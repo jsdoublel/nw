@@ -81,11 +81,11 @@ func TestFilmStoreDeregisterList(t *testing.T) {
 			wantExists: map[int]bool{1: true},
 		},
 		{
-			name:       "removes when count reaches zero",
+			name:       "keeps record when count reaches zero",
 			existing:   map[int]*FilmRecord{1: {Film: Film{LBxdID: 1}, NRefs: 1, Checked: time.Now()}},
 			list:       &FilmList{Films: []*Film{{LBxdID: 1}}},
-			wantRefs:   map[int]uint{},
-			wantExists: map[int]bool{1: false},
+			wantRefs:   map[int]uint{1: 0},
+			wantExists: map[int]bool{1: true},
 		},
 		{
 			name:       "panics when film missing",

@@ -16,14 +16,14 @@ var (
 
 // Film list that user might track
 type FilmList struct {
-	Name     string       // name of list on letterboxd
-	Desc     string       // description of list
-	Url      string       // letterboxd list url
-	NumFilms int          // number of films in list
-	Ordered  bool         // is the list ordered
-	NextFilm *Film        // the next film to be suggested
-	Films    []*Film      // films in list (can be nil)
-	store    WatchedFilms // for checking whether film is watched
+	Name     string   // name of list on letterboxd
+	Desc     string   // description of list
+	Url      string   // letterboxd list url
+	NumFilms int      // number of films in list
+	Ordered  bool     // is the list ordered
+	NextFilm *Film    // the next film to be suggested
+	Films    []*Film  // films in list (can be nil)
+	watched  FilmsSet // for checking whether film is watched
 }
 
 // Changed Ordered status; clears NextFilm
@@ -45,7 +45,7 @@ func (fl *FilmList) NextWatch() (Film, error) {
 	if len(fl.Films) == 0 {
 		return Film{}, ErrListEmpty
 	}
-	if fl.NextFilm != nil && !fl.store.Watched(fl.NextFilm) {
+	if fl.NextFilm != nil && !fl.watched.InSet(fl.NextFilm) {
 		return *fl.NextFilm, nil
 	}
 	var tmpList []*Film
@@ -59,7 +59,7 @@ func (fl *FilmList) NextWatch() (Film, error) {
 		tmpList = fl.Films
 	}
 	for _, f := range tmpList {
-		if !fl.store.Watched(f) {
+		if !fl.watched.InSet(f) {
 			fl.NextFilm = f
 			return *f, nil
 		}
@@ -78,7 +78,7 @@ func (app *Application) AddList(filmList *FilmList) error {
 		}
 		return nil
 	}
-	filmList.store = app.WatchedFilms
+	filmList.watched = app.WatchedFilms
 	app.FilmStore.RegisterList(filmList)
 	app.TrackedLists[filmList.Url] = filmList
 	return nil

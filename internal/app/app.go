@@ -23,10 +23,10 @@ type Application struct {
 
 	// ----- stuff from letterboxd
 
-	Username     string        // username on letterboxd
-	ListHeaders  []*FilmList   // lists that belong to user on letterboxd (without scrapped films)
-	Watchlist    map[int]*Film // users letterboxd watchlist
-	WatchedFilms WatchedFilms  // users list of watched films on letterboxd
+	Username     string      // username on letterboxd
+	ListHeaders  []*FilmList // lists that belong to user on letterboxd (without scrapped films)
+	Watchlist    FilmsSet    // users letterboxd watchlist
+	WatchedFilms FilmsSet    // users list of watched films on letterboxd
 
 	// ----- tracked by app
 

@@ -20,7 +20,7 @@ func makeTestNextWatch(t *testing.T, totalFilms int, watched map[int]*Film) Next
 	}
 	app := Application{
 		Watchlist:    watchlist,
-		WatchedFilms: WatchedFilms{Films: watched},
+		WatchedFilms: watched,
 		FilmStore:    FilmStore{},
 	}
 	seedFilmStore(t, &app.FilmStore, watchlist)
@@ -85,7 +85,7 @@ func TestApplicationMakeNextWatch(t *testing.T) {
 			}
 			app := Application{
 				Watchlist:    make(map[int]*Film),
-				WatchedFilms: WatchedFilms{Films: watched},
+				WatchedFilms: watched,
 				FilmStore:    FilmStore{},
 			}
 			for i := 0; i < tc.films; i++ {

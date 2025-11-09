@@ -22,8 +22,8 @@ var (
 type NextWatch struct {
 	Stacks       [][]*Film
 	lastUpdated  [][]bool // position changed in last update
-	watchedFilms WatchedFilms
-	watchlist    map[int]*Film
+	watchedFilms FilmsSet
+	watchlist    FilmsSet
 	store        *FilmStore
 }
 
@@ -74,10 +74,12 @@ func (nw *NextWatch) UpdateWatched() error {
 	return nw.update()
 }
 
-// Deletes all watched films from queue, replacing them with nil pointers.
+// Deletes all watched films from queue, replacing them with nil pointers. Also
+// removes films no longer in watchlist.
 func (nw *NextWatch) deleteWatched() {
 	for i, j := range nw.Positions() {
-		if nw.Stacks[i][j] != nil && nw.watchedFilms.Watched(nw.Stacks[i][j]) {
+		if nw.Stacks[i][j] != nil &&
+			(nw.watchedFilms.InSet(nw.Stacks[i][j]) || !nw.watchlist.InSet(nw.Stacks[i][j])) {
 			nw.Stacks[i][j] = nil
 		}
 	}
@@ -91,7 +93,7 @@ func (nw *NextWatch) update() error {
 	nw.ClearLastUpdated()
 	pool := make([]*Film, 0, len(nw.watchlist))
 	for _, f := range nw.watchlist {
-		if !nw.watchedFilms.Watched(f) && !nw.ContainsFilm(*f) {
+		if !nw.watchedFilms.InSet(f) && !nw.ContainsFilm(*f) {
 			pool = append(pool, f)
 		}
 	}

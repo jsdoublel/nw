@@ -63,7 +63,7 @@ func TestFilmListNextWatch(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			tc.list.store = WatchedFilms{Films: tc.watched}
+			tc.list.watched = tc.watched
 			got, err := tc.list.NextWatch()
 			if tc.wantErr != nil {
 				if !errors.Is(err, tc.wantErr) {

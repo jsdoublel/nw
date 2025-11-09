@@ -110,9 +110,6 @@ func (fs *FilmStore) deregister(film Film) {
 		panic(fmt.Sprintf("cannot decrement number of refs to %s, already 0", film))
 	}
 	fr.NRefs--
-	if fr.NRefs == 0 {
-		delete(fs.Films, film.LBxdID)
-	}
 }
 
 // retrieve film details. This involves scrapping letterboxd for TMDB id and

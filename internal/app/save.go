@@ -80,7 +80,7 @@ func savePath(username string) string {
 // Post JSON unmarshal setup
 func (app *Application) rehydrate() {
 	for _, list := range app.TrackedLists {
-		list.store = app.WatchedFilms
+		list.watched = app.WatchedFilms
 	}
 	app.NWQueue.makeLastUpdate()
 	app.NWQueue.watchedFilms = app.WatchedFilms
@@ -149,12 +149,12 @@ func (app *Application) updateWatchedFilms() error {
 		return err
 	}
 	if !app.WatchedFilms.IsZero() {
-		app.FilmStore.DeregisterSet(app.WatchedFilms.Films)
+		app.FilmStore.DeregisterSet(app.WatchedFilms)
 	}
 	app.FilmStore.RegisterSet(watchedFilms)
-	app.WatchedFilms = WatchedFilms{Films: watchedFilms}
+	app.WatchedFilms = watchedFilms
 	for _, v := range app.TrackedLists {
-		v.store = app.WatchedFilms
+		v.watched = app.WatchedFilms
 	}
 	return nil
 }
