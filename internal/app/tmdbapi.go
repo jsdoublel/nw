@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/cyruzin/golang-tmdb"
 )
@@ -36,4 +38,31 @@ func TMDBFilm(id int) (*tmdb.MovieDetails, error) {
 		return nil, fmt.Errorf("%w, with id %d, %w", ErrFailedTMDBLookup, id, err)
 	}
 	return film, nil
+}
+
+// Queries TMDB for movies matching the given search string.
+func SearchFilms(query string) ([]tmdb.MovieResult, error) {
+	if TMDBClient == nil {
+		return nil, ErrNoAPI
+	}
+	q := strings.TrimSpace(query)
+	if q == "" {
+		return nil, fmt.Errorf("query cannot be empty")
+	}
+	res, err := TMDBClient.GetSearchMovies(q, map[string]string{
+		"include_adult": "true", "page": "1",
+		"append_to_response": "credits",
+	})
+	if err != nil {
+		return nil, fmt.Errorf("tmdb search failed, %w", err)
+	}
+	return res.Results, nil
+}
+
+func StringFromMovieResult(mr tmdb.MovieResult) (string, error) {
+	releaseDate, err := time.Parse("2006-01-02", mr.ReleaseDate)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%s (%d)", mr.Title, releaseDate.Year()), nil
 }

@@ -5,7 +5,6 @@ import (
 	"io"
 	"log"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
@@ -21,7 +20,6 @@ type nwDeleteFilmMsg struct {
 func NWDeleteFilm() tea.Msg { return nwDeleteFilmMsg{} }
 
 type itemTitle interface {
-	list.Item
 	Title() string
 	Updated() bool
 }
@@ -97,22 +95,15 @@ func (d nwItemDelegate) Render(w io.Writer, m list.Model, index int, listItem li
 	}
 	if _, ok := listItem.(stackSeparator); ok {
 		fn = func(_ ...string) string {
-			return nwSeparatorStyle.Render(strings.Repeat("\u2500", paneWidth))
+			return nwSeparatorStyle.Render(strings.Repeat(string(hSep), paneWidth))
 		}
 	}
 	if index == 0 {
 		b.Reset()
 		b.WriteString(" Next Watch: ")
 	}
-	paddingLen := paneWidth - utf8.RuneCountInString(it.Title()) - utf8.RuneCountInString(b.String())
 	b.WriteString(it.Title())
-	var content string
-	if paddingLen < 0 {
-		content = string(append([]rune(b.String())[:utf8.RuneCountInString(b.String())+paddingLen-2], '\u2026'))
-	} else {
-		b.WriteString(strings.Repeat(" ", paddingLen))
-		content = b.String()
-	}
+	content := trimAndPadString(b.String(), paneWidth)
 	if _, err := fmt.Fprint(w, fn(content)); err != nil {
 		log.Printf("error rendering NW queue, %s", err)
 	}

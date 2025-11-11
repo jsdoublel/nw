@@ -3,24 +3,25 @@ package tui
 import "github.com/charmbracelet/bubbles/key"
 
 type keyMap struct {
-	Back      key.Binding
-	Quit      key.Binding
-	Help      key.Binding
-	Search    key.Binding
-	Delete    key.Binding
-	Yes       key.Binding
-	No        key.Binding
-	Left      key.Binding
-	Right     key.Binding
-	Up        key.Binding
-	Down      key.Binding
-	MoveLeft  key.Binding
-	MoveRight key.Binding
-	MoveUp    key.Binding
-	MoveDown  key.Binding
-	AddList   key.Binding
-	Update    key.Binding
-	StopWatch key.Binding
+	Back        key.Binding
+	Quit        key.Binding
+	Help        key.Binding
+	Search      key.Binding
+	Delete      key.Binding
+	Yes         key.Binding
+	No          key.Binding
+	Left        key.Binding
+	Right       key.Binding
+	Up          key.Binding
+	Down        key.Binding
+	MoveLeft    key.Binding
+	MoveRight   key.Binding
+	MoveUp      key.Binding
+	MoveDown    key.Binding
+	AddList     key.Binding
+	SearchFilms key.Binding
+	Update      key.Binding
+	StopWatch   key.Binding
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
@@ -103,6 +104,10 @@ var keys = keyMap{
 	AddList: key.NewBinding(
 		key.WithKeys("a"),
 		key.WithHelp("a", "add lists"),
+	),
+	SearchFilms: key.NewBinding(
+		key.WithKeys("/"),
+		key.WithHelp("/", "search films"),
 	),
 	Update: key.NewBinding(
 		key.WithKeys("U"),

@@ -8,6 +8,9 @@ import (
 const (
 	paneWidth  = 64
 	paneHeight = 42
+
+	ellipse = '\u2026'
+	hSep    = '\u2500'
 )
 
 var (
@@ -73,6 +76,10 @@ var (
 				Foreground(text).
 				Background(gray3).
 				Padding(0, 2)
+
+	// ----- Film Search
+	filmSearchItemStyle     = lipgloss.NewStyle()
+	filmSearchSelectedStyle = lipgloss.NewStyle().Background(lack).Foreground(gray9)
 
 	// ----- Misc. Prompts
 	yesNoStyle    = lipgloss.NewStyle().Inherit(mainStyle)

@@ -190,9 +190,20 @@ func MakeSearchListPane(a *ApplicationTUI) *SearchModel {
 	for _, lh := range a.ListHeaders {
 		items = append(items, &searchListsItem{lh})
 	}
-	return MakeSearchModel(a, items, "Enter URL or search lists...", searchListsDelegate{listStyleDelegate(), a}, func(query string) {
-		if err := a.AddListFromUrl(query); !errors.Is(err, app.ErrInvalidUrl) {
+	inputChangeAction := func(s string) tea.Cmd {
+		return func() tea.Msg { return UpdateSearchFilterMsg{filter: s} }
+	}
+	queryEnterAction := func(s string) {
+		if err := a.AddListFromUrl(s); !errors.Is(err, app.ErrInvalidUrl) {
 			log.Printf("could not add query as url, %s", err)
 		}
-	})
+	}
+	return MakeSearchModel(
+		a,
+		items,
+		"Enter URL or search lists...",
+		searchListsDelegate{listStyleDelegate(), a},
+		inputChangeAction,
+		queryEnterAction,
+	)
 }

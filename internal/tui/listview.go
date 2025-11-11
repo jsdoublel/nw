@@ -103,7 +103,7 @@ func (li viewListItem) Description() string {
 	case errors.Is(err, app.ErrNoValidFilm):
 		suffix = "List Complete"
 	default:
-		suffix = fmt.Sprintf("Next Watch : %s", nw)
+		suffix = nw.String()
 	}
 	return fmt.Sprintf("%s :: %s", ordered, suffix)
 }

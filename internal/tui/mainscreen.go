@@ -44,6 +44,8 @@ func (ms *MainScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			ms.focusLeft()
 		case key.Matches(msg, keys.AddList):
 			ms.app.screens.push(MakeAddListScreen(ms.app))
+		case key.Matches(msg, keys.SearchFilms):
+			ms.app.screens.push(MakeSearchFilms(ms.app))
 		}
 	case NewFilmDetailsMsg:
 		ms.NewFilmDetails(msg.film)
