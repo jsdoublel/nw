@@ -40,7 +40,7 @@ func (fi FilmResultItem) String() string {
 	return fmt.Sprintf("%s (%d)", fi.Title, releaseDate.Year())
 }
 
-type filmSearchDelegate struct{}
+type filmSearchDelegate struct{ app *ApplicationTUI }
 
 func (d filmSearchDelegate) Height() int  { return 1 }
 func (d filmSearchDelegate) Spacing() int { return 0 }
@@ -62,7 +62,15 @@ func (d filmSearchDelegate) Render(w io.Writer, m list.Model, index int, listIte
 }
 
 func (d filmSearchDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
-	return nil
+	keyMsg, ok := msg.(tea.KeyMsg)
+	if !ok || keyMsg.Type != tea.KeyEnter {
+		return nil
+	}
+	if r, ok := m.SelectedItem().(FilmResultItem); ok {
+		d.app.screens.push(MakeFilmDetailsModelFromResults(tmdb.MovieResult(r), d.app))
+		return nil
+	}
+	panic("Film search result is not a tmdb.MovieResult")
 }
 
 // Pads a string to reach given width or, if it is too long trim it, adding an
@@ -95,7 +103,7 @@ func MakeSearchFilms(a *ApplicationTUI) *SearchFilms {
 		a,
 		make([]list.Item, 0),
 		"Search films...",
-		filmSearchDelegate{},
+		filmSearchDelegate{a},
 		inputAction,
 		EnterAction,
 	)

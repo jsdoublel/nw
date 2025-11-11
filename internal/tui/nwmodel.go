@@ -167,6 +167,7 @@ func MakeNWModel(a *ApplicationTUI) *NWModel {
 	l.SetShowTitle(false)
 	l.SetShowStatusBar(false)
 	l.SetShowHelp(false)
+	l.SetShowPagination(false)
 	nwStyle = nwStyle.BorderForeground(focused)
 	return &NWModel{
 		list:    l,

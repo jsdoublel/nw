@@ -7,7 +7,7 @@ import (
 
 const (
 	paneWidth  = 64
-	paneHeight = 42
+	paneHeight = 31
 
 	ellipse = '\u2026'
 	hSep    = '\u2500'
@@ -53,10 +53,10 @@ var (
 	lsStyle           = lipgloss.NewStyle().Inherit(mainStyle)
 
 	// ----- NW Queue
-	nwStyle = lipgloss.NewStyle().Inherit(mainStyle).
-		UnsetBorderLeft().
-		UnsetBorderRight().
-		UnsetBorderBottom()
+	nwStyle = lipgloss.NewStyle().Inherit(mainStyle) //.
+	// UnsetBorderLeft().
+	// UnsetBorderRight().
+	// UnsetBorderBottom()
 	nwItemStyle         = lipgloss.NewStyle()
 	nwSelectedItemStyle = lipgloss.NewStyle().Background(lack).Foreground(gray9)
 	nwUpdatedItemStyle  = lipgloss.NewStyle().Foreground(green)

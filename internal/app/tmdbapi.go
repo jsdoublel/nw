@@ -50,8 +50,7 @@ func SearchFilms(query string) ([]tmdb.MovieResult, error) {
 		return nil, fmt.Errorf("query cannot be empty")
 	}
 	res, err := TMDBClient.GetSearchMovies(q, map[string]string{
-		"include_adult": "true", "page": "1",
-		"append_to_response": "credits",
+		"include_adult": "false", "page": "1",
 	})
 	if err != nil {
 		return nil, fmt.Errorf("tmdb search failed, %w", err)
@@ -59,10 +58,10 @@ func SearchFilms(query string) ([]tmdb.MovieResult, error) {
 	return res.Results, nil
 }
 
-func StringFromMovieResult(mr tmdb.MovieResult) (string, error) {
+func ReleaseYear(mr tmdb.MovieResult) (int, error) {
 	releaseDate, err := time.Parse("2006-01-02", mr.ReleaseDate)
 	if err != nil {
-		return "", err
+		return 0, fmt.Errorf("error parsing date for film results %s, %s", mr.Title, mr.ReleaseDate)
 	}
-	return fmt.Sprintf("%s (%d)", mr.Title, releaseDate.Year()), nil
+	return releaseDate.Year(), nil
 }

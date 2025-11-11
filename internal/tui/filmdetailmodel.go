@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	tmdb "github.com/cyruzin/golang-tmdb"
 	"github.com/pkg/browser"
 
 	"github.com/jsdoublel/nw/internal/app"
@@ -48,13 +49,15 @@ func (fd *FilmDetailsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			fd.actionRight()
 		case key.Matches(msg, keys.Left):
 			fd.actionLeft()
-		case msg.Type == tea.KeyEnter && fd.err == nil:
+		case msg.Type == tea.KeyEnter && fd.film != nil:
 			if err := fd.actions[fd.selectedAction].action(*fd.film); err != nil {
 				log.Printf("action \"%s\" failed for film %s, %s", fd.actions[fd.selectedAction].label, fd.film, err)
 			}
+		case key.Matches(msg, keys.Back):
+			return fd, GoBack
 		}
 	}
-	return nil, nil
+	return fd, nil
 }
 
 func (fd *FilmDetailsModel) View() string {
@@ -176,6 +179,24 @@ func MakeFilmDetailsModel(f *app.Film, a *ApplicationTUI) *FilmDetailsModel {
 	}
 	return &FilmDetailsModel{
 		film:    fr,
+		focused: false,
+		app:     a,
+		actions: filmActions,
+		err:     err,
+	}
+}
+
+func MakeFilmDetailsModelFromResults(f tmdb.MovieResult, a *ApplicationTUI) *FilmDetailsModel {
+	releaseYear, _ := app.ReleaseYear(f)
+	details, err := app.TMDBFilm(int(f.ID))
+	fr := app.FilmRecord{Film: app.Film{Title: details.Title, Year: uint(releaseYear)}, TMDBID: int(details.ID), Details: details}
+	filmDetailsStyle = filmDetailsStyle.BorderForeground(focused)
+	filmActions := []FilmAction{
+		{label: "Watch", action: a.StartDiscordRPC},
+		{label: "Poster", action: app.DownloadPoster},
+	}
+	return &FilmDetailsModel{
+		film:    &fr,
 		focused: false,
 		app:     a,
 		actions: filmActions,
