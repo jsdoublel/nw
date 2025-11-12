@@ -41,8 +41,8 @@ func (jm *JoinModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (jm *JoinModel) View() string {
 	if jm.app.width < 2*paneWidth && jm.bothOnScreen() {
-		return joinTallThin.Height(jm.app.height).
-			Render(lipgloss.JoinVertical(jm.pos, jm.secondary.View(), jm.main.View()))
+		return joinTallThin.Height(jm.app.height - 1). // - 1 for status bar
+								Render(lipgloss.JoinVertical(jm.pos, jm.secondary.View(), jm.main.View()))
 	} else if jm.app.width < 2*paneWidth {
 		return jm.main.View()
 	}

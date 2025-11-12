@@ -32,7 +32,7 @@ type FilmDetailsModel struct {
 
 type FilmAction struct {
 	label  string
-	action func(app.FilmRecord) error
+	action func(app.FilmRecord) (tea.Cmd, error)
 }
 
 func init() { // discrads output from calling OpenURL which messes with View
@@ -50,9 +50,11 @@ func (fd *FilmDetailsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, keys.Left):
 			fd.actionLeft()
 		case msg.Type == tea.KeyEnter && fd.film != nil:
-			if err := fd.actions[fd.selectedAction].action(*fd.film); err != nil {
+			cmd, err := fd.actions[fd.selectedAction].action(*fd.film)
+			if err != nil {
 				log.Printf("action \"%s\" failed for film %s, %s", fd.actions[fd.selectedAction].label, fd.film, err)
 			}
+			return fd, cmd
 		case key.Matches(msg, keys.Back):
 			return fd, GoBack
 		}
@@ -169,13 +171,21 @@ func (fd *FilmDetailsModel) actionLeft() {
 	}
 }
 
+func poster(fr app.FilmRecord, a *ApplicationTUI) (tea.Cmd, error) {
+	if path, err := app.DownloadPoster(fr); err != nil {
+		return a.status.SetMessage(fmt.Sprintf("error %s", err)), err
+	} else {
+		return a.status.SetMessage(fmt.Sprintf("Poster downloaded to %s", path)), nil
+	}
+}
+
 func MakeFilmDetailsModel(f *app.Film, a *ApplicationTUI) *FilmDetailsModel {
 	fr, err := a.FilmStore.Lookup(*f)
 	filmDetailsStyle = filmDetailsStyle.BorderForeground(focused)
 	filmActions := []FilmAction{
-		{label: "Watch", action: a.StartDiscordRPC},
-		{label: "Poster", action: app.DownloadPoster},
-		{label: "Letterboxd", action: func(f app.FilmRecord) error { return browser.OpenURL(f.Url) }},
+		{label: "Watch", action: func(fr app.FilmRecord) (tea.Cmd, error) { return nil, a.StartDiscordRPC(fr) }},
+		{label: "Poster", action: func(fr app.FilmRecord) (tea.Cmd, error) { return poster(fr, a) }},
+		{label: "Letterboxd", action: func(f app.FilmRecord) (tea.Cmd, error) { return nil, browser.OpenURL(f.Url) }},
 	}
 	return &FilmDetailsModel{
 		film:    fr,
@@ -192,8 +202,8 @@ func MakeFilmDetailsModelFromResults(f tmdb.MovieResult, a *ApplicationTUI) *Fil
 	fr := app.FilmRecord{Film: app.Film{Title: details.Title, Year: uint(releaseYear)}, TMDBID: int(details.ID), Details: details}
 	filmDetailsStyle = filmDetailsStyle.BorderForeground(focused)
 	filmActions := []FilmAction{
-		{label: "Watch", action: a.StartDiscordRPC},
-		{label: "Poster", action: app.DownloadPoster},
+		{label: "Watch", action: func(fr app.FilmRecord) (tea.Cmd, error) { return nil, a.StartDiscordRPC(fr) }},
+		{label: "Poster", action: func(fr app.FilmRecord) (tea.Cmd, error) { return poster(fr, a) }},
 	}
 	return &FilmDetailsModel{
 		film:    &fr,

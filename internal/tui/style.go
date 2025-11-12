@@ -82,6 +82,11 @@ var (
 	filmSearchItemStyle     = lipgloss.NewStyle()
 	filmSearchSelectedStyle = lipgloss.NewStyle().Background(lack).Foreground(gray9)
 
+	// ----- Status Bar
+	statusBarWatchingStyle = lipgloss.NewStyle().Background(red).Padding(0, 1)
+	statusBarUpdating      = lipgloss.NewStyle().Background(green).Padding(0, 1)
+	statusBarMessageStyle  = lipgloss.NewStyle().Background(lack).Padding(0, 1)
+
 	// ----- Misc. Prompts
 	yesNoStyle    = lipgloss.NewStyle().Inherit(mainStyle)
 	questionStyle = lipgloss.NewStyle().

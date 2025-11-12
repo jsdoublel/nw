@@ -29,6 +29,7 @@ func (ss ScreenStack) cur() tea.Model    { return ss[len(ss)-1] }
 // Main model struct that drives NW TUI
 type ApplicationTUI struct {
 	app.Application
+	status  StatusBarModel
 	screens ScreenStack
 	width   int
 	height  int
@@ -57,11 +58,13 @@ func RunApplicationTUI(username string) error {
 
 func (a *ApplicationTUI) Init() tea.Cmd {
 	a.screens.push(MakeMainScreen(a))
+	a.status = StatusBarModel{"", a}
 	return nil
 }
 
 func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	_, cmd := a.screens.cur().Update(msg)
+	_, c := a.screens.cur().Update(msg)
+	_, sc := a.status.Update(msg)
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		a.width = msg.Width
@@ -79,16 +82,17 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if err := a.UpdateUserData(); err != nil {
 				log.Printf("failed to update user data, %s", err)
 			}
-			return a, UpdateScreen
+			return a, tea.Batch(c, sc, UpdateScreen)
 		case key.Matches(msg, keys.StopWatch):
 			a.StopDiscordRPC()
 		}
 	}
-	return a, cmd
+	return a, tea.Batch(c, sc)
 }
 
 func (a *ApplicationTUI) View() string {
-	return lipgloss.Place(a.width, a.height, lipgloss.Center, lipgloss.Center, a.screens.cur().View())
+	main := lipgloss.Place(a.width, a.height-1, lipgloss.Center, lipgloss.Center, a.screens.cur().View())
+	return lipgloss.JoinVertical(lipgloss.Left, a.status.View(), main)
 }
 
 func (a *ApplicationTUI) checkSize() {

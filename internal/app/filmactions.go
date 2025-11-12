@@ -26,35 +26,52 @@ var (
 	ErrRetreivingPoster  = errors.New("could not retrieve poster")
 )
 
+type DiscordRPC struct {
+	name string             // string for film that is being watched
+	stop context.CancelFunc // function to stop watching
+}
+
+func (d DiscordRPC) String() string {
+	return d.name
+}
+
+func (d DiscordRPC) Watching() bool {
+	return d.stop != nil
+}
+
 // Downloads poster given a film record containing a PosterPath in its details.
 // Returns the path the poster was saved to.
-func DownloadPoster(fr FilmRecord) error {
+func DownloadPoster(fr FilmRecord) (string, error) {
 	if fr.Details.PosterPath == "" {
-		return fmt.Errorf("%w for film %s", ErrMissingPosterPath, fr.Title)
+		return "", fmt.Errorf("%w for film %s", ErrMissingPosterPath, fr.Title)
 	}
 	resp, err := http.Get(PosterPathPrefix + fr.Details.PosterPath)
 	defer func() { _ = resp.Body.Close() }()
 	if err != nil {
-		return fmt.Errorf("%w for film %s, %w", ErrRetreivingPoster, fr.Title, err)
+		return "", fmt.Errorf("%w for film %s, %w", ErrRetreivingPoster, fr.Title, err)
 	}
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("%w for film %s, status code %d != %d", ErrRetreivingPoster, fr.Title, resp.StatusCode, http.StatusOK)
+		return "", fmt.Errorf("%w for film %s, status code %d != %d", ErrRetreivingPoster, fr.Title, resp.StatusCode, http.StatusOK)
 	}
 	content, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return os.WriteFile(posterFileName(fr.Film), content, 0o644)
+	path := posterFileName(fr.Film)
+	return path, os.WriteFile(path, content, 0o644)
 }
 
 func posterFileName(f Film) string {
-	fName := fmt.Sprintf("%s%d.jpg", strings.ReplaceAll(f.Title, " ", ""), f.Year)
+	fName := fmt.Sprintf("%s_%d.jpg", strings.ToLower(strings.ReplaceAll(f.Title, " ", "_")), f.Year)
 	return filepath.Join(xdg.UserDirs.Download, fName)
 }
 
 func (app *Application) StartDiscordRPC(fr FilmRecord) error {
+	if app.DiscordRPC.Watching() {
+		app.StopDiscordRPC()
+	}
 	ctx, cancel := context.WithCancel(context.Background())
-	app.rpcCancel = cancel
+	app.DiscordRPC = DiscordRPC{name: fr.String(), stop: cancel}
 	go func() {
 		defer cancel()
 		if err := client.Login(DiscordRPCid); err != nil {
@@ -79,7 +96,8 @@ func (app *Application) StartDiscordRPC(fr FilmRecord) error {
 }
 
 func (app *Application) StopDiscordRPC() {
-	if app.rpcCancel != nil {
-		app.rpcCancel()
+	if app.DiscordRPC.stop != nil {
+		app.DiscordRPC.stop()
 	}
+	app.DiscordRPC = DiscordRPC{}
 }

@@ -1,7 +1,6 @@
 package app
 
 import (
-	"context"
 	"log"
 	"os"
 	"path/filepath"
@@ -38,7 +37,7 @@ type Application struct {
 	UserDataChecked time.Time            // last time watchlist, watched films, etc. were checked
 
 	// ----- tracked processes
-	rpcCancel context.CancelFunc
+	DiscordRPC DiscordRPC
 }
 
 // Tasks to run on application startup goes here (e.g., checking letterboxd for updated data).
