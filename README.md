@@ -28,7 +28,12 @@ Tui utitlity for selecting films to watch from letterboxd.
 - [x] Download posters
 - [x] Go to TMDB site (or letterboxd)
 - [x] Set Discord Rich Presence
-- [ ] Search all films (maybe on letterboxd, but probably TMDB)
+- [x] Search all films (maybe on letterboxd, but probably TMDB)
+- [ ] Add License
+- [ ] Add Tutorial
+- [ ] Add Help
+- [ ] Add status notifications
+- [ ] Add splash-screen when starting up
 
 ## Screens 
 

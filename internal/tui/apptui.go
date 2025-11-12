@@ -66,6 +66,7 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		a.width = msg.Width
 		a.height = msg.Height
+		a.checkSize()
 	case GoBackMsg:
 		if len(a.screens) == 1 {
 			return a, tea.Quit
@@ -88,4 +89,13 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (a *ApplicationTUI) View() string {
 	return lipgloss.Place(a.width, a.height, lipgloss.Center, lipgloss.Center, a.screens.cur().View())
+}
+
+func (a *ApplicationTUI) checkSize() {
+	toSmall := a.height <= paneHeight || a.width <= paneWidth
+	if _, ok := a.screens.cur().(*ResizeLockModel); ok && !toSmall {
+		a.screens.pop()
+	} else if !ok && toSmall {
+		a.screens.push(&ResizeLockModel{a})
+	}
 }

@@ -58,6 +58,9 @@ func (ms *MainScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (ms *MainScreen) View() string {
+	if ms.app.width < 3*paneWidth {
+		return ms.panes[ms.focus].View()
+	}
 	return lipgloss.JoinHorizontal(
 		lipgloss.Center,
 		ms.panes[mainScreenNWPos].View(),
@@ -83,7 +86,7 @@ func (ms *MainScreen) focusLeft() {
 
 func (ms *MainScreen) NewFilmDetails(film app.Film) {
 	if jm, ok := ms.panes[mainScreenNWPos].(*JoinModel); ok {
-		jm.models[joinDetailsPos] = MakeFilmDetailsModel(&film, ms.app)
+		jm.secondary = MakeFilmDetailsModel(&film, ms.app)
 		return
 	}
 	panic("film details not in correct position in JoinModel")
@@ -92,8 +95,10 @@ func (ms *MainScreen) NewFilmDetails(film app.Film) {
 func MakeMainScreen(a *ApplicationTUI) *MainScreen {
 	return &MainScreen{
 		panes: []focusable{&JoinModel{
-			models: []focusable{MakeFilmDetailsModel(a.NWQueue.Stacks[0][0], a), MakeNWModel(a)},
-			pos:    lipgloss.Top,
+			secondary: MakeFilmDetailsModel(a.NWQueue.Stacks[0][0], a),
+			main:      MakeNWModel(a),
+			pos:       lipgloss.Top,
+			app:       a,
 		}, MakeViewListPane(a)},
 		focus: mainScreenNWPos,
 		app:   a,

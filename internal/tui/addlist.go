@@ -58,6 +58,9 @@ func (al *AddListsScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (al *AddListsScreen) View() string {
+	if al.app.width < 2*paneWidth {
+		return al.panes[al.focus].View()
+	}
 	return lipgloss.JoinHorizontal(lipgloss.Top,
 		al.searchPane().View(),
 		al.viewPane().View(),

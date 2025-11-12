@@ -53,14 +53,15 @@ var (
 	lsStyle           = lipgloss.NewStyle().Inherit(mainStyle)
 
 	// ----- NW Queue
-	nwStyle = lipgloss.NewStyle().Inherit(mainStyle) //.
-	// UnsetBorderLeft().
-	// UnsetBorderRight().
-	// UnsetBorderBottom()
+	nwStyle             = lipgloss.NewStyle().Inherit(mainStyle)
 	nwItemStyle         = lipgloss.NewStyle()
 	nwSelectedItemStyle = lipgloss.NewStyle().Background(lack).Foreground(gray9)
 	nwUpdatedItemStyle  = lipgloss.NewStyle().Foreground(green)
 	nwSeparatorStyle    = lipgloss.NewStyle().Foreground(focused)
+
+	// ----- Model Join (Joint NW Queue / Details)
+	// musts set height based on screen when used
+	joinTallThin = lipgloss.NewStyle().PaddingBottom(4).AlignVertical(lipgloss.Bottom)
 
 	// ----- Film Details
 	filmDetailsStyle    = lipgloss.NewStyle().Inherit(mainStyle)
