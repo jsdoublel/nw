@@ -11,6 +11,7 @@ const (
 
 	ellipse = '\u2026'
 	hSep    = '\u2500'
+	cursor  = '\u2588'
 )
 
 var (

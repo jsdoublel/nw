@@ -23,7 +23,7 @@ type FilmRecord struct {
 	ReleaseDate time.Time          // release date (according to tmdb)
 	Watched     bool               // film is recorded as watched
 
-	// These fields are only exported so they can be martialed. Please don't mutate.
+	// These fields are only exported so they can be marshaled. Please don't mutate.
 
 	Checked time.Time // last time details were checked
 	NRefs   uint      // number of list references

@@ -6,6 +6,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	overlay "github.com/rmhubbert/bubbletea-overlay"
 )
 
 // Model for yes no question pop-up
@@ -21,9 +22,6 @@ func (p *YesNoPrompt) Init() tea.Cmd { return nil }
 func (p *YesNoPrompt) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case YesNoResponseMsg:
-		if p.app.screens.cur() != p {
-			panic("model sending YesNoResponse should be top of stack YesNoPrompt")
-		}
 		p.app.screens.pop()
 		return p.app, func() tea.Msg { return p.callback(msg.response) }
 	case tea.KeyMsg:
@@ -63,5 +61,8 @@ type YesNoResponseMsg struct {
 }
 
 func (a *ApplicationTUI) AskYesNo(question string, callback func(bool) tea.Msg) {
-	a.screens.push(&YesNoPrompt{question: question, selected: true, callback: callback, app: a})
+	yesNoModel := &YesNoPrompt{question: question, selected: true, callback: callback, app: a}
+	callingModel := a.screens.cur()
+	overlayModel := overlay.New(yesNoModel, callingModel, overlay.Center, overlay.Center, 0, 0)
+	a.screens.push(overlayModel)
 }

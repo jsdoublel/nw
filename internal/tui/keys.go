@@ -110,8 +110,8 @@ var keys = keyMap{
 		key.WithHelp("/", "search films"),
 	),
 	Update: key.NewBinding(
-		key.WithKeys("U"),
-		key.WithHelp("U", "update"),
+		key.WithKeys("ctrl+u"),
+		key.WithHelp("ctrl+u", "update data"),
 	),
 	StopWatch: key.NewBinding(
 		key.WithKeys("ctrl+w"),

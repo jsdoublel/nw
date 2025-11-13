@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/spinner"
@@ -11,9 +12,14 @@ import (
 
 const SplashText = " NW Loading...  "
 
+var fakeCursor = spinner.Spinner{
+	Frames: []string{string(cursor), " "},
+	FPS:    time.Second / 4,
+}
+
 type SplashScreenModel struct {
 	spinner spinner.Model
-	tick    int // for animations
+	tick    int
 	err     error
 }
 
@@ -49,6 +55,6 @@ func MakeSplashScreen() (tea.Model, tea.Cmd) {
 	ss := &SplashScreenModel{
 		spinner: spinner.New(),
 	}
-	ss.spinner.Spinner = spinner.Pulse
+	ss.spinner.Spinner = fakeCursor
 	return ss, ss.spinner.Tick
 }

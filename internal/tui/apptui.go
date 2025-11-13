@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	overlay "github.com/rmhubbert/bubbletea-overlay"
 
 	"github.com/jsdoublel/nw/internal/app"
 )
@@ -59,8 +60,7 @@ func (a *ApplicationTUI) Init() tea.Cmd {
 }
 
 func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	_, c := a.screens.cur().Update(msg)
-	_, sc := a.status.Update(msg)
+	cmds := a.Updater(msg)
 	switch msg := msg.(type) {
 	case userDataLoadedMsg:
 		a.screens.pop()          // remove loading screen
@@ -91,12 +91,26 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			a.StopDiscordRPC()
 		}
 	}
-	return a, tea.Batch(c, sc)
+	return a, tea.Batch(cmds...)
 }
 
 func (a *ApplicationTUI) View() string {
 	main := lipgloss.Place(a.width, a.height-1, lipgloss.Center, lipgloss.Center, a.screens.cur().View())
 	return lipgloss.JoinVertical(lipgloss.Left, a.status.View(), main)
+}
+
+// Handle update rounting with overlays
+func (a *ApplicationTUI) Updater(msg tea.Msg) []tea.Cmd {
+	var bc, c tea.Cmd
+	_, c = a.screens.cur().Update(msg) // always returns nil if cur is an overlay
+	_, sc := a.status.Update(msg)
+	if ov, ok := a.screens.cur().(*overlay.Model); ok {
+		_, c = ov.Foreground.Update(msg)
+		if msg, ok := msg.(UpdateScreenMsg); ok {
+			_, bc = ov.Background.Update(msg)
+		}
+	}
+	return []tea.Cmd{c, bc, sc}
 }
 
 func (a *ApplicationTUI) checkSize() {
