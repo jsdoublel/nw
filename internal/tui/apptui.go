@@ -117,11 +117,12 @@ func updateUserDataCmd(app *ApplicationTUI, check bool) tea.Cmd {
 			return nil
 		}
 	}
-	app.screens.push(&SplashScreenModel{})
-	return func() tea.Msg {
+	splash, cmd := MakeSplashScreen()
+	app.screens.push(splash)
+	return tea.Batch(cmd, func() tea.Msg {
 		if err := app.UpdateUserData(check); err != nil {
 			return userDataFailedMsg{err}
 		}
 		return userDataLoadedMsg{}
-	}
+	})
 }

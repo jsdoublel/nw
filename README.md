@@ -32,8 +32,8 @@ Tui utitlity for selecting films to watch from letterboxd.
 - [ ] Add License
 - [ ] Add Tutorial
 - [ ] Add Help
-- [ ] Add status notifications
-- [ ] Add splash-screen when starting up
+- [x] Add status notifications
+- [x] Add splash-screen when starting up
 
 ## Screens 
 

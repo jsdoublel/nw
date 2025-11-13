@@ -41,7 +41,7 @@ var (
 	text      = gray9
 
 	mainStyle = lipgloss.NewStyle().
-			Border(lipgloss.NormalBorder()).
+			Border(lipgloss.RoundedBorder()).
 			BorderForeground(focused).
 			Foreground(text)
 
@@ -84,8 +84,14 @@ var (
 
 	// ----- Status Bar
 	statusBarWatchingStyle = lipgloss.NewStyle().Background(red).Padding(0, 1)
-	statusBarUpdating      = lipgloss.NewStyle().Background(green).Padding(0, 1)
 	statusBarMessageStyle  = lipgloss.NewStyle().Background(lack).Padding(0, 1)
+
+	// ----- Splash Screen
+	splashSpinnerStyles = []lipgloss.Style{
+		lipgloss.NewStyle().Foreground(orange),
+		lipgloss.NewStyle().Foreground(green),
+		lipgloss.NewStyle().Foreground(lack),
+	}
 
 	// ----- Misc. Prompts
 	yesNoStyle    = lipgloss.NewStyle().Inherit(mainStyle)
