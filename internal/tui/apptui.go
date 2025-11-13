@@ -28,7 +28,7 @@ func (ss ScreenStack) cur() tea.Model    { return ss[len(ss)-1] }
 
 // Main model struct that drives NW TUI
 type ApplicationTUI struct {
-	app.Application
+	*app.Application
 	status  StatusBarModel
 	screens ScreenStack
 	width   int
@@ -47,25 +47,32 @@ func RunApplicationTUI(username string) error {
 		return fmt.Errorf("could not load application data, %w", err)
 	}
 	defer application.Shutdown()
-	if err := application.Init(); err != nil {
-		return err
-	}
-	a := ApplicationTUI{Application: *application}
+	a := ApplicationTUI{Application: application}
 	p := tea.NewProgram(&a, tea.WithAltScreen())
 	_, err = p.Run()
 	return err
 }
 
 func (a *ApplicationTUI) Init() tea.Cmd {
-	a.screens.push(MakeMainScreen(a))
-	a.status = StatusBarModel{"", a}
-	return nil
+	a.status = StatusBarModel{app: a}
+	return updateUserDataCmd(a, true)
 }
 
 func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	_, c := a.screens.cur().Update(msg)
 	_, sc := a.status.Update(msg)
 	switch msg := msg.(type) {
+	case userDataLoadedMsg:
+		a.screens.pop()          // remove loading screen
+		if len(a.screens) == 0 { // hacky, but we need different behavior on startup vs. update
+			a.screens.push(MakeMainScreen(a))
+		} else {
+			return a, UpdateScreen
+		}
+	case userDataFailedMsg:
+		if ss, ok := a.screens.cur().(*SplashScreenModel); ok {
+			ss.SetError(msg.err)
+		}
 	case tea.WindowSizeMsg:
 		a.width = msg.Width
 		a.height = msg.Height
@@ -79,10 +86,7 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, keys.Update):
-			if err := a.UpdateUserData(); err != nil {
-				log.Printf("failed to update user data, %s", err)
-			}
-			return a, tea.Batch(c, sc, UpdateScreen)
+			return a, updateUserDataCmd(a, false)
 		case key.Matches(msg, keys.StopWatch):
 			a.StopDiscordRPC()
 		}
@@ -101,5 +105,23 @@ func (a *ApplicationTUI) checkSize() {
 		a.screens.pop()
 	} else if !ok && toSmall {
 		a.screens.push(&ResizeLockModel{a})
+	}
+}
+
+type userDataLoadedMsg struct{}
+type userDataFailedMsg struct{ err error }
+
+func updateUserDataCmd(app *ApplicationTUI, check bool) tea.Cmd {
+	if len(app.screens) != 0 { // check to prevent user spamming Update key
+		if _, ok := app.screens.cur().(*SplashScreenModel); ok {
+			return nil
+		}
+	}
+	app.screens.push(&SplashScreenModel{})
+	return func() tea.Msg {
+		if err := app.UpdateUserData(check); err != nil {
+			return userDataFailedMsg{err}
+		}
+		return userDataLoadedMsg{}
 	}
 }

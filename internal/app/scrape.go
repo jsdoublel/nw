@@ -14,10 +14,12 @@ import (
 
 const LetterboxdUrl = "https://letterboxd.com"
 
-var ErrBadScrape error = errors.New("bad scrape")
-var ErrInvalidUrl error = errors.New("invalid url")
+var (
+	ErrBadScrape  error = errors.New("bad scrape")
+	ErrInvalidUrl error = errors.New("invalid url")
 
-var titleYearRegex = regexp.MustCompile(`^(.+?)\s+\((\d{4})\)$`)
+	titleYearRegex = regexp.MustCompile(`^(.+?)\s+\((\d{4})\)$`)
+)
 
 func ScapeUserLists(username string) ([]*FilmList, error) {
 	listPageUrl, err := url.JoinPath(LetterboxdUrl, username, "lists")
@@ -26,6 +28,7 @@ func ScapeUserLists(username string) ([]*FilmList, error) {
 	}
 	usersListUrls := []*FilmList{}
 	c := colly.NewCollector()
+	attachScrapeLogger(c, "user lists")
 	c.OnHTML("div.body", func(h *colly.HTMLElement) {
 		fl := &FilmList{}
 		h.ForEach("h2.name.prettify a[href]", func(_ int, link *colly.HTMLElement) {
@@ -80,6 +83,7 @@ func ScrapeFilmList(rawURL string) (fl FilmList, err error) {
 	}
 	fl.Url = rawURL
 	c := colly.NewCollector()
+	attachScrapeLogger(c, rawURL)
 	c.OnHTML("h1.title-1.prettify", func(h *colly.HTMLElement) {
 		fl.Name = h.Text
 	})
@@ -147,6 +151,7 @@ func ScrapeFilmID(rawURL string) (id int, err error) {
 		return -1, fmt.Errorf("%w, %s is not a letterboxd.com url", ErrInvalidUrl, filmUrl)
 	}
 	c := colly.NewCollector()
+	attachScrapeLogger(c, rawURL)
 	var scrapingErr error
 	c.OnHTML("a.micro-button.track-event", func(h *colly.HTMLElement) {
 		if h.Text == "TMDB" {
@@ -189,4 +194,23 @@ func parseDescription(h *colly.HTMLElement, selector string) string {
 		builder.WriteString(text)
 	})
 	return builder.String()
+}
+
+func attachScrapeLogger(c *colly.Collector, label string) {
+	c.OnError(func(resp *colly.Response, err error) {
+		status := 0
+		url := label
+		if resp != nil {
+			status = resp.StatusCode
+			if resp.Request != nil && resp.Request.URL != nil {
+				url = resp.Request.URL.String()
+			}
+		}
+		log.Printf("scrape error [%s] status=%d url=%s err=%v", label, status, url, err)
+	})
+	c.OnResponse(func(resp *colly.Response) {
+		if resp.StatusCode >= 400 {
+			log.Printf("scrape response [%s] status=%d url=%s", label, resp.StatusCode, resp.Request.URL)
+		}
+	})
 }

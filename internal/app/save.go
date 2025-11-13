@@ -97,18 +97,17 @@ func CreateApp(username string) (*Application, error) {
 		TrackedLists: make(map[string]*FilmList),
 		FilmStore:    FilmStore{Films: make(map[int]*FilmRecord)},
 	}
-	if err := app.UpdateUserData(); err != nil {
-		return nil, err
-	}
-	var err error
-	if app.NWQueue, err = app.MakeNextWatch(); err != nil {
-		return nil, err
-	}
 	return app, nil
 }
 
 // Updates all of the user's watchlist, watched films, and lists
-func (app *Application) UpdateUserData() error {
+//
+// Argument "check," when true, checks whether previous data has expired---if
+// it has not, nothing is done.
+func (app *Application) UpdateUserData(check bool) error {
+	if check && time.Since(app.UserDataChecked) < userDataExpireTime {
+		return nil
+	}
 	log.Print("updating user data...")
 	if err := app.updateListHeaders(); err != nil {
 		return err
@@ -122,6 +121,11 @@ func (app *Application) UpdateUserData() error {
 	if app.NWQueue.Stacks != nil {
 		if err := app.NWQueue.UpdateWatched(); err != nil {
 			log.Print(err)
+		}
+	} else {
+		var err error
+		if app.NWQueue, err = app.MakeNextWatch(); err != nil {
+			return err
 		}
 	}
 	app.UserDataChecked = time.Now()

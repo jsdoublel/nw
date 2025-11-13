@@ -7,7 +7,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-var heightCutoff = int(math.Floor(float64(paneHeight) * 1.5))
+var heightCutoff = int(math.Floor(float64(paneHeight) * 1.8))
 
 // Bubbletea model joining two other models; it passes all updates to both and
 // is also focusable.

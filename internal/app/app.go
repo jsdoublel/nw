@@ -40,16 +40,6 @@ type Application struct {
 	DiscordRPC DiscordRPC
 }
 
-// Tasks to run on application startup goes here (e.g., checking letterboxd for updated data).
-func (app *Application) Init() error {
-	if time.Since(app.UserDataChecked) > userDataExpireTime {
-		if err := app.UpdateUserData(); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 // Run application shutdown tasks (e.g., write save).
 func (app *Application) Shutdown() {
 	app.StopDiscordRPC()
