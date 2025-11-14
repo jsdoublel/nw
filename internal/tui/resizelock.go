@@ -29,6 +29,6 @@ func (fl *ResizeLockModel) View() string {
 		"Terminal size too small!",
 		fmt.Sprintf("Current: Width = %s, Height = %s", w, h),
 		"",
-		fmt.Sprintf("Requires: Width = %d, Height = %d", paneWidth, paneHeight),
+		fmt.Sprintf("Requires: Width = %d, Height = %d", paneWidth+1, paneHeight+1),
 	)
 }

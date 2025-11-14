@@ -89,9 +89,9 @@ func (fd *FilmDetailsModel) errorText() string {
 
 func (fd *FilmDetailsModel) renderDetails() string {
 	title := filmTitleStyle.Render(fd.film.String())
-	colWidth := paneWidth/2 - 1
+	colWidth := paneWidth/2 - 2
 	rightText := filmTextStyle.Width(colWidth).Render(fd.film.Details.Overview)
-	limitAdj := 2
+	limitAdj := 2 // adjust cast length limit based on height of text above
 	var b strings.Builder
 	if directors := fd.directorLine(); directors != "" {
 		b.WriteString(flimDirStyle.Render(directors))
@@ -116,9 +116,7 @@ func (fd *FilmDetailsModel) castLine(limit int) string {
 	cast := fd.film.Details.Credits.Cast
 	names := make([]string, 0, limit)
 	for _, member := range cast {
-		if character := strings.TrimSpace(member.Character); character != "" {
-			names = append(names, member.Name)
-		}
+		names = append(names, member.Name)
 		if len(names) == limit {
 			break
 		}

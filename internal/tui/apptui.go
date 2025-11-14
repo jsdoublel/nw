@@ -60,11 +60,11 @@ func (a *ApplicationTUI) Init() tea.Cmd {
 }
 
 func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	cmds := a.Updater(msg)
+	cmds := a.UpdateRouter(msg)
 	switch msg := msg.(type) {
 	case userDataLoadedMsg:
 		a.screens.pop()          // remove loading screen
-		if len(a.screens) == 0 { // hacky, but we need different behavior on startup vs. update
+		if len(a.screens) == 0 { // we need different behavior on startup vs. update
 			a.screens.push(MakeMainScreen(a))
 		} else {
 			return a, UpdateScreen
@@ -72,6 +72,8 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case userDataFailedMsg:
 		if ss, ok := a.screens.cur().(*SplashScreenModel); ok {
 			ss.SetError(msg.err)
+		} else {
+			panic("userDataFailedMsg received without splash screen")
 		}
 	case tea.WindowSizeMsg:
 		a.width = msg.Width
@@ -100,7 +102,7 @@ func (a *ApplicationTUI) View() string {
 }
 
 // Handle update rounting with overlays
-func (a *ApplicationTUI) Updater(msg tea.Msg) []tea.Cmd {
+func (a *ApplicationTUI) UpdateRouter(msg tea.Msg) []tea.Cmd {
 	var bc, c tea.Cmd
 	_, c = a.screens.cur().Update(msg) // always returns nil if cur is an overlay
 	_, sc := a.status.Update(msg)
