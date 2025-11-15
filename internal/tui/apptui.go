@@ -5,6 +5,7 @@ import (
 	"log"
 	"path/filepath"
 
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -30,8 +31,9 @@ func (ss ScreenStack) cur() tea.Model    { return ss[len(ss)-1] }
 // Main model struct that drives NW TUI
 type ApplicationTUI struct {
 	*app.Application
-	status  StatusBarModel
 	screens ScreenStack
+	status  StatusBarModel
+	help    help.Model
 	width   int
 	height  int
 }
@@ -56,6 +58,7 @@ func RunApplicationTUI(username string) error {
 
 func (a *ApplicationTUI) Init() tea.Cmd {
 	a.status = StatusBarModel{app: a}
+	a.help = help.New()
 	return updateUserDataCmd(a, true)
 }
 
@@ -78,6 +81,7 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		a.width = msg.Width
 		a.height = msg.Height
+		a.help.Width = a.width
 		a.checkSize()
 	case GoBackMsg:
 		if len(a.screens) == 1 {
@@ -91,14 +95,24 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return a, updateUserDataCmd(a, false)
 		case key.Matches(msg, keys.StopWatch):
 			a.StopDiscordRPC()
+		case key.Matches(msg, keys.Help):
+			a.help.ShowAll = !a.help.ShowAll
 		}
 	}
 	return a, tea.Batch(cmds...)
 }
 
 func (a *ApplicationTUI) View() string {
-	main := lipgloss.Place(a.width, a.height, lipgloss.Center, lipgloss.Center, a.screens.cur().View())
-	return overlay.Composite(a.status.View(), main, overlay.Left, overlay.Top, 0, 0)
+	cur := a.screens.cur()
+	main := lipgloss.Place(a.width, a.height, lipgloss.Center, lipgloss.Center, cur.View())
+	if _, ok := cur.(*ResizeLockModel); ok {
+		return main
+	}
+	if _, ok := cur.(*SplashScreenModel); ok {
+		return main
+	}
+	compStatus := overlay.Composite(a.status.View(), main, overlay.Left, overlay.Top, 0, 0)
+	return overlay.Composite(a.help.View(keys), compStatus, overlay.Left, overlay.Bottom, 0, 0)
 }
 
 // Handle update rounting with overlays

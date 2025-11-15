@@ -36,7 +36,8 @@ func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Left, k.Right, k.Up, k.Down},
 		{k.MoveLeft, k.MoveRight, k.MoveUp, k.MoveDown},
-		{k.Search, k.Delete, k.Back, k.Help, k.Quit},
+		{k.Update, k.Delete, k.SearchFilms, k.AddList},
+		{k.Back, k.Help, k.Quit},
 	}
 }
 
@@ -55,19 +56,19 @@ var keys = keyMap{
 	),
 	Left: key.NewBinding(
 		key.WithKeys("left", "h"),
-		key.WithHelp("left/h", "left"),
+		key.WithHelp("\u2190/h", "left"),
 	),
 	Right: key.NewBinding(
 		key.WithKeys("right", "l"),
-		key.WithHelp("right/l", "right"),
+		key.WithHelp("\u2192/l", "right"),
 	),
 	Up: key.NewBinding(
 		key.WithKeys("up", "k"),
-		key.WithHelp("up/k", "up"),
+		key.WithHelp("\u2191/k", "up"),
 	),
 	Down: key.NewBinding(
 		key.WithKeys("down", "j"),
-		key.WithHelp("down/j", "down"),
+		key.WithHelp("\u2193/j", "down"),
 	),
 	MoveLeft: key.NewBinding(
 		key.WithKeys("ctrl+h"),
