@@ -8,7 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	overlay "github.com/rmhubbert/bubbletea-overlay"
+	overlay "github.com/jsdoublel/bubbletea-overlay"
 
 	"github.com/jsdoublel/nw/internal/app"
 )
@@ -97,15 +97,15 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (a *ApplicationTUI) View() string {
-	main := lipgloss.Place(a.width, a.height-1, lipgloss.Center, lipgloss.Center, a.screens.cur().View())
-	return lipgloss.JoinVertical(lipgloss.Left, a.status.View(), main)
+	main := lipgloss.Place(a.width, a.height, lipgloss.Center, lipgloss.Center, a.screens.cur().View())
+	return overlay.Composite(a.status.View(), main, overlay.Left, overlay.Top, 0, 0)
 }
 
 // Handle update rounting with overlays
 func (a *ApplicationTUI) UpdateRouter(msg tea.Msg) []tea.Cmd {
-	var bc, c tea.Cmd
+	var c, bc, sc tea.Cmd
 	_, c = a.screens.cur().Update(msg) // always returns nil if cur is an overlay
-	_, sc := a.status.Update(msg)
+	_, sc = a.status.Update(msg)
 	if ov, ok := a.screens.cur().(*overlay.Model); ok {
 		_, c = ov.Foreground.Update(msg)
 		if msg, ok := msg.(UpdateScreenMsg); ok {

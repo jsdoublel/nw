@@ -84,8 +84,8 @@ var (
 	filmSearchSelectedStyle = lipgloss.NewStyle().Background(lack).Foreground(gray9)
 
 	// ----- Status Bar
-	statusBarWatchingStyle = lipgloss.NewStyle().Background(red).Padding(0, 1)
-	statusBarMessageStyle  = lipgloss.NewStyle().Background(lack).Padding(0, 1)
+	statusBarWatchingStyle = lipgloss.NewStyle().Foreground(red).Border(lipgloss.RoundedBorder()).BorderForeground(red).Padding(0, 1)
+	statusBarMessageStyle  = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Padding(0, 1)
 
 	// ----- Splash Screen
 	splashSpinnerStyles = []lipgloss.Style{

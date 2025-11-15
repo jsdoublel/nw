@@ -2,10 +2,10 @@ package tui
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 const messageTimeout = 5 * time.Second
@@ -34,7 +34,7 @@ func (sb *StatusBarModel) View() string {
 	if sb.message != "" {
 		strs = append(strs, statusBarMessageStyle.Render(sb.message))
 	}
-	return strings.Join(strs, "")
+	return lipgloss.JoinVertical(lipgloss.Left, strs...)
 }
 
 type statusClearMsg struct{}
