@@ -22,6 +22,7 @@ type keyMap struct {
 	SearchFilms key.Binding
 	Update      key.Binding
 	StopWatch   key.Binding
+	About       key.Binding
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
@@ -37,7 +38,7 @@ func (k keyMap) FullHelp() [][]key.Binding {
 		{k.Left, k.Right, k.Up, k.Down},
 		{k.MoveLeft, k.MoveRight, k.MoveUp, k.MoveDown},
 		{k.Update, k.Delete, k.SearchFilms, k.AddList},
-		{k.Back, k.Help, k.Quit},
+		{k.About, k.Back, k.Help, k.Quit},
 	}
 }
 
@@ -117,5 +118,9 @@ var keys = keyMap{
 	StopWatch: key.NewBinding(
 		key.WithKeys("ctrl+w"),
 		key.WithHelp("ctrl+w", "stop watching"),
+	),
+	About: key.NewBinding(
+		key.WithKeys("ctrl+a"),
+		key.WithHelp("ctrl+a", "about"),
 	),
 }

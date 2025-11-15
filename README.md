@@ -31,7 +31,7 @@ Tui utitlity for selecting films to watch from letterboxd.
 - [x] Search all films (maybe on letterboxd, but probably TMDB)
 - [ ] Add License
 - [ ] Add Tutorial
-- [ ] Add Help
+- [x] Add Help
 - [x] Add status notifications
 - [x] Add splash-screen when starting up
 

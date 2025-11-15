@@ -1,17 +1,17 @@
 module github.com/jsdoublel/nw
 
-go 1.24.2
+go 1.25.4
 
 require (
 	github.com/adrg/xdg v0.5.3
 	github.com/charmbracelet/bubbles v0.21.1-0.20250623103423-23b8fd6302d7
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.0
-	github.com/cyruzin/golang-tmdb v1.8.2
+	github.com/cyruzin/golang-tmdb v1.9.0
 	github.com/gocolly/colly v1.2.0
 	github.com/hugolgst/rich-go v0.0.0-20240715122152-74618cc1ace2
-	github.com/jsdoublel/bubbletea-overlay v0.0.0-20251114173902-2ddd4a6da2ce
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
+	github.com/rmhubbert/bubbletea-overlay v0.5.0
 )
 
 replace github.com/hugolgst/rich-go => github.com/jsdoublel/rich-go v0.0.0-20251109204316-02ce5e317ce0
@@ -19,8 +19,8 @@ replace github.com/hugolgst/rich-go => github.com/jsdoublel/rich-go v0.0.0-20251
 require (
 	github.com/PuerkitoBio/goquery v1.10.3 // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
-	github.com/antchfx/htmlquery v1.3.4 // indirect
-	github.com/antchfx/xmlquery v1.4.4 // indirect
+	github.com/antchfx/htmlquery v1.3.5 // indirect
+	github.com/antchfx/xmlquery v1.5.0 // indirect
 	github.com/antchfx/xpath v1.3.5 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
@@ -49,7 +49,7 @@ require (
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
 	github.com/temoto/robotstxt v1.1.2 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
-	golang.org/x/net v0.44.0 // indirect
+	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect

@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"strings"
+
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -12,6 +14,26 @@ const (
 	ellipse = '\u2026'
 	hSep    = '\u2500'
 	cursor  = '\u2588'
+
+	Title    = "NW – Next Watch"
+	Subtitle = "A TUI utility for selecting films to watch from Letterboxd (powered by TMDB)."
+	License  = `Copyright (C) 2025 James Willson <jsdoublel@gmail.com>
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
+This software uses TMDB and the TMDB APIs but is not endorsed, certified, or 
+otherwise approved by TMDB.`
 )
 
 var (
@@ -38,7 +60,7 @@ var (
 	gray9 = lipgloss.Color("#dddddd")
 
 	unfocused = gray4
-	focused   = gray7
+	focused   = gray6
 	text      = gray9
 
 	mainStyle = lipgloss.NewStyle().
@@ -111,6 +133,17 @@ var (
 			Foreground(text).
 			Background(gray3).
 			Padding(0, 2)
+	popupStyle     = lipgloss.NewStyle().Inherit(mainStyle)
+	popupTextStyle = lipgloss.NewStyle().Padding(1)
+	popupOkStyle   = lipgloss.NewStyle().
+			Foreground(black).
+			Background(focused).
+			Padding(0, 2)
+	About = strings.Join([]string{
+		lipgloss.NewStyle().Bold(true).Render(Title),
+		lipgloss.NewStyle().Italic(true).Render(Subtitle),
+		popupTextStyle.Render(License),
+	}, "\n")
 )
 
 // Returns styled list.DefaultDelegate

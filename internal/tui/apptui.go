@@ -9,7 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	overlay "github.com/jsdoublel/bubbletea-overlay"
+	overlay "github.com/rmhubbert/bubbletea-overlay"
 
 	"github.com/jsdoublel/nw/internal/app"
 )
@@ -97,6 +97,8 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			a.StopDiscordRPC()
 		case key.Matches(msg, keys.Help):
 			a.help.ShowAll = !a.help.ShowAll
+		case key.Matches(msg, keys.About):
+			a.Popup(About)
 		}
 	}
 	return a, tea.Batch(cmds...)

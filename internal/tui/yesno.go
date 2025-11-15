@@ -6,7 +6,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	overlay "github.com/jsdoublel/bubbletea-overlay"
+	overlay "github.com/rmhubbert/bubbletea-overlay"
 )
 
 // Model for yes no question pop-up

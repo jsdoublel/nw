@@ -1,7 +1,8 @@
 /*
-NW - Next Watch: A TUI utility for selecting films to watch from letterboxd.
+NW - Next Watch: A TUI utility for selecting films to watch from Letterboxd
+(powered by TMDB).
 
-Copyright (C) 2025 James Willson <jamessw156@gmail.com>
+Copyright (C) 2025 James Willson <jsdoublel@gmail.com>
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -14,6 +15,9 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see <https://www.gnu.org/licenses/>.
+
+This software uses TMDB and the TMDB APIs but is not endorsed, certified, or
+otherwise approved by TMDB.
 */
 package main
 
