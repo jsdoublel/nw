@@ -5,7 +5,6 @@ import (
 	"io"
 	"log"
 	"strings"
-	"time"
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -172,9 +171,9 @@ func (fd *FilmDetailsModel) actionLeft() {
 
 func poster(fr app.FilmRecord, a *ApplicationTUI) (tea.Cmd, error) {
 	if path, err := app.DownloadPoster(fr); err != nil {
-		return statusMessageCmd(Message{text: fmt.Sprintf("error %s", err), error: true, timeout: time.Second * 10}), err
+		return statusMessageCmd(Message{text: fmt.Sprintf("error %s", err), error: true}), err
 	} else {
-		return statusMessageCmd(Message{text: fmt.Sprintf("Poster downloaded to %s", path), timeout: time.Second * 5}), nil
+		return statusMessageCmd(Message{text: fmt.Sprintf("Poster downloaded to %s", path)}), nil
 	}
 }
 

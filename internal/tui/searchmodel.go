@@ -29,14 +29,23 @@ type UpdateSearchFilterMsg struct{ filter string }
 type SearchModel struct {
 	ListSelector
 	input             textinput.Model
-	queryAction       func(string)
+	queryEnterAction  func(string, list.Item)
 	inputChangeAction func(string) tea.Cmd
+	defaultMode       mode
 	mode              mode
 	focused           bool
 	app               *ApplicationTUI
 }
 
-func MakeSearchModel(a *ApplicationTUI, items []list.Item, searchText string, delegate list.ItemDelegate, inputAction func(string) tea.Cmd, queryAction func(string)) *SearchModel {
+func MakeSearchModel(
+	a *ApplicationTUI,
+	items []list.Item,
+	searchText string,
+	delegate list.ItemDelegate,
+	defaultMode mode,
+	inputAction func(string) tea.Cmd,
+	queryAction func(string, list.Item),
+) *SearchModel {
 	list := MakeListSelector(a, "", items, delegate)
 	list.list.SetHeight(resultPainHeight)
 	list.list.SetShowStatusBar(false)
@@ -47,17 +56,21 @@ func MakeSearchModel(a *ApplicationTUI, items []list.Item, searchText string, de
 	ti.Cursor.Style = cursorStyle
 	frameW, _ := searchInputStyle.GetFrameSize()
 	ti.Width = paneWidth - frameW - len(ti.Prompt)
-	searchListStyle = searchListStyle.BorderForeground(focusedColor)
-	searchInputStyle = searchInputStyle.BorderForeground(unfocusedColor)
-	return &SearchModel{
+	sm := &SearchModel{
 		ListSelector:      *list,
 		input:             ti,
 		inputChangeAction: inputAction,
-		queryAction:       queryAction,
-		mode:              normalMode,
+		queryEnterAction:  queryAction,
+		defaultMode:       defaultMode,
 		focused:           true,
 		app:               a,
 	}
+	if defaultMode == normalMode {
+		sm.switchToNormal()
+	} else {
+		sm.switchToSearch()
+	}
+	return sm
 }
 
 func (sm *SearchModel) Init() tea.Cmd { return nil }
@@ -75,9 +88,13 @@ func (sm *SearchModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
-		case msg.Type == tea.KeyEnter || key.Matches(msg, keys.MoveDown):
+		case msg.Type == tea.KeyEnter:
 			if sm.mode == searchMode {
-				sm.queryAction(query)
+				sm.queryEnterAction(query, sm.list.SelectedItem())
+			}
+			fallthrough
+		case key.Matches(msg, keys.MoveDown):
+			if sm.mode == searchMode {
 				sm.switchToNormal()
 				return sm, nil
 			}
@@ -85,10 +102,7 @@ func (sm *SearchModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if sm.mode == searchMode && sm.input.Value() != "" {
 				sm.input.SetValue("")
 				sm.list.ResetFilter()
-				return sm, nil
-			} else if sm.mode == searchMode {
-				sm.switchToNormal()
-				return sm, nil
+				return sm, sm.inputChangeAction("")
 			}
 			return sm, GoBack
 		case key.Matches(msg, keys.Search), key.Matches(msg, keys.MoveUp):
@@ -100,6 +114,12 @@ func (sm *SearchModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case UpdateSearchFilterMsg:
 		sm.list.SetFilterText(msg.filter)
+	case UpdateScreenMsg:
+		if sm.defaultMode == normalMode {
+			sm.switchToNormal()
+		} else {
+			sm.switchToSearch()
+		}
 	}
 
 	var lc tea.Cmd

@@ -100,7 +100,7 @@ func MakeSearchFilms(a *ApplicationTUI) *SearchFilms {
 			if err != nil {
 				text := fmt.Sprintf("film search failed, %s", err)
 				log.Print(err)
-				return statusMessageMsg{message: Message{text: text, error: true, timeout: time.Second * 10}}
+				return statusMessageMsg{message: Message{text: text, error: true}}
 			}
 			items := make([]list.Item, len(results))
 			for i, r := range results {
@@ -109,16 +109,20 @@ func MakeSearchFilms(a *ApplicationTUI) *SearchFilms {
 			return UpdateSearchItemsMsg{items: items, query: query}
 		}
 	}
-	EnterAction := func(s string) {}
+	EnterAction := func(s string, item list.Item) {
+		if r, ok := item.(FilmResultItem); ok {
+			a.screens.push(MakeFilmDetailsModelFromResults(tmdb.MovieResult(r), a))
+		}
+	}
 	model := *MakeSearchModel(
 		a,
 		make([]list.Item, 0),
 		"Search films...",
 		filmSearchDelegate{a},
+		searchMode,
 		inputAction,
 		EnterAction,
 	)
-	model.switchToSearch()
 	return &SearchFilms{
 		model: model,
 		app:   a,

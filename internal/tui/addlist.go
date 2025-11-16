@@ -196,7 +196,7 @@ func MakeSearchListPane(a *ApplicationTUI) *SearchModel {
 	inputChangeAction := func(s string) tea.Cmd {
 		return func() tea.Msg { return UpdateSearchFilterMsg{filter: s} }
 	}
-	queryEnterAction := func(s string) {
+	queryEnterAction := func(s string, _ list.Item) {
 		if err := a.AddListFromUrl(s); !errors.Is(err, app.ErrInvalidUrl) {
 			log.Printf("could not add query as url, %s", err)
 		}
@@ -206,6 +206,7 @@ func MakeSearchListPane(a *ApplicationTUI) *SearchModel {
 		items,
 		"Enter URL or search lists...",
 		searchListsDelegate{listStyleDelegate(), a},
+		normalMode,
 		inputChangeAction,
 		queryEnterAction,
 	)

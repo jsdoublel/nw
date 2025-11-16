@@ -8,8 +8,6 @@ import (
 	"github.com/jsdoublel/nw/internal/app"
 )
 
-const joinDetailsPos = 0
-
 const (
 	mainScreenNWPos = iota
 	mainScreenViewListPos

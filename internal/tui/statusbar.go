@@ -8,10 +8,11 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+const messageTimeout = 5 * time.Second
+
 type Message struct {
-	text    string
-	error   bool
-	timeout time.Duration
+	text  string
+	error bool
 }
 
 type statusEntry struct {
@@ -67,7 +68,7 @@ func (sb *StatusBarModel) setMessage(message Message) tea.Cmd {
 	id := sb.nextId
 	sb.messages = append(sb.messages, statusEntry{id: id, message: message})
 	sb.nextId++
-	return tea.Tick(message.timeout, func(time.Time) tea.Msg {
+	return tea.Tick(messageTimeout, func(time.Time) tea.Msg {
 		return statusClearMsg{id: id}
 	})
 }
