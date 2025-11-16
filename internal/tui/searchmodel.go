@@ -19,7 +19,10 @@ const (
 	resultPainHeight = paneHeight - 3
 )
 
-type UpdateSearchItemsMsg struct{ items []list.Item }
+type UpdateSearchItemsMsg struct {
+	items []list.Item
+	query string
+}
 type UpdateSearchFilterMsg struct{ filter string }
 
 // Model with text search input and list of results below
@@ -44,8 +47,8 @@ func MakeSearchModel(a *ApplicationTUI, items []list.Item, searchText string, de
 	ti.Cursor.Style = cursorStyle
 	frameW, _ := searchInputStyle.GetFrameSize()
 	ti.Width = paneWidth - frameW - len(ti.Prompt)
-	searchListStyle = searchListStyle.BorderForeground(focused)
-	searchInputStyle = searchInputStyle.BorderForeground(unfocused)
+	searchListStyle = searchListStyle.BorderForeground(focusedColor)
+	searchInputStyle = searchInputStyle.BorderForeground(unfocusedColor)
 	return &SearchModel{
 		ListSelector:      *list,
 		input:             ti,
@@ -92,7 +95,9 @@ func (sm *SearchModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			sm.switchToSearch()
 		}
 	case UpdateSearchItemsMsg:
-		sm.list.SetItems(msg.items)
+		if strings.TrimSpace(sm.input.Value()) == msg.query {
+			sm.list.SetItems(msg.items)
+		}
 	case UpdateSearchFilterMsg:
 		sm.list.SetFilterText(msg.filter)
 	}
@@ -114,28 +119,28 @@ func (sm *SearchModel) View() string {
 func (sm *SearchModel) switchToSearch() {
 	sm.input.Focus()
 	sm.mode = searchMode
-	searchListStyle = searchListStyle.BorderForeground(unfocused)
-	searchInputStyle = searchInputStyle.BorderForeground(focused)
+	searchListStyle = searchListStyle.BorderForeground(unfocusedColor)
+	searchInputStyle = searchInputStyle.BorderForeground(focusedColor)
 }
 
 func (sm *SearchModel) switchToNormal() {
 	sm.input.Blur()
 	sm.mode = normalMode
-	searchListStyle = searchListStyle.BorderForeground(focused)
-	searchInputStyle = searchInputStyle.BorderForeground(unfocused)
+	searchListStyle = searchListStyle.BorderForeground(focusedColor)
+	searchInputStyle = searchInputStyle.BorderForeground(unfocusedColor)
 }
 
 func (sm *SearchModel) Focus() {
 	sm.focused = true
 	if sm.mode == normalMode {
-		searchListStyle = searchListStyle.BorderForeground(focused)
+		searchListStyle = searchListStyle.BorderForeground(focusedColor)
 	} else {
-		searchInputStyle = searchInputStyle.BorderForeground(focused)
+		searchInputStyle = searchInputStyle.BorderForeground(focusedColor)
 	}
 }
 
 func (sm *SearchModel) Unfocus() {
 	sm.focused = false
-	searchListStyle = searchListStyle.BorderForeground(unfocused)
-	searchInputStyle = searchInputStyle.BorderForeground(unfocused)
+	searchListStyle = searchListStyle.BorderForeground(unfocusedColor)
+	searchInputStyle = searchInputStyle.BorderForeground(unfocusedColor)
 }

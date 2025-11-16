@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
@@ -72,12 +73,12 @@ func (fd *FilmDetailsModel) View() string {
 
 func (fd *FilmDetailsModel) Focus() {
 	fd.focused = true
-	filmDetailsStyle = filmDetailsStyle.BorderForeground(focused)
+	filmDetailsStyle = filmDetailsStyle.BorderForeground(focusedColor)
 }
 
 func (fd *FilmDetailsModel) Unfocus() {
 	fd.focused = false
-	filmDetailsStyle = filmDetailsStyle.BorderForeground(unfocused)
+	filmDetailsStyle = filmDetailsStyle.BorderForeground(unfocusedColor)
 }
 
 func (fd *FilmDetailsModel) errorText() string {
@@ -171,15 +172,15 @@ func (fd *FilmDetailsModel) actionLeft() {
 
 func poster(fr app.FilmRecord, a *ApplicationTUI) (tea.Cmd, error) {
 	if path, err := app.DownloadPoster(fr); err != nil {
-		return a.status.SetMessage(fmt.Sprintf("error %s", err)), err
+		return statusMessageCmd(Message{text: fmt.Sprintf("error %s", err), error: true, timeout: time.Second * 10}), err
 	} else {
-		return a.status.SetMessage(fmt.Sprintf("Poster downloaded to %s", path)), nil
+		return statusMessageCmd(Message{text: fmt.Sprintf("Poster downloaded to %s", path), timeout: time.Second * 5}), nil
 	}
 }
 
 func MakeFilmDetailsModel(f *app.Film, a *ApplicationTUI) *FilmDetailsModel {
 	fr, err := a.FilmStore.Lookup(*f)
-	filmDetailsStyle = filmDetailsStyle.BorderForeground(focused)
+	filmDetailsStyle = filmDetailsStyle.BorderForeground(focusedColor)
 	filmActions := []FilmAction{
 		{label: "Watch", action: func(fr app.FilmRecord) (tea.Cmd, error) { return nil, a.StartDiscordRPC(fr) }},
 		{label: "Poster", action: func(fr app.FilmRecord) (tea.Cmd, error) { return poster(fr, a) }},
@@ -198,7 +199,7 @@ func MakeFilmDetailsModelFromResults(f tmdb.MovieResult, a *ApplicationTUI) *Fil
 	releaseYear, _ := app.ReleaseYear(f)
 	details, err := app.TMDBFilm(int(f.ID))
 	fr := app.FilmRecord{Film: app.Film{Title: details.Title, Year: uint(releaseYear)}, TMDBID: int(details.ID), Details: details}
-	filmDetailsStyle = filmDetailsStyle.BorderForeground(focused)
+	filmDetailsStyle = filmDetailsStyle.BorderForeground(focusedColor)
 	filmActions := []FilmAction{
 		{label: "Watch", action: func(fr app.FilmRecord) (tea.Cmd, error) { return nil, a.StartDiscordRPC(fr) }},
 		{label: "Poster", action: func(fr app.FilmRecord) (tea.Cmd, error) { return poster(fr, a) }},

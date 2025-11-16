@@ -11,16 +11,19 @@ type Film struct {
 }
 
 func (f Film) String() string {
+	if f.Year == 0 {
+		return f.Title
+	}
 	return fmt.Sprintf("%s (%d)", f.Title, f.Year)
 }
 
 type FilmsSet map[int]*Film
 
-func (wf FilmsSet) InSet(film *Film) bool {
-	_, ok := wf[film.LBxdID]
+func (fs FilmsSet) InSet(film *Film) bool {
+	_, ok := fs[film.LBxdID]
 	return ok
 }
 
-func (wf FilmsSet) IsZero() bool {
-	return wf == nil
+func (fs FilmsSet) IsZero() bool {
+	return fs == nil
 }

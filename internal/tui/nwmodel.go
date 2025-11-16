@@ -151,14 +151,14 @@ func (nw *NWModel) View() string {
 
 func (nw *NWModel) Focus() {
 	nw.focused = true
-	nwSeparatorStyle = nwSeparatorStyle.Foreground(focused)
-	nwStyle = nwStyle.BorderForeground(focused)
+	nwSeparatorStyle = nwSeparatorStyle.Foreground(focusedColor)
+	nwStyle = nwStyle.BorderForeground(focusedColor)
 }
 
 func (nw *NWModel) Unfocus() {
 	nw.focused = false
-	nwSeparatorStyle = nwSeparatorStyle.Foreground(unfocused)
-	nwStyle = nwStyle.BorderForeground(unfocused)
+	nwSeparatorStyle = nwSeparatorStyle.Foreground(unfocusedColor)
+	nwStyle = nwStyle.BorderForeground(unfocusedColor)
 }
 
 func MakeNWModel(a *ApplicationTUI) *NWModel {
@@ -168,7 +168,7 @@ func MakeNWModel(a *ApplicationTUI) *NWModel {
 	l.SetShowStatusBar(false)
 	l.SetShowHelp(false)
 	l.SetShowPagination(false)
-	nwStyle = nwStyle.BorderForeground(focused)
+	nwStyle = nwStyle.BorderForeground(focusedColor)
 	return &NWModel{
 		list:    l,
 		app:     a,

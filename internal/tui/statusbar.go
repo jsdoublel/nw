@@ -8,18 +8,33 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-const messageTimeout = 5 * time.Second
+type Message struct {
+	text    string
+	error   bool
+	timeout time.Duration
+}
+
+type statusEntry struct {
+	id      int
+	message Message
+}
 
 type StatusBarModel struct {
-	message string
-	app     *ApplicationTUI
+	messages []statusEntry
+	nextId   int
+	app      *ApplicationTUI
 }
 
 func (sb *StatusBarModel) Init() tea.Cmd { return nil }
 
 func (sb *StatusBarModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if _, ok := msg.(statusClearMsg); ok {
-		sb.message = ""
+	if msg, ok := msg.(statusClearMsg); ok {
+		for i, entry := range sb.messages {
+			if entry.id == msg.id {
+				sb.messages = append(sb.messages[:i], sb.messages[i+1:]...)
+				break
+			}
+		}
 	}
 	return sb, nil
 }
@@ -31,17 +46,35 @@ func (sb *StatusBarModel) View() string {
 			fmt.Sprintf("Watching %s, press %s to stop", sb.app.DiscordRPC, keys.StopWatch.Help().Key),
 		))
 	}
-	if sb.message != "" {
-		strs = append(strs, statusBarMessageStyle.Render(sb.message))
+	for _, entry := range sb.messages {
+		if entry.message.error {
+			strs = append(strs, statusBarErrStyle.Render(entry.message.text))
+		} else {
+			strs = append(strs, statusBarMessageStyle.Render(entry.message.text))
+		}
 	}
 	return lipgloss.JoinVertical(lipgloss.Left, strs...)
 }
 
-type statusClearMsg struct{}
+type statusClearMsg struct{ id int }
+type statusMessageMsg struct{ message Message }
 
-func (sb *StatusBarModel) SetMessage(message string) tea.Cmd {
-	sb.message = message
-	return tea.Tick(messageTimeout, func(time.Time) tea.Msg {
-		return statusClearMsg{}
+func statusMessageCmd(message Message) tea.Cmd {
+	return func() tea.Msg { return statusMessageMsg{message: message} }
+}
+
+func (sb *StatusBarModel) setMessage(message Message) tea.Cmd {
+	id := sb.nextId
+	sb.messages = append(sb.messages, statusEntry{id: id, message: message})
+	sb.nextId++
+	return tea.Tick(message.timeout, func(time.Time) tea.Msg {
+		return statusClearMsg{id: id}
 	})
+}
+
+func MakeStatusBar(a *ApplicationTUI) *StatusBarModel {
+	return &StatusBarModel{
+		messages: make([]statusEntry, 0),
+		app:      a,
+	}
 }

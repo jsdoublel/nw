@@ -34,7 +34,7 @@ func MakeListSelector(a *ApplicationTUI, title string, items []list.Item, delega
 	return &ListSelector{
 		list:  l,
 		app:   a,
-		style: lsStyle.BorderForeground(unfocused),
+		style: lsStyle.BorderForeground(unfocusedColor),
 	}
 }
 
@@ -60,12 +60,12 @@ func (ls *ListSelector) View() string {
 
 func (ls *ListSelector) Focus() {
 	ls.focused = true
-	ls.style = lsStyle.BorderForeground(focused)
+	ls.style = lsStyle.BorderForeground(focusedColor)
 }
 
 func (ls *ListSelector) Unfocus() {
 	ls.focused = false
-	ls.style = lsStyle.BorderForeground(unfocused)
+	ls.style = lsStyle.BorderForeground(unfocusedColor)
 }
 
 // ----- View Pane

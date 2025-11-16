@@ -59,14 +59,14 @@ var (
 	gray8 = lipgloss.Color("#cccccc")
 	gray9 = lipgloss.Color("#dddddd")
 
-	unfocused = gray4
-	focused   = gray6
-	text      = gray9
+	unfocusedColor = gray4
+	focusedColor   = gray6
+	textColor      = gray9
 
 	mainStyle = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
-			BorderForeground(focused).
-			Foreground(text)
+			BorderForeground(focusedColor).
+			Foreground(textColor)
 
 	// ----- Add List Screen
 	addListTitleColor = lack
@@ -80,7 +80,7 @@ var (
 	nwItemStyle         = lipgloss.NewStyle()
 	nwSelectedItemStyle = lipgloss.NewStyle().Background(lack).Foreground(gray9)
 	nwUpdatedItemStyle  = lipgloss.NewStyle().Foreground(green)
-	nwSeparatorStyle    = lipgloss.NewStyle().Foreground(focused)
+	nwSeparatorStyle    = lipgloss.NewStyle().Foreground(focusedColor)
 
 	// ----- Model Join (Joint NW Queue / Details)
 	// musts set height based on screen when used
@@ -88,16 +88,16 @@ var (
 
 	// ----- Film Details
 	filmDetailsStyle    = lipgloss.NewStyle().Inherit(mainStyle)
-	filmTextStyle       = lipgloss.NewStyle().Width(paneWidth).Foreground(text)
+	filmTextStyle       = lipgloss.NewStyle().Width(paneWidth).Foreground(textColor)
 	filmTitleStyle      = lipgloss.NewStyle().Inherit(filmTextStyle).Bold(true)
 	flimDirStyle        = lipgloss.NewStyle().Inherit(filmTextStyle).Italic(true)
 	filmCastHeaderStyle = lipgloss.NewStyle().Inherit(filmTextStyle).Underline(true)
 	filmActionSelected  = lipgloss.NewStyle().
 				Foreground(black).
-				Background(focused).
+				Background(focusedColor).
 				Padding(0, 2)
 	filmActionUnselected = lipgloss.NewStyle().
-				Foreground(text).
+				Foreground(textColor).
 				Background(gray3).
 				Padding(0, 2)
 
@@ -108,10 +108,17 @@ var (
 	// ----- Status Bar
 	statusBarWatchingStyle = lipgloss.NewStyle().
 				Border(lipgloss.RoundedBorder()).
-				BorderForeground(red).
-				Foreground(red).
+				BorderForeground(green).
+				Foreground(green).
 				Padding(0, 1)
-	statusBarMessageStyle = lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Padding(0, 1)
+	statusBarMessageStyle = lipgloss.NewStyle().Width(paneWidth).
+				Border(lipgloss.RoundedBorder()).
+				Padding(0, 1)
+	statusBarErrStyle = lipgloss.NewStyle().Width(paneWidth).
+				Foreground(red).
+				Border(lipgloss.RoundedBorder()).
+				BorderForeground(red).
+				Padding(0, 1)
 
 	// ----- Splash Screen
 	splashSpinnerStyles = []lipgloss.Style{
@@ -127,17 +134,17 @@ var (
 			Padding(0, 2)
 	yesNoSelected = lipgloss.NewStyle().
 			Foreground(black).
-			Background(focused).
+			Background(focusedColor).
 			Padding(0, 2)
 	yesNoUnselected = lipgloss.NewStyle().
-			Foreground(text).
+			Foreground(textColor).
 			Background(gray3).
 			Padding(0, 2)
 	popupStyle     = lipgloss.NewStyle().Inherit(mainStyle)
 	popupTextStyle = lipgloss.NewStyle().Padding(1)
 	popupOkStyle   = lipgloss.NewStyle().
 			Foreground(black).
-			Background(focused).
+			Background(focusedColor).
 			Padding(0, 2)
 	About = strings.Join([]string{
 		lipgloss.NewStyle().Bold(true).Render(Title),

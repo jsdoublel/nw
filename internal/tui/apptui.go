@@ -57,7 +57,7 @@ func RunApplicationTUI(username string) error {
 }
 
 func (a *ApplicationTUI) Init() tea.Cmd {
-	a.status = StatusBarModel{app: a}
+	a.status = *MakeStatusBar(a)
 	a.help = help.New()
 	return updateUserDataCmd(a, true)
 }
@@ -78,6 +78,8 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else {
 			panic("userDataFailedMsg received without splash screen")
 		}
+	case statusMessageMsg:
+		cmds = append(cmds, a.status.setMessage(msg.message))
 	case tea.WindowSizeMsg:
 		a.width = msg.Width
 		a.height = msg.Height

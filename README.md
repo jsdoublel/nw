@@ -29,8 +29,12 @@ Tui utitlity for selecting films to watch from letterboxd.
 - [x] Go to TMDB site (or letterboxd)
 - [x] Set Discord Rich Presence
 - [x] Search all films (maybe on letterboxd, but probably TMDB)
-- [ ] Add License
+- [x] Add License
+- [ ] Add mouse support
 - [ ] Add Tutorial
+- [ ] Add config file
+- [ ] Redo list view
+- [ ] Improve search screen
 - [x] Add Help
 - [x] Add status notifications
 - [x] Add splash-screen when starting up

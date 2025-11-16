@@ -20,7 +20,7 @@ var (
 
 func init() {
 	var err error
-	if TMDBClient, err = tmdb.Init(os.Getenv("TMDB_API")); err != nil {
+	if TMDBClient, err = tmdb.Init(os.Getenv("TMDB_API_KEY")); err != nil {
 		log.Printf("%s, %s", ErrNoAPI, err)
 	} else {
 		TMDBClient.SetClientAutoRetry()
