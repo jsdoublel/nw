@@ -128,6 +128,9 @@ func (app *Application) UpdateUserData(check bool) error {
 			return err
 		}
 	}
+	if err := app.updateTrackedLists(false); err != nil {
+		return err
+	}
 	app.UserDataChecked = time.Now()
 	return nil
 }
@@ -171,6 +174,22 @@ func (app *Application) updateListHeaders() error {
 	}
 	app.ListHeaders = headers
 	return nil
+}
+
+// Updates the data in tracked film lists. Skips lists where the next up film
+// is unwatched (in order avoid excessive overall update times). This behavior
+// can be overridden with forceAll.
+func (app *Application) updateTrackedLists(forceAll bool) error {
+	var lastErr error
+	for _, fl := range app.TrackedLists {
+		if app.WatchedFilms.InSet(fl.NextFilm) || forceAll {
+			if err := app.RefreshList(fl); err != nil {
+				lastErr = err
+				log.Printf("failed refreshing list %s, %s", fl.Name, err)
+			}
+		}
+	}
+	return lastErr
 }
 
 // Retrieve watchlist from letterbxod

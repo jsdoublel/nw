@@ -59,9 +59,11 @@ var (
 	gray8 = lipgloss.Color("#cccccc")
 	gray9 = lipgloss.Color("#dddddd")
 
-	unfocusedColor = gray4
-	focusedColor   = gray6
-	textColor      = gray9
+	unfocusedColor       = gray4
+	focusedColor         = gray6
+	focusedButtonColor   = gray7
+	unfocusedButtonColor = gray3
+	textColor            = gray9
 
 	mainStyle = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
@@ -78,7 +80,7 @@ var (
 	// ----- NW Queue
 	nwStyle             = lipgloss.NewStyle().Inherit(mainStyle)
 	nwItemStyle         = lipgloss.NewStyle()
-	nwSelectedItemStyle = lipgloss.NewStyle().Background(lack).Foreground(gray9)
+	nwSelectedItemStyle = lipgloss.NewStyle().Background(lack).Foreground(textColor)
 	nwUpdatedItemStyle  = lipgloss.NewStyle().Foreground(green)
 	nwSeparatorStyle    = lipgloss.NewStyle().Foreground(focusedColor)
 
@@ -94,16 +96,16 @@ var (
 	filmCastHeaderStyle = lipgloss.NewStyle().Inherit(filmTextStyle).Underline(true)
 	filmActionSelected  = lipgloss.NewStyle().
 				Foreground(black).
-				Background(focusedColor).
+				Background(focusedButtonColor).
 				Padding(0, 2)
 	filmActionUnselected = lipgloss.NewStyle().
 				Foreground(textColor).
-				Background(gray3).
+				Background(unfocusedButtonColor).
 				Padding(0, 2)
 
 	// ----- Film Search
 	filmSearchItemStyle     = lipgloss.NewStyle()
-	filmSearchSelectedStyle = lipgloss.NewStyle().Background(lack).Foreground(gray9)
+	filmSearchSelectedStyle = lipgloss.NewStyle().Background(lack).Foreground(textColor)
 
 	// ----- Status Bar
 	statusBarWatchingStyle = lipgloss.NewStyle().
@@ -131,20 +133,20 @@ var (
 	yesNoStyle    = lipgloss.NewStyle().Inherit(mainStyle)
 	questionStyle = lipgloss.NewStyle().
 			AlignHorizontal(lipgloss.Center).
-			Padding(0, 2)
+			Padding(1, 2)
 	yesNoSelected = lipgloss.NewStyle().
 			Foreground(black).
-			Background(focusedColor).
+			Background(focusedButtonColor).
 			Padding(0, 2)
 	yesNoUnselected = lipgloss.NewStyle().
 			Foreground(textColor).
-			Background(gray3).
+			Background(unfocusedButtonColor).
 			Padding(0, 2)
 	popupStyle     = lipgloss.NewStyle().Inherit(mainStyle)
 	popupTextStyle = lipgloss.NewStyle().Padding(1)
 	popupOkStyle   = lipgloss.NewStyle().
 			Foreground(black).
-			Background(focusedColor).
+			Background(focusedButtonColor).
 			Padding(0, 2)
 	About = strings.Join([]string{
 		lipgloss.NewStyle().Bold(true).Render(Title),

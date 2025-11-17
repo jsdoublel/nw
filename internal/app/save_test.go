@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -103,6 +104,77 @@ func TestLoadReturnsSavedData(t *testing.T) {
 			}
 			if record.Title != test.wantFilm {
 				t.Fatalf("expected film title %s, got %s", test.wantFilm, record.Title)
+			}
+		})
+	}
+}
+
+func TestUpdateTrackedLists(t *testing.T) {
+	watchedFilm := &Film{LBxdID: 1, Title: "Seen"}
+	unwatchedFilm := &Film{LBxdID: 2, Title: "Next"}
+	testCases := []struct {
+		name                   string
+		forceAll               bool
+		wantUnwatchedRefreshed bool
+	}{
+		{
+			name:                   "refreshes lists with watched next film",
+			forceAll:               false,
+			wantUnwatchedRefreshed: false,
+		},
+		{
+			name:                   "force refresh refreshes all lists",
+			forceAll:               true,
+			wantUnwatchedRefreshed: true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			app := &Application{
+				TrackedLists: make(map[string]*FilmList),
+				FilmStore:    FilmStore{Films: map[int]*FilmRecord{}},
+				WatchedFilms: FilmsSet{
+					watchedFilm.LBxdID: watchedFilm,
+				},
+			}
+			watchedList := &FilmList{
+				Url: "https://letterboxd.com/bad-watched",
+				Films: []*Film{
+					{LBxdID: 11, Title: "Tracked"},
+				},
+				NextFilm: watchedFilm,
+			}
+			unwatchedList := &FilmList{
+				Url: "https://letterboxd.com/bad-unwatched",
+				Films: []*Film{
+					{LBxdID: 22, Title: "Other"},
+				},
+				NextFilm: unwatchedFilm,
+			}
+			if err := app.AddList(watchedList); err != nil {
+				t.Fatalf("add watched list: %v", err)
+			}
+			if err := app.AddList(unwatchedList); err != nil {
+				t.Fatalf("add unwatched list: %v", err)
+			}
+			watchedList.watched = nil
+			unwatchedList.watched = nil
+			err := app.updateTrackedLists(tc.forceAll)
+			if err == nil || !errors.Is(err, ErrInvalidUrl) {
+				t.Fatalf("expected ErrInvalidUrl, got %v", err)
+			}
+			if watchedList.watched == nil || !watchedList.watched.InSet(watchedFilm) {
+				t.Fatalf("watched list should have refreshed")
+			}
+			if tc.wantUnwatchedRefreshed {
+				if unwatchedList.watched == nil || !unwatchedList.watched.InSet(watchedFilm) {
+					t.Fatalf("unwatched list was not refreshed when forced")
+				}
+			} else if unwatchedList.watched != nil {
+				t.Fatalf("unwatched list should not refresh")
+			}
+			if !app.IsListTracked(watchedList.Url) || !app.IsListTracked(unwatchedList.Url) {
+				t.Fatalf("lists should remain tracked")
 			}
 		})
 	}

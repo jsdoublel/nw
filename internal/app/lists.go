@@ -3,6 +3,7 @@ package app
 import (
 	"errors"
 	"fmt"
+	"log"
 	"math/rand"
 	"strings"
 )
@@ -95,6 +96,19 @@ func (app *Application) RemoveList(filmList *FilmList) error {
 	return nil
 }
 
+// Rescrapes the list films and data from Letterboxd.
+func (app *Application) RefreshList(filmList *FilmList) error {
+	log.Printf("refreshing list %s", filmList.Name)
+	if err := app.RemoveList(filmList); err != nil {
+		return err
+	}
+	if err := app.AddListFromUrl(filmList.Url); err != nil {
+		_ = app.AddList(filmList) // re-add old list if scraping failed, should not fail with error
+		return err
+	}
+	return nil
+}
+
 // Checks if list is traced by user.
 func (app *Application) IsListTracked(url string) bool {
 	_, ok := app.TrackedLists[url]
@@ -109,7 +123,7 @@ func (app *Application) AddListFromUrl(url string) error {
 	if !strings.Contains(url, "/list/") {
 		return fmt.Errorf("%w, not a regular letterboxd list", ErrInvalidUrl)
 	}
-	list, err := ScrapeFilmList(url) // TODO: make goroutine
+	list, err := ScrapeFilmList(url)
 	if err != nil {
 		return fmt.Errorf("could not add list %s, %w", list.Name, err)
 	}

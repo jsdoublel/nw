@@ -52,7 +52,7 @@ func (p *YesNoPrompt) View() string {
 	}
 	buttons := lipgloss.JoinHorizontal(lipgloss.Center, fmt.Sprintf("%s   %s", yes, no))
 	question := questionStyle.Render(p.question)
-	return yesNoStyle.Render(lipgloss.JoinVertical(lipgloss.Center, "", question, "", buttons, ""))
+	return yesNoStyle.Render(lipgloss.JoinVertical(lipgloss.Center, question, buttons))
 }
 
 // Response to prompt: Yes [true] No [false]

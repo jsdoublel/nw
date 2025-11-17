@@ -31,10 +31,11 @@ Tui utitlity for selecting films to watch from letterboxd.
 - [x] Search all films (maybe on letterboxd, but probably TMDB)
 - [x] Add License
 - [ ] Add mouse support
+- [ ] Image support
 - [ ] Add Tutorial
 - [ ] Add config file
 - [ ] Redo list view
-- [ ] Improve search screen
+- [x] Improve search screen
 - [x] Add Help
 - [x] Add status notifications
 - [x] Add splash-screen when starting up

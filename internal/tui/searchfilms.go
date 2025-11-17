@@ -109,10 +109,11 @@ func MakeSearchFilms(a *ApplicationTUI) *SearchFilms {
 			return UpdateSearchItemsMsg{items: items, query: query}
 		}
 	}
-	EnterAction := func(s string, item list.Item) {
+	EnterAction := func(s string, item list.Item) tea.Cmd {
 		if r, ok := item.(FilmResultItem); ok {
 			a.screens.push(MakeFilmDetailsModelFromResults(tmdb.MovieResult(r), a))
 		}
+		return nil
 	}
 	model := *MakeSearchModel(
 		a,

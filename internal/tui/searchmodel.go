@@ -29,7 +29,7 @@ type UpdateSearchFilterMsg struct{ filter string }
 type SearchModel struct {
 	ListSelector
 	input             textinput.Model
-	queryEnterAction  func(string, list.Item)
+	queryEnterAction  func(string, list.Item) tea.Cmd
 	inputChangeAction func(string) tea.Cmd
 	defaultMode       mode
 	mode              mode
@@ -44,7 +44,7 @@ func MakeSearchModel(
 	delegate list.ItemDelegate,
 	defaultMode mode,
 	inputAction func(string) tea.Cmd,
-	queryAction func(string, list.Item),
+	queryAction func(string, list.Item) tea.Cmd,
 ) *SearchModel {
 	list := MakeListSelector(a, "", items, delegate)
 	list.list.SetHeight(resultPainHeight)
@@ -85,18 +85,19 @@ func (sm *SearchModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		ac = sm.inputChangeAction(query)
 	}
 
+	var ec tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
 		case msg.Type == tea.KeyEnter:
 			if sm.mode == searchMode {
-				sm.queryEnterAction(query, sm.list.SelectedItem())
+				ec = sm.queryEnterAction(query, sm.list.SelectedItem())
 			}
 			fallthrough
 		case key.Matches(msg, keys.MoveDown):
 			if sm.mode == searchMode {
 				sm.switchToNormal()
-				return sm, nil
+				return sm, ec
 			}
 		case key.Matches(msg, keys.Back):
 			if sm.mode == searchMode && sm.input.Value() != "" {
@@ -124,7 +125,7 @@ func (sm *SearchModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	var lc tea.Cmd
 	sm.list, lc = sm.list.Update(msg)
-	return sm, tea.Batch(ic, lc, ac)
+	return sm, tea.Batch(ic, lc, ac, ec)
 }
 
 func (sm *SearchModel) View() string {

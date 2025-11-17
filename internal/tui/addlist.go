@@ -147,11 +147,13 @@ func (d searchListsDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
 	case tea.KeyMsg:
 		if msg.Type == tea.KeyEnter || key.Matches(msg, keys.Delete) {
 			if !d.app.IsListTracked(li.fl.Url) {
-				if err := d.app.AddList(li.fl); err != nil {
-					log.Print(err.Error())
-					return nil
+				return func() tea.Msg {
+					if err := d.app.AddList(li.fl); err != nil {
+						log.Print(err.Error())
+						return nil
+					}
+					return UpdateScreenMsg{}
 				}
-				return UpdateScreen
 			} else {
 				d.app.AskYesNo(fmt.Sprintf("Stop tracking list %s?", li.Title()), func(b bool) tea.Msg {
 					return removeListMsg{ok: b}
@@ -196,9 +198,12 @@ func MakeSearchListPane(a *ApplicationTUI) *SearchModel {
 	inputChangeAction := func(s string) tea.Cmd {
 		return func() tea.Msg { return UpdateSearchFilterMsg{filter: s} }
 	}
-	queryEnterAction := func(s string, _ list.Item) {
-		if err := a.AddListFromUrl(s); !errors.Is(err, app.ErrInvalidUrl) {
-			log.Printf("could not add query as url, %s", err)
+	queryEnterAction := func(s string, _ list.Item) tea.Cmd {
+		return func() tea.Msg {
+			if err := a.AddListFromUrl(s); !errors.Is(err, app.ErrInvalidUrl) {
+				log.Printf("could not add query as url, %s", err)
+			}
+			return UpdateScreenMsg{}
 		}
 	}
 	return MakeSearchModel(

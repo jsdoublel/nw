@@ -122,15 +122,18 @@ func (a *ApplicationTUI) View() string {
 // Handle update rounting with overlays
 func (a *ApplicationTUI) UpdateRouter(msg tea.Msg) []tea.Cmd {
 	var c, bc, sc tea.Cmd
-	_, c = a.screens.cur().Update(msg) // always returns nil if cur is an overlay
 	_, sc = a.status.Update(msg)
+	// updating overlay model before non-overlay model avoids issue where a
+	// command that launches an overlay, is also sent to an overlay
 	if ov, ok := a.screens.cur().(*overlay.Model); ok {
 		_, c = ov.Foreground.Update(msg)
 		if msg, ok := msg.(UpdateScreenMsg); ok {
 			_, bc = ov.Background.Update(msg)
 		}
+		return []tea.Cmd{c, sc, bc}
 	}
-	return []tea.Cmd{c, bc, sc}
+	_, c = a.screens.cur().Update(msg)
+	return []tea.Cmd{c, sc}
 }
 
 func (a *ApplicationTUI) checkSize() {
