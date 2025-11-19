@@ -5,6 +5,8 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/lipgloss"
+
+	"github.com/jsdoublel/nw/internal/app"
 )
 
 const (
@@ -40,13 +42,13 @@ var (
 
 	// ----- Colors
 	// colors from : https://github.com/slugbyte/lackluster.nvim
-	lack   = lipgloss.Color("#708090")
+	lack   = paletteColor(app.Config.Appearance.Colors.Primary, "#708090")
 	luster = lipgloss.Color("#deeeed")
-	orange = lipgloss.Color("#ffaa88")
+	orange = paletteColor(app.Config.Appearance.Colors.Secondary, "#ffaa88")
 	yellow = lipgloss.Color("#abab77")
-	green  = lipgloss.Color("#789978")
+	green  = paletteColor(app.Config.Appearance.Colors.Success, "#789978")
 	blue   = lipgloss.Color("#7788aa")
-	red    = lipgloss.Color("#d70000")
+	red    = paletteColor(app.Config.Appearance.Colors.Error, "#d70000")
 
 	black = lipgloss.Color("#000000")
 	gray1 = lipgloss.Color("#080808")
@@ -65,10 +67,7 @@ var (
 	unfocusedButtonColor = gray3
 	textColor            = gray9
 
-	mainStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(focusedColor).
-			Foreground(textColor)
+	mainStyle = mainStyler()
 
 	// ----- Add List Screen
 	addListTitleColor = lack
@@ -155,6 +154,26 @@ var (
 	}, "\n")
 )
 
+func mainStyler() lipgloss.Style {
+	mainStyle := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(focusedColor).
+		Foreground(textColor)
+	bStyles := map[string]lipgloss.Border{
+		"rounded": lipgloss.RoundedBorder(),
+		"normal":  lipgloss.NormalBorder(),
+		"square":  lipgloss.NormalBorder(),
+		"double":  lipgloss.DoubleBorder(),
+	}
+	if app.Config.Appearance.ApplyBackdrop {
+		mainStyle = mainStyle.Background(gray1)
+	}
+	if border, ok := bStyles[strings.ToLower(app.Config.Appearance.Border)]; ok {
+		mainStyle.BorderStyle(border)
+	}
+	return mainStyle
+}
+
 // Returns styled list.DefaultDelegate
 func listStyleDelegate() list.DefaultDelegate {
 	listStyleDele := list.NewDefaultDelegate()
@@ -177,4 +196,11 @@ func listStyleDelegate() list.DefaultDelegate {
 		Foreground(blue).
 		Underline(true)
 	return listStyleDele
+}
+
+func paletteColor(cfg string, fallback string) lipgloss.Color {
+	if cfg == "" {
+		return lipgloss.Color(fallback)
+	}
+	return lipgloss.Color(cfg)
 }

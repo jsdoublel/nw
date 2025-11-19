@@ -1,6 +1,14 @@
 package tui
 
-import "github.com/charmbracelet/bubbles/key"
+import (
+	"strings"
+
+	"github.com/charmbracelet/bubbles/key"
+
+	"github.com/jsdoublel/nw/internal/app"
+)
+
+var NoRebind = []string{}
 
 type keyMap struct {
 	Back        key.Binding
@@ -42,85 +50,42 @@ func (k keyMap) FullHelp() [][]key.Binding {
 	}
 }
 
-var keys = keyMap{
-	Back: key.NewBinding(
-		key.WithKeys("esc"),
-		key.WithHelp("esc", "back"),
-	),
-	Quit: key.NewBinding(
-		key.WithKeys("ctrl+c"),
-		key.WithHelp("ctrl+c", "quit"),
-	),
-	Help: key.NewBinding(
-		key.WithKeys("?"),
-		key.WithHelp("?", "toggle help"),
-	),
-	Left: key.NewBinding(
-		key.WithKeys("left", "h"),
-		key.WithHelp("\u2190/h", "left"),
-	),
-	Right: key.NewBinding(
-		key.WithKeys("right", "l"),
-		key.WithHelp("\u2192/l", "right"),
-	),
-	Up: key.NewBinding(
-		key.WithKeys("up", "k"),
-		key.WithHelp("\u2191/k", "up"),
-	),
-	Down: key.NewBinding(
-		key.WithKeys("down", "j"),
-		key.WithHelp("\u2193/j", "down"),
-	),
-	MoveLeft: key.NewBinding(
-		key.WithKeys("ctrl+h"),
-		key.WithHelp("ctrl+h", "move focus left"),
-	),
-	MoveRight: key.NewBinding(
-		key.WithKeys("ctrl+l"),
-		key.WithHelp("ctrl+l", "move focus right"),
-	),
-	MoveUp: key.NewBinding(
-		key.WithKeys("ctrl+k"),
-		key.WithHelp("ctrl+k", "move focus up"),
-	),
-	MoveDown: key.NewBinding(
-		key.WithKeys("ctrl+j"),
-		key.WithHelp("ctrl+j", "move focus down"),
-	),
-	Search: key.NewBinding(
-		key.WithKeys("i", ":", "/"),
-		key.WithHelp("i/:", "enter text"),
-	),
-	Delete: key.NewBinding(
-		key.WithKeys("ctrl+d"),
-		key.WithHelp("ctrl+d", "delete"),
-	),
-	Yes: key.NewBinding(
-		key.WithKeys("y", "Y"),
-		key.WithHelp("y", "Yes"),
-	),
-	No: key.NewBinding(
-		key.WithKeys("n", "N"),
-		key.WithHelp("n", "No"),
-	),
-	AddList: key.NewBinding(
-		key.WithKeys("a"),
-		key.WithHelp("a", "add lists"),
-	),
-	SearchFilms: key.NewBinding(
-		key.WithKeys("/"),
-		key.WithHelp("/", "search films"),
-	),
-	Update: key.NewBinding(
-		key.WithKeys("ctrl+u"),
-		key.WithHelp("ctrl+u", "update data"),
-	),
-	StopWatch: key.NewBinding(
-		key.WithKeys("ctrl+w"),
-		key.WithHelp("ctrl+w", "stop watching"),
-	),
-	About: key.NewBinding(
-		key.WithKeys("ctrl+a"),
-		key.WithHelp("ctrl+a", "about"),
-	),
+var keys = newKeyMap()
+
+func newKeyMap() keyMap {
+	return keyMap{
+		Back:        binding(NoRebind, []string{"esc"}, "esc", "back"),
+		Quit:        binding(app.Config.Keybinds.Quit, []string{"ctrl+c"}, "ctrl+c", "quit"),
+		Help:        binding(NoRebind, []string{"?"}, "?", "toggle help"),
+		Left:        binding(app.Config.Keybinds.Left, []string{"left", "h"}, "\u2190/h", "left"),
+		Right:       binding(app.Config.Keybinds.Right, []string{"right", "l"}, "\u2192/l", "right"),
+		Up:          binding(app.Config.Keybinds.Up, []string{"up", "k"}, "\u2191/k", "up"),
+		Down:        binding(app.Config.Keybinds.Down, []string{"down", "j"}, "\u2193/j", "down"),
+		MoveLeft:    binding(app.Config.Keybinds.MoveLeft, []string{"ctrl+h"}, "ctrl+h", "move focus left"),
+		MoveRight:   binding(app.Config.Keybinds.MoveRight, []string{"ctrl+l"}, "ctrl+l", "move focus right"),
+		MoveUp:      binding(app.Config.Keybinds.MoveUp, []string{"ctrl+k"}, "ctrl+k", "move focus up"),
+		MoveDown:    binding(app.Config.Keybinds.MoveDown, []string{"ctrl+j"}, "ctrl+j", "move focus down"),
+		Search:      binding(NoRebind, []string{"i", ":", "/"}, "i/:", "enter text"),
+		Delete:      binding(app.Config.Keybinds.Delete, []string{"ctrl+d"}, "ctrl+d", "delete"),
+		Yes:         binding(app.Config.Keybinds.Yes, []string{"y", "Y"}, "y", "Yes"),
+		No:          binding(app.Config.Keybinds.No, []string{"n", "N"}, "n", "No"),
+		AddList:     binding(app.Config.Keybinds.AddList, []string{"a"}, "a", "add lists"),
+		SearchFilms: binding(app.Config.Keybinds.SearchFilms, []string{"/"}, "/", "search films"),
+		Update:      binding(app.Config.Keybinds.Update, []string{"ctrl+u"}, "ctrl+u", "update data"),
+		StopWatch:   binding(app.Config.Keybinds.StopWatch, []string{"ctrl+w"}, "ctrl+w", "stop watching"),
+		About:       binding(app.Config.Keybinds.About, []string{"ctrl+a"}, "ctrl+a", "about"),
+	}
+}
+
+func binding(cfg []string, fallback []string, defaultHelp string, desc string) key.Binding {
+	keys := fallback
+	help := defaultHelp
+	if len(cfg) != 0 {
+		keys = cfg
+		help = strings.Join(cfg, "/")
+	}
+	return key.NewBinding(
+		key.WithKeys(keys...),
+		key.WithHelp(help, desc),
+	)
 }

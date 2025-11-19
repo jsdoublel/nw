@@ -1,0 +1,42 @@
+# username = "letterboxd-username" # letterboxd username (or pass as an argument to the executable)
+# api_key = "your-api-key-here" # TMDB api Key (or use TMDB_API_KEY environmental variable)
+
+# Directories let you override where NW stores data/posters.
+# Below are shown the default locations on Linux.
+[directories]
+# data = "/home/user/.local/share/nw" # application data (save files, logs)
+# posters = "/home/user/Downloads"    # poster download location
+
+# Appearance controls general look-and-feel of the TUI.
+[appearance]
+border = "rounded" # rounded, normal, or double border style
+backdrop = false   # enable backdrop 
+
+# Palette values override core colors used throughout the UI.
+[appearance.colors]
+primary = "#708090"   # blue
+secondary = "#ffaa88" # orange
+success = "#789978"   # green
+error = "#d70000"     # red
+
+# Key bindings map actions to multiple acceptable key sequences.
+# Keep in mind that some keybindings (e.g., stop_watch and update) might
+# conflict with writing text into a text box if chosen poorly.
+[keybinds]
+about = ["ctrl+a"]         # show about screen
+add_list = ["a"]           # open add-list screen
+delete = ["ctrl+d"]        # delete current film/list entry
+up = ["up", "k"]           # move up
+down = ["down", "j"]       # move down
+left = ["left", "h"]       # move left
+right = ["right", "l"]     # move right
+move_up = ["ctrl+k"]       # move focus up
+move_down = ["ctrl+j"]     # move focus down
+move_left = ["ctrl+h"]     # move focus left
+move_right = ["ctrl+l"]    # move focus right
+yes = ["y", "Y"]           # confirm prompts
+no = ["n", "N"]            # cancel prompts
+search_films = ["/"]       # open film search
+stop_watch = ["ctrl+w"]    # stop Discord "watching" presence
+update = ["ctrl+u"]        # refresh data from Letterboxd
+quit = ["ctrl+c"]          # quit the application

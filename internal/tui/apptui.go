@@ -44,7 +44,10 @@ func RunApplicationTUI(username string) error {
 		return fmt.Errorf("could not set up logging, %w", err)
 	}
 	defer func() { _ = logf.Close() }()
-	log.Print("nw starting...")
+	log.Printf("nw version %s starting...", app.Version)
+	if app.ConfigErr != nil {
+		log.Printf("error loading config, %s", app.ConfigErr)
+	}
 	application, err := app.Load(username)
 	if err != nil {
 		return fmt.Errorf("could not load application data, %w", err)

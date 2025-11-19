@@ -11,8 +11,12 @@ import (
 
 var NWDataPath string
 
+const Version = "v0.1.0"
+
 func init() {
-	NWDataPath = filepath.Join(getDataDirBase(), "nw")
+	configInit()
+	apiInit()
+	NWDataPath = getDataDirBase()
 	if _, err := os.Stat(NWDataPath); os.IsNotExist(err) {
 		if err := os.MkdirAll(NWDataPath, 0o755); err != nil {
 			log.Printf("could not create directory at %s", NWDataPath)
@@ -54,5 +58,8 @@ func getDataDirBase() string {
 	if dir, ok := os.LookupEnv("NW_DATA_HOME"); ok {
 		return dir
 	}
-	return xdg.DataHome
+	if Config.Directories.Data != "" {
+		return Config.Directories.Data
+	}
+	return filepath.Join(xdg.DataHome, "nw")
 }

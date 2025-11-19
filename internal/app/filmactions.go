@@ -63,7 +63,11 @@ func DownloadPoster(fr FilmRecord) (string, error) {
 
 func posterFileName(f Film) string {
 	fName := fmt.Sprintf("%s_%d.jpg", strings.ToLower(strings.ReplaceAll(f.Title, " ", "_")), f.Year)
-	return filepath.Join(xdg.UserDirs.Download, fName)
+	posterBaseDir := Config.Directories.Posters
+	if posterBaseDir == "" {
+		posterBaseDir = xdg.UserDirs.Download
+	}
+	return filepath.Join(posterBaseDir, fName)
 }
 
 func (app *Application) StartDiscordRPC(fr FilmRecord) error {

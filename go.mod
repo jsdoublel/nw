@@ -3,6 +3,7 @@ module github.com/jsdoublel/nw
 go 1.25.4
 
 require (
+	github.com/BurntSushi/toml v1.5.0
 	github.com/adrg/xdg v0.5.3
 	github.com/charmbracelet/bubbles v0.21.1-0.20250623103423-23b8fd6302d7
 	github.com/charmbracelet/bubbletea v1.3.10
