@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -50,22 +51,13 @@ var (
 	blue   = lipgloss.Color("#7788aa")
 	red    = paletteColor(app.Config.Appearance.Colors.Error, "#d70000")
 
-	black = lipgloss.Color("#000000")
-	gray1 = lipgloss.Color("#080808")
-	gray2 = lipgloss.Color("#191919")
-	gray3 = lipgloss.Color("#2a2a2a")
-	gray4 = lipgloss.Color("#444444")
-	gray5 = lipgloss.Color("#555555")
-	gray6 = lipgloss.Color("#7a7a7a")
-	gray7 = lipgloss.Color("#aaaaaa")
-	gray8 = lipgloss.Color("#cccccc")
-	gray9 = lipgloss.Color("#dddddd")
+	grays = grayColors(app.Config.Appearance.LightMode)
 
-	unfocusedColor       = gray4
-	focusedColor         = gray6
-	focusedButtonColor   = gray7
-	unfocusedButtonColor = gray3
-	textColor            = gray9
+	unfocusedColor       = grays[4]
+	focusedColor         = grays[6]
+	focusedButtonColor   = grays[7]
+	unfocusedButtonColor = grays[3]
+	textColor            = grays[9]
 
 	mainStyle = mainStyler()
 
@@ -94,7 +86,7 @@ var (
 	flimDirStyle        = lipgloss.NewStyle().Inherit(filmTextStyle).Italic(true)
 	filmCastHeaderStyle = lipgloss.NewStyle().Inherit(filmTextStyle).Underline(true)
 	filmActionSelected  = lipgloss.NewStyle().
-				Foreground(black).
+				Foreground(grays[0]).
 				Background(focusedButtonColor).
 				Padding(0, 2)
 	filmActionUnselected = lipgloss.NewStyle().
@@ -134,7 +126,7 @@ var (
 			AlignHorizontal(lipgloss.Center).
 			Padding(1, 2)
 	yesNoSelected = lipgloss.NewStyle().
-			Foreground(black).
+			Foreground(grays[0]).
 			Background(focusedButtonColor).
 			Padding(0, 2)
 	yesNoUnselected = lipgloss.NewStyle().
@@ -144,7 +136,7 @@ var (
 	popupStyle     = lipgloss.NewStyle().Inherit(mainStyle)
 	popupTextStyle = lipgloss.NewStyle().Padding(1)
 	popupOkStyle   = lipgloss.NewStyle().
-			Foreground(black).
+			Foreground(grays[0]).
 			Background(focusedButtonColor).
 			Padding(0, 2)
 	About = strings.Join([]string{
@@ -166,7 +158,7 @@ func mainStyler() lipgloss.Style {
 		"double":  lipgloss.DoubleBorder(),
 	}
 	if app.Config.Appearance.ApplyBackdrop {
-		mainStyle = mainStyle.Background(gray1)
+		mainStyle = mainStyle.Background(grays[1])
 	}
 	if border, ok := bStyles[strings.ToLower(app.Config.Appearance.Border)]; ok {
 		mainStyle.BorderStyle(border)
@@ -178,13 +170,13 @@ func mainStyler() lipgloss.Style {
 func listStyleDelegate() list.DefaultDelegate {
 	listStyleDele := list.NewDefaultDelegate()
 	listStyleDele.Styles.NormalTitle = listStyleDele.Styles.NormalTitle.
-		Foreground(gray8)
+		Foreground(grays[8])
 	listStyleDele.Styles.NormalDesc = listStyleDele.Styles.NormalDesc.
-		Foreground(gray7)
+		Foreground(grays[7])
 	listStyleDele.Styles.DimmedTitle = listStyleDele.Styles.DimmedTitle.
-		Foreground(gray6)
+		Foreground(grays[6])
 	listStyleDele.Styles.DimmedDesc = listStyleDele.Styles.DimmedDesc.
-		Foreground(gray5)
+		Foreground(grays[5])
 	listStyleDele.Styles.SelectedTitle = listStyleDele.Styles.SelectedTitle.
 		Foreground(luster).
 		BorderForeground(orange).
@@ -203,4 +195,23 @@ func paletteColor(cfg string, fallback string) lipgloss.Color {
 		return lipgloss.Color(fallback)
 	}
 	return lipgloss.Color(cfg)
+}
+
+func grayColors(lightMode bool) []lipgloss.Color {
+	grays := []lipgloss.Color{
+		lipgloss.Color("#000000"),
+		lipgloss.Color("#080808"),
+		lipgloss.Color("#191919"),
+		lipgloss.Color("#2a2a2a"),
+		lipgloss.Color("#444444"),
+		lipgloss.Color("#555555"),
+		lipgloss.Color("#7a7a7a"),
+		lipgloss.Color("#aaaaaa"),
+		lipgloss.Color("#cccccc"),
+		lipgloss.Color("#dddddd"),
+	}
+	if lightMode {
+		slices.Reverse(grays)
+	}
+	return grays
 }

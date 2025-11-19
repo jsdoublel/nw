@@ -11,6 +11,7 @@
 [appearance]
 border = "rounded" # rounded, normal, or double border style
 backdrop = false   # enable backdrop 
+light_mode = false # enable to make program work with light backdrop
 
 # Palette values override core colors used throughout the UI.
 [appearance.colors]
