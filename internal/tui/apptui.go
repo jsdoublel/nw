@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"path/filepath"
@@ -48,11 +49,24 @@ func RunApplicationTUI(username string) error {
 	if app.ConfigErr != nil {
 		log.Printf("error loading config, %s", app.ConfigErr)
 	}
+	if username == "" {
+		username = app.Config.Username
+	}
+	if username == "" {
+		username = AskQuestion("What is your Letterboxd username?", "Username")
+	}
+	if username == "" {
+		return errors.New("no username provided")
+	}
 	application, err := app.Load(username)
 	if err != nil {
 		return fmt.Errorf("could not load application data, %w", err)
 	}
 	defer application.Shutdown()
+	if application.ApiKey == "" {
+		application.ApiKey = AskQuestion("What is your TMDB api key?", "API Key")
+	}
+	application.ApiInit()
 	a := ApplicationTUI{Application: application}
 	p := tea.NewProgram(&a, tea.WithAltScreen())
 	_, err = p.Run()

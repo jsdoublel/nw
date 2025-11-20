@@ -51,13 +51,13 @@ var (
 	blue   = lipgloss.Color("#7788aa")
 	red    = paletteColor(app.Config.Appearance.Colors.Error, "#d70000")
 
-	grays = grayColors(app.Config.Appearance.LightMode)
+	gray = grayColors(app.Config.Appearance.LightMode)
 
-	unfocusedColor       = grays[4]
-	focusedColor         = grays[6]
-	focusedButtonColor   = grays[7]
-	unfocusedButtonColor = grays[3]
-	textColor            = grays[9]
+	unfocusedColor       = gray[4]
+	focusedColor         = gray[6]
+	focusedButtonColor   = gray[7]
+	unfocusedButtonColor = gray[3]
+	textColor            = gray[9]
 
 	mainStyle = mainStyler()
 
@@ -86,7 +86,7 @@ var (
 	flimDirStyle        = lipgloss.NewStyle().Inherit(filmTextStyle).Italic(true)
 	filmCastHeaderStyle = lipgloss.NewStyle().Inherit(filmTextStyle).Underline(true)
 	filmActionSelected  = lipgloss.NewStyle().
-				Foreground(grays[0]).
+				Foreground(gray[0]).
 				Background(focusedButtonColor).
 				Padding(0, 2)
 	filmActionUnselected = lipgloss.NewStyle().
@@ -126,7 +126,7 @@ var (
 			AlignHorizontal(lipgloss.Center).
 			Padding(1, 2)
 	yesNoSelected = lipgloss.NewStyle().
-			Foreground(grays[0]).
+			Foreground(gray[0]).
 			Background(focusedButtonColor).
 			Padding(0, 2)
 	yesNoUnselected = lipgloss.NewStyle().
@@ -136,7 +136,7 @@ var (
 	popupStyle     = lipgloss.NewStyle().Inherit(mainStyle)
 	popupTextStyle = lipgloss.NewStyle().Padding(1)
 	popupOkStyle   = lipgloss.NewStyle().
-			Foreground(grays[0]).
+			Foreground(gray[0]).
 			Background(focusedButtonColor).
 			Padding(0, 2)
 	About = strings.Join([]string{
@@ -144,6 +144,9 @@ var (
 		lipgloss.NewStyle().Italic(true).Render(Subtitle),
 		popupTextStyle.Render(License),
 	}, "\n")
+
+	startupTextStyle  = lipgloss.NewStyle().Foreground(gray[8]).Italic(true)
+	startupInputStyle = lipgloss.NewStyle().Foreground(textColor)
 )
 
 func mainStyler() lipgloss.Style {
@@ -158,10 +161,10 @@ func mainStyler() lipgloss.Style {
 		"double":  lipgloss.DoubleBorder(),
 	}
 	if app.Config.Appearance.ApplyBackdrop {
-		mainStyle = mainStyle.Background(grays[1])
+		mainStyle = mainStyle.Background(gray[1])
 	}
 	if border, ok := bStyles[strings.ToLower(app.Config.Appearance.Border)]; ok {
-		mainStyle.BorderStyle(border)
+		mainStyle = mainStyle.BorderStyle(border)
 	}
 	return mainStyle
 }
@@ -170,13 +173,13 @@ func mainStyler() lipgloss.Style {
 func listStyleDelegate() list.DefaultDelegate {
 	listStyleDele := list.NewDefaultDelegate()
 	listStyleDele.Styles.NormalTitle = listStyleDele.Styles.NormalTitle.
-		Foreground(grays[8])
+		Foreground(gray[8])
 	listStyleDele.Styles.NormalDesc = listStyleDele.Styles.NormalDesc.
-		Foreground(grays[7])
+		Foreground(gray[7])
 	listStyleDele.Styles.DimmedTitle = listStyleDele.Styles.DimmedTitle.
-		Foreground(grays[6])
+		Foreground(gray[6])
 	listStyleDele.Styles.DimmedDesc = listStyleDele.Styles.DimmedDesc.
-		Foreground(grays[5])
+		Foreground(gray[5])
 	listStyleDele.Styles.SelectedTitle = listStyleDele.Styles.SelectedTitle.
 		Foreground(luster).
 		BorderForeground(orange).

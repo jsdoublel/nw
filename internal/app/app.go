@@ -15,7 +15,6 @@ const Version = "v0.1.0"
 
 func init() {
 	configInit()
-	ApiInit()
 	NWDataPath = getDataDirBase()
 	if _, err := os.Stat(NWDataPath); os.IsNotExist(err) {
 		if err := os.MkdirAll(NWDataPath, 0o755); err != nil {
@@ -29,6 +28,7 @@ type Application struct {
 	// ----- stuff from letterboxd
 
 	Username     string      // username on letterboxd
+	ApiKey       string      // TMDB api key
 	ListHeaders  []*FilmList // lists that belong to user on letterboxd (without scrapped films)
 	Watchlist    FilmsSet    // users letterboxd watchlist
 	WatchedFilms FilmsSet    // users list of watched films on letterboxd

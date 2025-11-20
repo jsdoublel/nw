@@ -3,8 +3,6 @@ package app
 import (
 	"errors"
 	"fmt"
-	"log"
-	"os"
 	"strings"
 	"time"
 
@@ -18,11 +16,9 @@ var (
 	ErrFailedTMDBLookup = errors.New("failed TMDB lookup")
 )
 
-func ApiInit() { // prefers config key if valid
+func (app *Application) ApiInit() { // prefers config key if valid
 	var err error
-	if TMDBClient, err = tmdb.Init(Config.ApiKey); err == nil {
-	} else if TMDBClient, err = tmdb.Init(os.Getenv("TMDB_API_KEY")); err != nil {
-		log.Printf("%s, %s", ErrNoAPI, err)
+	if TMDBClient, err = tmdb.Init(app.ApiKey); err != nil {
 		return
 	}
 	TMDBClient.SetClientAutoRetry()

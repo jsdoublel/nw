@@ -57,13 +57,6 @@ func parseArgs() string {
 
 func main() {
 	username := parseArgs()
-	if username == "" {
-		username = app.Config.Username
-	}
-	if username == "" {
-		fmt.Println("No username provided (try `nw -h` for help)")
-		os.Exit(1)
-	}
 	if err := tui.RunApplicationTUI(username); err != nil {
 		fmt.Fprintf(os.Stderr, "nw failed with error, %s\n", err.Error())
 		os.Exit(1)

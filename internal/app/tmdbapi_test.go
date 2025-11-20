@@ -1,8 +1,20 @@
 package app
 
 import (
+	"log"
+	"os"
 	"testing"
+
+	tmdb "github.com/cyruzin/golang-tmdb"
 )
+
+func TestMain(m *testing.M) {
+	TMDBClient, _ = tmdb.Init(os.Getenv("TMDB_API_KEY"))
+	if TMDBClient == nil {
+		log.Fatal("failed to initialize TMDB client")
+	}
+	os.Exit(m.Run())
+}
 
 func TestTMDBFilm(t *testing.T) {
 	testCases := []struct {

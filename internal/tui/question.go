@@ -7,7 +7,6 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/jsdoublel/nw/internal/app"
 )
 
 type Question struct {
@@ -31,7 +30,7 @@ func (q *Question) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (q *Question) View() string {
-	return lipgloss.JoinVertical(lipgloss.Left, q.question, q.input.View())
+	return lipgloss.JoinVertical(lipgloss.Left, startupTextStyle.Render("\n"+q.question), startupInputStyle.Render(q.input.View()))
 }
 
 func AskQuestion(question, placeholder string) string {
@@ -44,24 +43,9 @@ func AskQuestion(question, placeholder string) string {
 	p := tea.NewProgram(q)
 	result, err := p.Run()
 	if err != nil {
-		log.Fatalf("startup failed with %s\n", err)
+		log.Printf("startup failed with %s\n", err)
+		return ""
 	}
 	q, _ = result.(*Question)
 	return strings.TrimSpace(q.input.Value())
-}
-
-func RunStartup(username string) {
-	changed := false
-	if username == "" && app.Config.Username == "" {
-		app.Config.Username = AskQuestion("What is your Letterboxd username?:", "username")
-	}
-	if app.TMDBClient == nil && app.Config.ApiKey == "" {
-		app.Config.ApiKey = AskQuestion("Enter your TMDB api key:", "api key")
-		app.ApiInit()
-	}
-	if changed && strings.ToLower(AskQuestion("Save changes to config?", "y/n"))[0] == 'y' {
-		if err := app.SaveConfig(); err != nil {
-			log.Printf("failed to update config, %s", err)
-		}
-	}
 }

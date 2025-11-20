@@ -79,6 +79,9 @@ func savePath(username string) string {
 
 // Post JSON unmarshal setup
 func (app *Application) rehydrate() {
+	if app.ApiKey == "" {
+		app.ApiKey = getAPIKey()
+	}
 	for _, list := range app.TrackedLists {
 		list.watched = app.WatchedFilms
 	}
@@ -86,6 +89,13 @@ func (app *Application) rehydrate() {
 	app.NWQueue.watchedFilms = app.WatchedFilms
 	app.NWQueue.watchlist = app.Watchlist
 	app.NWQueue.store = &app.FilmStore
+}
+
+func getAPIKey() string {
+	if Config.ApiKey != "" {
+		return Config.ApiKey
+	}
+	return os.Getenv("TMDB_API_KEY")
 }
 
 // ----- Update user data etc.
