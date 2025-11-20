@@ -18,7 +18,7 @@ var (
 	ErrFailedTMDBLookup = errors.New("failed TMDB lookup")
 )
 
-func apiInit() { // prefers config key if valid
+func ApiInit() { // prefers config key if valid
 	var err error
 	if TMDBClient, err = tmdb.Init(Config.ApiKey); err == nil {
 	} else if TMDBClient, err = tmdb.Init(os.Getenv("TMDB_API_KEY")); err != nil {

@@ -15,7 +15,7 @@ const Version = "v0.1.0"
 
 func init() {
 	configInit()
-	apiInit()
+	ApiInit()
 	NWDataPath = getDataDirBase()
 	if _, err := os.Stat(NWDataPath); os.IsNotExist(err) {
 		if err := os.MkdirAll(NWDataPath, 0o755); err != nil {

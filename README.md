@@ -34,7 +34,7 @@ Tui utitlity for selecting films to watch from letterboxd.
 - [ ] Image support
 - [ ] Add Tutorial
 - [ ] Add better onbordering (e.g., if you don't enter your username, ask, etc.)
-- [ ] Add config file
+- [x] Add config file
 - [x] Redo list view
 - [x] Improve search screen
 - [x] Add Help

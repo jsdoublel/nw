@@ -73,3 +73,7 @@ func configInit() {
 func ConfigPath() string {
 	return filepath.Join(xdg.ConfigHome, "nw", "nw.toml")
 }
+
+func SaveConfig() error {
+	return nil
+}
