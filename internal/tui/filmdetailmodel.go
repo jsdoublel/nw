@@ -169,27 +169,45 @@ func (fd *FilmDetailsModel) actionLeft() {
 	}
 }
 
-func poster(fr app.FilmRecord, a *ApplicationTUI) (tea.Cmd, error) {
-	if path, err := app.DownloadPoster(fr); err != nil {
-		return statusMessageCmd(Message{text: fmt.Sprintf("error %s", err), error: true}), err
-	} else {
-		return statusMessageCmd(Message{text: fmt.Sprintf("Poster downloaded to %s", path)}), nil
+func filmActions(fr app.FilmRecord, a *ApplicationTUI) []FilmAction {
+	actions := []FilmAction{
+		{label: "Watch", action: func(fr app.FilmRecord) (tea.Cmd, error) { return nil, a.StartDiscordRPC(fr) }},
+		{label: "Poster", action: func(fr app.FilmRecord) (tea.Cmd, error) {
+			if path, err := app.DownloadPoster(fr); err != nil {
+				return statusMessageCmd(Message{text: fmt.Sprintf("error %s", err), error: true}), err
+			} else {
+				return statusMessageCmd(Message{text: fmt.Sprintf("Poster downloaded to %s", path)}), nil
+			}
+		}},
 	}
+	if fr.Url != "" {
+		actions = append(actions, FilmAction{
+			label:  "Letterboxd",
+			action: func(f app.FilmRecord) (tea.Cmd, error) { return nil, browser.OpenURL(f.Url) },
+		})
+	}
+	if fr.Url == "" || app.Config.Features.AlwaysIncludeTMDB {
+		actions = append(actions, FilmAction{
+			label: "TMDB",
+			action: func(f app.FilmRecord) (tea.Cmd, error) {
+				return nil, browser.OpenURL(fmt.Sprintf("%s%d", app.TMDBFilmPathPrefix, fr.TMDBID))
+			},
+		})
+	}
+	if app.Config.Features.DisableDiscordRPC {
+		return actions[1:]
+	}
+	return actions
 }
 
 func MakeFilmDetailsModel(f *app.Film, a *ApplicationTUI) *FilmDetailsModel {
 	fr, err := a.FilmStore.Lookup(*f)
 	filmDetailsStyle = filmDetailsStyle.BorderForeground(focusedColor)
-	filmActions := []FilmAction{
-		{label: "Watch", action: func(fr app.FilmRecord) (tea.Cmd, error) { return nil, a.StartDiscordRPC(fr) }},
-		{label: "Poster", action: func(fr app.FilmRecord) (tea.Cmd, error) { return poster(fr, a) }},
-		{label: "Letterboxd", action: func(f app.FilmRecord) (tea.Cmd, error) { return nil, browser.OpenURL(f.Url) }},
-	}
 	return &FilmDetailsModel{
 		film:    fr,
 		focused: false,
 		app:     a,
-		actions: filmActions,
+		actions: filmActions(*fr, a),
 		err:     err,
 	}
 }
@@ -199,15 +217,11 @@ func MakeFilmDetailsModelFromResults(f tmdb.MovieResult, a *ApplicationTUI) *Fil
 	details, err := app.TMDBFilm(int(f.ID))
 	fr := app.FilmRecord{Film: app.Film{Title: details.Title, Year: uint(releaseYear)}, TMDBID: int(details.ID), Details: details}
 	filmDetailsStyle = filmDetailsStyle.BorderForeground(focusedColor)
-	filmActions := []FilmAction{
-		{label: "Watch", action: func(fr app.FilmRecord) (tea.Cmd, error) { return nil, a.StartDiscordRPC(fr) }},
-		{label: "Poster", action: func(fr app.FilmRecord) (tea.Cmd, error) { return poster(fr, a) }},
-	}
 	return &FilmDetailsModel{
 		film:    &fr,
 		focused: false,
 		app:     a,
-		actions: filmActions,
+		actions: filmActions(fr, a),
 		err:     err,
 	}
 }

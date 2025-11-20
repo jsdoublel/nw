@@ -1,6 +1,11 @@
 # username = "letterboxd-username" # letterboxd username (or pass as an argument to the executable)
 # api_key = "your-api-key-here" # TMDB api Key (or use TMDB_API_KEY environmental variable)
 
+# Enable or disable features that are apart of the application.
+[features]
+disable_discord_rpc = false # when true, disables Discord RPC "watching" option.
+always_include_tmdb = false # when true, always includes link to TMDB page on all film details screens.
+
 # Directories let you override where NW stores data/posters.
 # Below are shown the default locations on Linux.
 [directories]

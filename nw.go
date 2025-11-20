@@ -31,10 +31,6 @@ import (
 )
 
 func parseArgs() string {
-	flag.Usage = func() {
-		fmt.Fprint(flag.CommandLine.Output(), "Usage: nw [flags]\n\nFlags:\n") // nolint
-		flag.PrintDefaults()
-	}
 	username := flag.String("u", "", "letterboxd username (overrides config)")
 	config := flag.Bool("c", false, "prints expected config path and exits")
 	version := flag.Bool("v", false, "prints version and exits")
@@ -56,9 +52,8 @@ func parseArgs() string {
 }
 
 func main() {
-	username := parseArgs()
-	if err := tui.RunApplicationTUI(username); err != nil {
-		fmt.Fprintf(os.Stderr, "nw failed with error, %s\n", err.Error())
+	if err := tui.RunApplicationTUI(parseArgs()); err != nil {
+		fmt.Fprintf(os.Stderr, "nw failed with error: %s\n", err.Error())
 		os.Exit(1)
 	}
 }

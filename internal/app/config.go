@@ -11,9 +11,15 @@ import (
 type config struct {
 	Username    string           `toml:"username"`
 	ApiKey      string           `toml:"api_key"`
+	Features    featuresConfig   `toml:"features"`
 	Appearance  appearanceConfig `toml:"appearance"`
 	Keybinds    keybindConfig    `toml:"keybinds"`
 	Directories directoryConfig  `toml:"directories"`
+}
+
+type featuresConfig struct {
+	DisableDiscordRPC bool `toml:"discord_rpc"`
+	AlwaysIncludeTMDB bool `toml:"always_include_tmdb"`
 }
 
 type appearanceConfig struct {

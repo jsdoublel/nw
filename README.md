@@ -33,7 +33,7 @@ Tui utitlity for selecting films to watch from letterboxd.
 - [ ] Add mouse support
 - [ ] Image support
 - [ ] Add Tutorial
-- [ ] Add better onbordering (e.g., if you don't enter your username, ask, etc.)
+- [x] Add better onbordering (e.g., if you don't enter your username, ask, etc.)
 - [x] Add config file
 - [x] Redo list view
 - [x] Improve search screen
