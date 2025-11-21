@@ -1,7 +1,6 @@
 package tui
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"path/filepath"
@@ -49,14 +48,10 @@ func RunApplicationTUI(username string) error {
 	if app.ConfigErr != nil {
 		log.Printf("error loading config, %s", app.ConfigErr)
 	}
-	if username == "" {
-		username = app.Config.Username
-	}
-	if username == "" {
-		username = AskQuestion("What is your Letterboxd username?", "Username")
-	}
-	if username == "" {
-		return errors.New("no username provided")
+	if err := app.GetUser(&username, func() string {
+		return AskQuestion("What is your Letterboxd username?", "Username")
+	}); err != nil {
+		return err
 	}
 	application, err := app.Load(username)
 	if err != nil {

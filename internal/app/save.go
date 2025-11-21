@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -15,7 +16,8 @@ const (
 	LatestSaveVersion  = 0
 	userDataExpireTime = time.Hour * 24
 
-	saveExt = ".json"
+	lastUserFile = "lastusername.txt"
+	saveExt      = ".json"
 )
 
 // ----- Save functionality
@@ -70,6 +72,33 @@ func Load(username string) (*Application, error) {
 	} else {
 		return nil, err
 	}
+}
+
+// Retrieve username if it has not been set using a variety of means. askUser
+// is a function that can be used to ask the user in some way to enter their
+// username if all else fails. GetUser also saves and loads most recently used
+// username. Returns an error if no username can ultimately be retrieved.
+func GetUser(username *string, askUser func() string) error {
+	if *username == "" {
+		*username = Config.Username
+	}
+	lastUsernameFile := filepath.Join(NWDataPath, lastUserFile)
+	if *username == "" {
+		if content, err := os.ReadFile(lastUsernameFile); err == nil {
+			*username = string(bytes.TrimSpace(content))
+		}
+	}
+	if *username == "" && askUser != nil {
+		*username = askUser()
+	}
+	if *username != "" {
+		if err := os.WriteFile(lastUsernameFile, []byte(*username), 0o0666); err != nil {
+			log.Printf("error storing last username, %s", err)
+		}
+	} else {
+		return errors.New("no username provided")
+	}
+	return nil
 }
 
 // Get save path name from username
