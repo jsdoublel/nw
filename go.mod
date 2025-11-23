@@ -57,3 +57,5 @@ require (
 	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 )
+
+replace gopkg.in/natefinch/npipe.v2 => github.com/ph4r05/npipe v0.0.0-20240527105247-e977e49ae283 // indirect
