@@ -8,6 +8,8 @@ import (
 	"github.com/adrg/xdg"
 )
 
+const configName = "config.toml"
+
 type config struct {
 	Username    string           `toml:"username"`
 	ApiKey      string           `toml:"api_key"`
@@ -77,5 +79,5 @@ func configInit() {
 
 // Returns the expected config file path
 func ConfigPath() string {
-	return filepath.Join(xdg.ConfigHome, "nw", "nw.toml")
+	return filepath.Join(xdg.ConfigHome, "nw", configName)
 }

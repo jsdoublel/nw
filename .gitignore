@@ -1,6 +1,6 @@
-nw
+bin
 .env
 AGENTS.md
+GEMINI.md
 scratch
 *.pdf
-nw-*
