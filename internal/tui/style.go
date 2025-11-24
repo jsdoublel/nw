@@ -160,9 +160,6 @@ func mainStyler() lipgloss.Style {
 		"square":  lipgloss.NormalBorder(),
 		"double":  lipgloss.DoubleBorder(),
 	}
-	if app.Config.Appearance.ApplyBackdrop {
-		mainStyle = mainStyle.Background(gray[1])
-	}
 	if border, ok := bStyles[strings.ToLower(app.Config.Appearance.Border)]; ok {
 		mainStyle = mainStyle.BorderStyle(border)
 	}

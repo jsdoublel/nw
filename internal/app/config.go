@@ -25,10 +25,9 @@ type featuresConfig struct {
 }
 
 type appearanceConfig struct {
-	Border        string       `toml:"border"` // rounded, normal, double
-	ApplyBackdrop bool         `toml:"backdrop"`
-	LightMode     bool         `toml:"light_mode"`
-	Colors        colorPalette `toml:"colors"`
+	Border    string       `toml:"border"` // rounded, normal, double
+	LightMode bool         `toml:"light_mode"`
+	Colors    colorPalette `toml:"colors"`
 }
 
 type colorPalette struct {

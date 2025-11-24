@@ -15,7 +15,6 @@ always_include_tmdb = false # when true, always includes link to TMDB page on al
 # Appearance controls general look-and-feel of the TUI.
 [appearance]
 border = "rounded" # rounded, normal, or double border style
-backdrop = false   # enable backdrop 
 light_mode = false # enable to make program work with light backdrop
 
 # Palette values override core colors used throughout the UI.
