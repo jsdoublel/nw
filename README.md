@@ -1,74 +1,66 @@
 # NW (Next Watch)
 
-Tui utitlity for selecting films to watch from letterboxd.
+A TUI utility for selecting films to watch from
+[Letterboxd](https://letterboxd.com/) (powered by
+[TMDB](https://www.themoviedb.org/)). Also includes features for quickly
+downloading poster images from TMDB and setting your Discord status as the
+current film you are watching.
 
-## Features (TODO)
+## Main Features
 
-### Recommendations
+> [!WARNING]
+> Some features require a TMDB api key. You can obtain one from [TDMB's
+> website](https://developer.themoviedb.org/docs/getting-started) for free.
 
-- [x] Recommended Next Watches
-- [x] Recommend next unwatched film from order lists
-- [x] Recommend random unwatched film from unordered lists
+- Chooses your Next Watch
+	- Populates a list of five ordered groups containing five films from your
+	  Letterboxd Watchlist, as well as a selection for what film is to be
+	  watched next.
+	- Each time you watch a film, a film is selected from each group to be
+	  promoted to the next group at random.
+- Track progress on lists
+	- You can search through public lists on your Letterboxd profile, as well
+	  as retrieve list from URLs.
+	- List can be set as Ordered (suggests the next unwatched film) or
+	  Unordered (selects a random unwatched film).
+- Search up film details
+    - Allows you to quickly search though films via TMDB.
+    - Once a film is selected you can 
+		- View the film's details
+		- Download the poster image
+		- Display the film as being "Watched" on Discord.
 
-### List tracking
+## Getting Started 
 
-- [x] Add lists from Profile lists
-- [x] Add lists from URL
-- [x] View tracked lists
-- [x] Delete tracked lists
-- [x] Set list as order/unordered
+### Installation
 
-### Details
+There are three ways to install `nw`. If you have [Go](https://go.dev/) installed, `nw` can be installed with
 
-- [x] Display film details
-- [ ] Display list details
+```
+go install github.com/jsdoublel/nw@latest
+```
 
-### Misc 
+Otherwise, you can download a precompiled binary from the [GitHub releases](https://github.com/jsdoublel/nw/releases); or, if you want to build `nw` from source, you can do this by running
+```
+git clone https://github.com/jsdoublel/nw.git
+cd nw
+make
+```
+Running `make` successfully requires that Go is installed.
 
-- [x] Download posters
-- [x] Go to TMDB site (or letterboxd)
-- [x] Set Discord Rich Presence
-- [x] Search all films (maybe on letterboxd, but probably TMDB)
-- [x] Add License
-- [ ] Add mouse support
-- [ ] Image support
-- [ ] Add Tutorial
-- [x] Add better onbordering (e.g., if you don't enter your username, ask, etc.)
-- [x] Add config file
-- [x] Redo list view
-- [x] Improve search screen
-- [x] Add Help
-- [x] Add status notifications
-- [x] Add splash-screen when starting up
+### Initial setup
 
-## Screens 
+When you first start `nw`, it will ask for your Letterboxd username, as well as
+your TMDB API Key. If you want to change these values later, they can be set in
+the [config file](Configuration). Alternatively, you can launch `nw` with the
+`-u` argument to switch Letterboxd accounts (i.e., `nw -u <new username>`).
 
-### Main Screen (NW Queue Page)
+## Configuration
 
-- Recommend next film from randomizer queue
-- Show entire ranomizer queue
-- Recommendations and next up from tracked lists (as well as list)
-- ACTION: Delete film from randomizer queue
-- ACTION: View film details
-- ACTION: Add list to track
-- ACTION: View tracked list details
-- ACTION: Search all through all films
+NW uses a configuration file to adjust various settings. NW will look in a sane
+place as per the OS used. You can figure out where this will be by running `nw
+-c`, which will print the expected location.
 
-### List Select Window
-
-- View lists from user's profile
-    - Selected (tracked) lists should be highlighted
-- ACTION: There should be a place to add from URL
-- ACTION: set list as order/random
-
-### Film Details
-
-- Display film details
-- ACTION: Download poster
-- ACTION: Go to TMDB page (or maybe letterboxd page)
-- ACTION: Set discord presence as watching
-
-### List Details
-
-- View list details
-- Scroll through films and go to film details
+A configuration file with default settings is included in the repository as
+`config.toml`. It includes descriptions of the various settings. The file uses
+[TOML](https://toml.io/en/) format.
