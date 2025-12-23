@@ -6,6 +6,8 @@ A TUI utility for selecting films to watch from
 downloading poster images from TMDB and setting your Discord status as the
 current film you are watching.
 
+![nw screenshot](readme_image.png)
+
 ## Main Features
 
 > [!WARNING]
