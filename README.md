@@ -17,7 +17,7 @@ current film you are watching.
 ## Main Features
 
 > [!WARNING]
-> Some features require a TMDB api key. You can obtain one from [TDMB's
+> Some features require a TMDB API key. You can obtain one from [TDMB's
 > website](https://developer.themoviedb.org/docs/getting-started) for free.
 
 - Chooses your Next Watch
@@ -60,7 +60,7 @@ Running `make` successfully requires that Go is installed.
 
 When you first start `nw`, it will ask for your Letterboxd username, as well as
 your TMDB API Key. If you want to change these values later, they can be set in
-the [config file](Configuration). Alternatively, you can launch `nw` with the
+the [config file](config.toml). Alternatively, you can launch `nw` with the
 `-u` argument to switch Letterboxd accounts (i.e., `nw -u <new username>`).
 
 ## Configuration
