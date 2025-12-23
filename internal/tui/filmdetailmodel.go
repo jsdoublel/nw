@@ -202,12 +202,16 @@ func filmActions(fr app.FilmRecord, a *ApplicationTUI) []FilmAction {
 
 func MakeFilmDetailsModel(f *app.Film, a *ApplicationTUI) *FilmDetailsModel {
 	fr, err := a.FilmStore.Lookup(*f)
+	actions := []FilmAction{}
+	if fr != nil {
+		actions = filmActions(*fr, a)
+	}
 	filmDetailsStyle = filmDetailsStyle.BorderForeground(focusedColor)
 	return &FilmDetailsModel{
 		film:    fr,
 		focused: false,
 		app:     a,
-		actions: filmActions(*fr, a),
+		actions: actions,
 		err:     err,
 	}
 }

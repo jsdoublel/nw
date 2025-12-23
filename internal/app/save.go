@@ -135,6 +135,7 @@ func CreateApp(username string) (*Application, error) {
 		Username:     username,
 		TrackedLists: make(map[string]*FilmList),
 		FilmStore:    FilmStore{Films: make(map[int]*FilmRecord)},
+		ApiKey:       getAPIKey(),
 	}
 	return app, nil
 }
