@@ -89,7 +89,7 @@ func (fd *FilmDetailsModel) errorText() string {
 
 func (fd *FilmDetailsModel) renderDetails() string {
 	title := filmTitleStyle.Render(fd.film.String())
-	colWidth := paneWidth/2 - 2
+	colWidth := paneWidth/2 - 3 // minus 3, as we subtract outer padding plus a gap in the middle
 	rightText := filmTextStyle.Width(colWidth).Render(fd.film.Details.Overview)
 	limitAdj := 2 // adjust cast length limit based on height of text above
 	var b strings.Builder
