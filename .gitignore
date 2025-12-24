@@ -1,6 +1,14 @@
-bin
-.env
-AGENTS.md
-GEMINI.md
-scratch
+# ignore markdowns except for README
+*.md
+!README.md
 *.pdf
+
+# environment
+.env
+
+# binaries
+nw
+bin
+
+# directory for misc. files
+scratch
