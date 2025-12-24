@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"fmt"
 	"slices"
 	"strings"
 
@@ -141,7 +142,7 @@ var (
 			Background(focusedButtonColor).
 			Padding(0, 2)
 	About = strings.Join([]string{
-		lipgloss.NewStyle().Bold(true).Render(Title),
+		lipgloss.NewStyle().Bold(true).Render(fmt.Sprintf("%s (%s)", Title, app.Version)),
 		lipgloss.NewStyle().Italic(true).Render(Subtitle),
 		popupTextStyle.Render(License),
 	}, "\n")
