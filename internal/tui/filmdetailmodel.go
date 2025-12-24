@@ -26,6 +26,7 @@ type FilmDetailsModel struct {
 	focused        bool
 	actions        []FilmAction
 	selectedAction int
+	style          lipgloss.Style
 	app            *ApplicationTUI
 	err            error // records error if film details could not be retrieved
 }
@@ -64,20 +65,20 @@ func (fd *FilmDetailsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (fd *FilmDetailsModel) View() string {
 	if fd.err != nil {
-		return filmDetailsStyle.Foreground(red).Width(paneWidth).Render(fd.errorText())
+		return fd.style.Foreground(red).Width(paneWidth).Render(fd.errorText())
 	}
-	return filmDetailsStyle.Width(paneWidth).
+	return fd.style.Width(paneWidth).
 		Render(lipgloss.JoinVertical(lipgloss.Center, fd.renderDetails(), "", fd.renderActions()))
 }
 
 func (fd *FilmDetailsModel) Focus() {
 	fd.focused = true
-	filmDetailsStyle = filmDetailsStyle.BorderForeground(focusedColor)
+	fd.style = fd.style.BorderForeground(focusedColor)
 }
 
 func (fd *FilmDetailsModel) Unfocus() {
 	fd.focused = false
-	filmDetailsStyle = filmDetailsStyle.BorderForeground(unfocusedColor)
+	fd.style = fd.style.BorderForeground(unfocusedColor)
 }
 
 func (fd *FilmDetailsModel) errorText() string {
@@ -206,10 +207,10 @@ func MakeFilmDetailsModel(f *app.Film, a *ApplicationTUI) *FilmDetailsModel {
 	if fr != nil {
 		actions = filmActions(*fr, a)
 	}
-	filmDetailsStyle = filmDetailsStyle.BorderForeground(focusedColor)
 	return &FilmDetailsModel{
 		film:    fr,
 		focused: false,
+		style:   filmDetailsStyle.BorderForeground(focusedColor),
 		app:     a,
 		actions: actions,
 		err:     err,
@@ -220,10 +221,10 @@ func MakeFilmDetailsModelFromResults(f tmdb.MovieResult, a *ApplicationTUI) *Fil
 	releaseYear, _ := app.ReleaseYear(f)
 	details, err := app.TMDBFilm(int(f.ID))
 	fr := app.FilmRecord{Film: app.Film{Title: details.Title, Year: uint(releaseYear)}, TMDBID: int(details.ID), Details: details}
-	filmDetailsStyle = filmDetailsStyle.BorderForeground(focusedColor)
 	return &FilmDetailsModel{
 		film:    &fr,
 		focused: false,
+		style:   filmDetailsStyle.BorderForeground(focusedColor),
 		app:     a,
 		actions: filmActions(fr, a),
 		err:     err,

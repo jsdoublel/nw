@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 
 	"github.com/jsdoublel/nw/internal/app"
 )
@@ -111,6 +112,7 @@ func (d nwItemDelegate) Render(w io.Writer, m list.Model, index int, listItem li
 
 type NWModel struct {
 	list    list.Model
+	style   lipgloss.Style
 	focused bool
 	app     *ApplicationTUI
 }
@@ -146,19 +148,19 @@ func (nw *NWModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (nw *NWModel) View() string {
-	return nwStyle.Width(paneWidth).Render(nw.list.View())
+	return nw.style.Width(paneWidth).Render(nw.list.View())
 }
 
 func (nw *NWModel) Focus() {
 	nw.focused = true
 	nwSeparatorStyle = nwSeparatorStyle.Foreground(focusedColor)
-	nwStyle = nwStyle.BorderForeground(focusedColor)
+	nw.style = nw.style.BorderForeground(focusedColor)
 }
 
 func (nw *NWModel) Unfocus() {
 	nw.focused = false
 	nwSeparatorStyle = nwSeparatorStyle.Foreground(unfocusedColor)
-	nwStyle = nwStyle.BorderForeground(unfocusedColor)
+	nw.style = nw.style.BorderForeground(unfocusedColor)
 }
 
 func MakeNWModel(a *ApplicationTUI) *NWModel {
@@ -168,9 +170,9 @@ func MakeNWModel(a *ApplicationTUI) *NWModel {
 	l.SetShowStatusBar(false)
 	l.SetShowHelp(false)
 	l.SetShowPagination(false)
-	nwStyle = nwStyle.BorderForeground(focusedColor)
 	return &NWModel{
 		list:    l,
+		style:   nwStyle.BorderForeground(focusedColor),
 		app:     a,
 		focused: true,
 	}
