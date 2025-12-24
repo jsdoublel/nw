@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -63,8 +64,11 @@ func DownloadPoster(fr FilmRecord) (string, error) {
 	return path, os.WriteFile(path, content, 0o644)
 }
 
+var nonAlphanumericRegex = regexp.MustCompile(`[^a-zA-Z0-9]+`)
+
 func posterFileName(f Film) string {
-	fName := fmt.Sprintf("%s_%d.jpg", strings.ToLower(strings.ReplaceAll(f.Title, " ", "_")), f.Year)
+	cleanTitle := nonAlphanumericRegex.ReplaceAllString(f.Title, "")
+	fName := fmt.Sprintf("%s_%d.jpg", strings.ToLower(cleanTitle), f.Year)
 	posterBaseDir := Config.Directories.Posters
 	if posterBaseDir == "" {
 		posterBaseDir = xdg.UserDirs.Download
