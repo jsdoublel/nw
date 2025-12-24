@@ -195,7 +195,7 @@ func (app *Application) updateWatchedFilms() error {
 	if err != nil {
 		return err
 	}
-	if !app.WatchedFilms.IsZero() {
+	if app.WatchedFilms != nil {
 		app.FilmStore.DeregisterSet(app.WatchedFilms)
 	}
 	app.FilmStore.RegisterSet(watchedFilms)

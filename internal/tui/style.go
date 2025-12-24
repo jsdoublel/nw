@@ -58,6 +58,7 @@ var (
 	focusedButtonColor   = gray[7]
 	unfocusedButtonColor = gray[3]
 	textColor            = gray[9]
+	textDark             = gray[0]
 
 	mainStyle = mainStyler()
 
@@ -71,7 +72,7 @@ var (
 	// ----- NW Queue
 	nwStyle             = lipgloss.NewStyle().Inherit(mainStyle)
 	nwItemStyle         = lipgloss.NewStyle()
-	nwSelectedItemStyle = lipgloss.NewStyle().Background(lack).Foreground(textColor)
+	nwSelectedItemStyle = lipgloss.NewStyle().Background(lack).Foreground(textDark)
 	nwUpdatedItemStyle  = lipgloss.NewStyle().Foreground(green)
 	nwSeparatorStyle    = lipgloss.NewStyle().Foreground(focusedColor)
 
@@ -86,7 +87,7 @@ var (
 	flimDirStyle        = lipgloss.NewStyle().Inherit(filmTextStyle).Italic(true)
 	filmCastHeaderStyle = lipgloss.NewStyle().Inherit(filmTextStyle).Underline(true)
 	filmActionSelected  = lipgloss.NewStyle().
-				Foreground(gray[0]).
+				Foreground(textDark).
 				Background(focusedButtonColor).
 				Padding(0, 2)
 	filmActionUnselected = lipgloss.NewStyle().
@@ -96,7 +97,7 @@ var (
 
 	// ----- Film Search
 	filmSearchItemStyle     = lipgloss.NewStyle()
-	filmSearchSelectedStyle = lipgloss.NewStyle().Background(lack).Foreground(textColor)
+	filmSearchSelectedStyle = lipgloss.NewStyle().Background(lack).Foreground(textDark)
 
 	// ----- Status Bar
 	statusBarWatchingStyle = lipgloss.NewStyle().
@@ -126,7 +127,7 @@ var (
 			AlignHorizontal(lipgloss.Center).
 			Padding(1, 2)
 	yesNoSelected = lipgloss.NewStyle().
-			Foreground(gray[0]).
+			Foreground(textDark).
 			Background(focusedButtonColor).
 			Padding(0, 2)
 	yesNoUnselected = lipgloss.NewStyle().

@@ -23,7 +23,3 @@ func (fs FilmsSet) InSet(film *Film) bool {
 	_, ok := fs[film.LBxdID]
 	return ok
 }
-
-func (fs FilmsSet) IsZero() bool {
-	return fs == nil
-}

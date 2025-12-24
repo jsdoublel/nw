@@ -26,7 +26,7 @@ type ListSelector struct {
 func MakeListSelector(a *ApplicationTUI, title string, items []list.Item, delegate list.ItemDelegate) *ListSelector {
 	l := list.New(items, delegate, paneWidth, paneHeight)
 	l.Title = title
-	l.Styles.Title = l.Styles.Title.Background(addListTitleColor)
+	l.Styles.Title = l.Styles.Title.Background(addListTitleColor).Foreground(textDark)
 	l.SetShowHelp(false)
 	l.SetShowFilter(false)
 	l.SetFilteringEnabled(false)
