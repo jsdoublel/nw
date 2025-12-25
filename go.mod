@@ -10,12 +10,10 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/cyruzin/golang-tmdb v1.9.0
 	github.com/gocolly/colly v1.2.0
-	github.com/hugolgst/rich-go v0.0.0-20240715122152-74618cc1ace2
+	github.com/jsdoublel/rich-go v0.0.0-20251224231517-025ebcf8b4db
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/rmhubbert/bubbletea-overlay v0.5.0
 )
-
-replace github.com/hugolgst/rich-go => github.com/jsdoublel/rich-go v0.0.0-20251109204316-02ce5e317ce0
 
 require (
 	github.com/PuerkitoBio/goquery v1.10.3 // indirect
@@ -57,5 +55,3 @@ require (
 	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 )
-
-replace gopkg.in/natefinch/npipe.v2 => github.com/ph4r05/npipe v0.0.0-20240527105247-e977e49ae283 // indirect

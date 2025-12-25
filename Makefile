@@ -5,7 +5,6 @@ TARGETS := \
 	linux/amd64 \
 	linux/arm64 \
 	windows/amd64 \
-	windows/arm64 \
 	darwin/amd64 \
 	darwin/arm64
 
@@ -28,4 +27,10 @@ bin:
 clean:
 	rm bin/*
 
-.PHONY: all build clean cross-compile $(TARGETS)
+dlv-launch:
+	dlv debug --headless --api-version=2 --listen=127.0.0.1:43000
+
+dlv-connect:
+	dlv connect 127.0.0.1:43000
+
+.PHONY: all build clean dlv-launch dlv-connect $(TARGETS)

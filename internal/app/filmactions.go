@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/adrg/xdg"
-	"github.com/hugolgst/rich-go/client"
+	"github.com/jsdoublel/rich-go/client"
 )
 
 const (
