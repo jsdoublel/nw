@@ -29,8 +29,8 @@ current film you are watching.
 - Track progress on lists
 	- You can search through public lists on your Letterboxd profile, as well
 	  as retrieve list from URLs.
-	- List can be set as Ordered (suggests the next unwatched film) or
-	  Unordered (selects a random unwatched film).
+	- List can be set as "Ordered" (suggests the next unwatched film) or
+	  "Unordered" (selects a random unwatched film).
 - Search up film details
     - Allows you to quickly search though films via TMDB.
     - Once a film is selected you can 
@@ -42,13 +42,16 @@ current film you are watching.
 
 ### Installation
 
-There are three ways to install `nw`. If you have [Go](https://go.dev/) installed, `nw` can be installed with
+There are three ways to install `nw`. If you have [Go](https://go.dev/)
+installed, `nw` can be installed with
 
 ```
 go install github.com/jsdoublel/nw@latest
 ```
 
-Otherwise, you can download a precompiled binary from the [GitHub releases](https://github.com/jsdoublel/nw/releases); or, if you want to build `nw` from source, you can do this by running
+Otherwise, you can download a precompiled binary from the [GitHub
+releases](https://github.com/jsdoublel/nw/releases); or, if you want to build
+`nw` from source, you can do this by running
 ```
 git clone https://github.com/jsdoublel/nw.git
 cd nw
