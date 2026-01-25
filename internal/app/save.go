@@ -159,6 +159,8 @@ func (app *Application) UpdateUserData(check bool) error {
 		return err
 	}
 	if app.NWQueue.Stacks != nil {
+		app.NWQueue.watchlist = app.Watchlist
+		app.NWQueue.watchedFilms = app.WatchedFilms
 		if err := app.NWQueue.UpdateWatched(); err != nil {
 			log.Print(err)
 		}
