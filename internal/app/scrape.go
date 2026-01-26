@@ -39,7 +39,7 @@ func ScapeUserLists(username string) ([]*FilmList, error) {
 		})
 		h.ForEach("span.value", func(i int, h *colly.HTMLElement) {
 			parts := strings.Split(h.Text, "\u00A0")
-			num, err := strconv.Atoi(parts[0])
+			num, err := strconv.Atoi(strings.TrimSpace(parts[0]))
 			if err != nil {
 				log.Printf("couldn't parse number of films in list %s from %s", fl.Name, parts[0])
 			}
@@ -85,7 +85,7 @@ func ScrapeFilmList(rawURL string) (fl FilmList, err error) {
 	c := colly.NewCollector()
 	attachScrapeLogger(c, rawURL)
 	c.OnHTML("h1.title-1.prettify", func(h *colly.HTMLElement) {
-		fl.Name = h.Text
+		fl.Name = strings.TrimSpace(h.Text)
 	})
 	c.OnHTML("div.body-text", func(h *colly.HTMLElement) {
 		if h.Attr("data-full-text-url") != "#list-notes" {
@@ -99,7 +99,7 @@ func ScrapeFilmList(rawURL string) (fl FilmList, err error) {
 				f := Film{Url: fUrl}
 				title := h.Attr("data-item-name")
 				if matches := titleYearRegex.FindStringSubmatch(title); len(matches) == 3 {
-					f.Title = matches[1]
+					f.Title = strings.TrimSpace(matches[1])
 					if year, err := strconv.Atoi(matches[2]); err == nil {
 						f.Year = uint(year)
 					}
