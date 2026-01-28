@@ -17,7 +17,7 @@ current film you are watching.
 ## Main Features
 
 > [!WARNING]
-> Some features require a TMDB API key. You can obtain one from [TDMB's
+> Some features require a TMDB API key. You can obtain one from [TMDB's
 > website](https://developer.themoviedb.org/docs/getting-started) for free.
 
 - Chooses your Next Watch
