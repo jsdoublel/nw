@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 )
@@ -82,11 +83,22 @@ func TestScrapeFilmID(t *testing.T) {
 			url:      "https://letterboxd.com/film/2001-a-space-odyssey/",
 			expected: 62,
 		},
+		{
+			name:     "Midnight Mass",
+			url:      "https://letterboxd.com/film/midnight-mass-2021/",
+			expected: -1,
+		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 			id, err := ScrapeFilmID(test.url)
+			if test.expected == -1 {
+				if !errors.Is(err, ErrNotAFilm) {
+					t.Errorf("expected ErrNotAFilm, got %v", err)
+				}
+				return
+			}
 			if err != nil {
 				t.Errorf("Produced error %s", err)
 			}

@@ -17,6 +17,7 @@ const LetterboxdUrl = "https://letterboxd.com"
 var (
 	ErrBadScrape  error = errors.New("bad scrape")
 	ErrInvalidUrl error = errors.New("invalid url")
+	ErrNotAFilm   error = errors.New("not a film")
 
 	titleYearRegex = regexp.MustCompile(`^(.+?)\s+\((\d{4})\)$`)
 )
@@ -158,8 +159,18 @@ func ScrapeFilmID(rawURL string) (id int, err error) {
 			tmdbURL, err := filmUrl.Parse(h.Attr("href"))
 			if err != nil {
 				scrapingErr = err
+				return
 			}
-			id, err = strconv.Atoi(strings.Split(tmdbURL.Path, "/")[2])
+			parts := strings.Split(tmdbURL.Path, "/")
+			if len(parts) < 3 {
+				scrapingErr = fmt.Errorf("invalid tmdb url path: %s", tmdbURL.Path)
+				return
+			}
+			if parts[1] != "movie" {
+				scrapingErr = ErrNotAFilm
+				return
+			}
+			id, err = strconv.Atoi(parts[2])
 			if err != nil {
 				scrapingErr = err
 			}

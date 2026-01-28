@@ -134,7 +134,11 @@ func (nw *NextWatch) update() error {
 // cannot be retrieve for any other reason (excluding API errors).
 func (nw *NextWatch) filterFilm(film Film) bool {
 	f, err := nw.store.Lookup(film)
-	if errors.Is(err, ErrFailedTMDBLookup) { // TV shows fail by default
+	if errors.Is(err, ErrNotAFilm) {
+		log.Printf("%s excluded, %s", film, err)
+		return false
+	}
+	if errors.Is(err, ErrFailedTMDBLookup) {
 		log.Printf("%s, excluding film %s", err, film)
 		return false
 	}
