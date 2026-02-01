@@ -61,7 +61,7 @@ func BenchmarkScrapeList(b *testing.B) {
 
 func BenchmarkScrapeUserLists(b *testing.B) {
 	for b.Loop() {
-		if _, err := ScapeUserLists("jsdoublel"); err != nil {
+		if _, err := ScrapeUserLists("jsdoublel"); err != nil {
 			b.Fatalf("failed to scrape user's lists, %s", err)
 		}
 	}

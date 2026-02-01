@@ -8,8 +8,10 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gocolly/colly"
+	"github.com/imroc/req/v3"
 )
 
 const LetterboxdUrl = "https://letterboxd.com"
@@ -22,7 +24,7 @@ var (
 	titleYearRegex = regexp.MustCompile(`^(.+?)\s+\((\d{4})\)$`)
 )
 
-func ScapeUserLists(username string) ([]*FilmList, error) {
+func ScrapeUserLists(username string) ([]*FilmList, error) {
 	listPageUrl, err := url.JoinPath(LetterboxdUrl, username, "lists")
 	if err != nil {
 		return nil, fmt.Errorf("problem joining url parts, %w", err)
@@ -208,6 +210,18 @@ func parseDescription(h *colly.HTMLElement, selector string) string {
 }
 
 func attachScrapeLogger(c *colly.Collector, label string) {
+	// Use req/v3 to impersonate Chrome's TLS fingerprint (JA3)
+	client := req.C().ImpersonateChrome()
+	c.WithTransport(client.Transport)
+
+	c.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
+	// Keep per-collector limit as a fallback/jitter
+	_ = c.Limit(&colly.LimitRule{
+		DomainGlob:  "*letterboxd.com*",
+		Delay:       100 * time.Millisecond,
+		RandomDelay: 100 * time.Millisecond,
+	})
+
 	c.OnError(func(resp *colly.Response, err error) {
 		status := 0
 		url := label

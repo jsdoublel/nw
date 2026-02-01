@@ -210,7 +210,7 @@ func (app *Application) updateWatchedFilms() error {
 
 func (app *Application) updateListHeaders() error {
 	log.Print("updating user's lists")
-	headers, err := ScapeUserLists(app.Username)
+	headers, err := ScrapeUserLists(app.Username)
 	if err != nil {
 		return err
 	}
