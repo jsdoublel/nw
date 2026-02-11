@@ -19,9 +19,9 @@ light_mode = false # enable to make program work with light backdrop
 
 # Palette values override core colors used throughout the UI.
 [appearance.colors]
-primary = "#708090"   # blue
-secondary = "#ffaa88" # orange
-success = "#789978"   # green
+primary = "#40bcf4"   # blue
+secondary = "#ff8000" # orange
+success = "#00e054"   # green
 error = "#d70000"     # red
 
 # Key bindings map actions to multiple acceptable key sequences.

@@ -43,12 +43,13 @@ otherwise approved by TMDB.`
 var (
 
 	// ----- Colors
-	// colors from : https://github.com/slugbyte/lackluster.nvim
-	lack   = paletteColor(app.Config.Appearance.Colors.Primary, "#708090")
+	// originally colors from : https://github.com/slugbyte/lackluster.nvim
+	// later changed to letterboxd colors
+	lack   = paletteColor(app.Config.Appearance.Colors.Primary, "#40bcf4")
 	luster = lipgloss.Color("#deeeed")
-	orange = paletteColor(app.Config.Appearance.Colors.Secondary, "#ffaa88")
+	orange = paletteColor(app.Config.Appearance.Colors.Secondary, "#ff8000")
 	yellow = lipgloss.Color("#abab77")
-	green  = paletteColor(app.Config.Appearance.Colors.Success, "#789978")
+	green  = paletteColor(app.Config.Appearance.Colors.Success, "#00e054")
 	blue   = lipgloss.Color("#7788aa")
 	red    = paletteColor(app.Config.Appearance.Colors.Error, "#d70000")
 
@@ -64,7 +65,7 @@ var (
 	mainStyle = mainStyler()
 
 	// ----- Add List Screen
-	addListTitleColor = lack
+	addListTitleColor = green
 	searchInputStyle  = lipgloss.NewStyle().Inherit(mainStyle)
 	searchListStyle   = lipgloss.NewStyle().Inherit(mainStyle)
 	cursorStyle       = lipgloss.NewStyle()
