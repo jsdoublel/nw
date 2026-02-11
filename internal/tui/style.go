@@ -102,16 +102,16 @@ var (
 
 	// ----- Status Bar
 	statusBarWatchingStyle = lipgloss.NewStyle().
-				Border(lipgloss.RoundedBorder()).
+				Border(mainStyle.GetBorderStyle()).
 				BorderForeground(green).
 				Foreground(green).
 				Padding(0, 1)
 	statusBarMessageStyle = lipgloss.NewStyle().Width(paneWidth).
-				Border(lipgloss.RoundedBorder()).
+				Border(mainStyle.GetBorderStyle()).
 				Padding(0, 1)
 	statusBarErrStyle = lipgloss.NewStyle().Width(paneWidth).
 				Foreground(red).
-				Border(lipgloss.RoundedBorder()).
+				Border(mainStyle.GetBorderStyle()).
 				BorderForeground(red).
 				Padding(0, 1)
 
