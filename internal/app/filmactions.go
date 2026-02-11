@@ -90,14 +90,18 @@ func (app *Application) StartDiscordRPC(fr FilmRecord) error {
 		}
 		defer client.Logout()
 		startT := time.Now()
-		if err := client.SetActivity(client.Activity{
+		activity := client.Activity{
 			Details:    fr.String(),
-			LargeImage: PosterPathPrefix + fr.Details.PosterPath,
+			State:      fr.DirectorString(),
 			LargeText:  fr.String(),
 			SmallImage: "tmdb_logo",
 			SmallText:  "The Movie Database",
 			Timestamps: &client.Timestamps{Start: &startT},
-		}); err != nil {
+		}
+		if fr.Details.PosterPath != "" {
+			activity.LargeImage = PosterPathPrefix + fr.Details.PosterPath
+		}
+		if err := client.SetActivity(activity); err != nil {
 			log.Printf("discord rpc update failed, %s", err)
 		}
 		<-ctx.Done()

@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	tmdb "github.com/cyruzin/golang-tmdb"
@@ -144,4 +145,18 @@ func (fs *FilmStore) retrieve(film Film) error {
 	}
 	fr.Checked = time.Now()
 	return nil
+}
+
+func (fd *FilmRecord) DirectorString() string {
+	crew := fd.Details.Credits.Crew
+	directors := make([]string, 0)
+	for _, member := range crew {
+		if strings.EqualFold(member.Job, "Director") {
+			directors = append(directors, member.Name)
+		}
+	}
+	if len(directors) == 0 {
+		return ""
+	}
+	return fmt.Sprintf("dir. %s", strings.Join(directors, ", "))
 }

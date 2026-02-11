@@ -94,7 +94,7 @@ func (fd *FilmDetailsModel) renderDetails() string {
 	rightText := filmTextStyle.Width(colWidth).Render(fd.film.Details.Overview)
 	limitAdj := 2 // adjust cast length limit based on height of text above
 	var b strings.Builder
-	if directors := fd.directorLine(); directors != "" {
+	if directors := fd.film.DirectorString(); directors != "" {
 		b.WriteString(flimDirStyle.Render(directors))
 		limitAdj++
 	}
@@ -126,20 +126,6 @@ func (fd *FilmDetailsModel) castLine(limit int) string {
 		return ""
 	}
 	return strings.Join(names, "\n")
-}
-
-func (fd *FilmDetailsModel) directorLine() string {
-	crew := fd.film.Details.Credits.Crew
-	directors := make([]string, 0)
-	for _, member := range crew {
-		if strings.EqualFold(member.Job, "Director") {
-			directors = append(directors, member.Name)
-		}
-	}
-	if len(directors) == 0 {
-		return ""
-	}
-	return fmt.Sprintf("dir. %s", strings.Join(directors, ", "))
 }
 
 func (fd *FilmDetailsModel) renderActions() string {
