@@ -94,6 +94,9 @@ func (fd *FilmDetailsModel) renderDetails() string {
 	colWidthRight := paneWidth/2 - rightPad
 	colWidthLeft := paneWidth/2 - leftPad
 	rightText := filmTextStyle.Width(colWidthRight).Render(fd.film.Details.Overview)
+	if len([]rune(fd.film.String())) > colWidthRight {
+		rightText = "\n" + rightText
+	}
 	limitAdj := 2 // adjust cast length limit based on height of text above
 	var b strings.Builder
 	if directors := fd.film.DirectorString(); directors != "" {
