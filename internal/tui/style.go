@@ -83,7 +83,7 @@ var (
 	joinTallThin = lipgloss.NewStyle().PaddingBottom(4).AlignVertical(lipgloss.Bottom)
 
 	// ----- Film Details
-	filmDetailsStyle    = lipgloss.NewStyle().Inherit(mainStyle)
+	filmDetailsStyle    = lipgloss.NewStyle().Inherit(mainStyle).PaddingLeft(1).PaddingRight(1)
 	filmTextStyle       = lipgloss.NewStyle().Width(paneWidth).Foreground(textColor)
 	filmTitleStyle      = lipgloss.NewStyle().Inherit(filmTextStyle).Bold(true)
 	flimDirStyle        = lipgloss.NewStyle().Inherit(filmTextStyle).Italic(true)

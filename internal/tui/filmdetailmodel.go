@@ -90,8 +90,10 @@ func (fd *FilmDetailsModel) errorText() string {
 
 func (fd *FilmDetailsModel) renderDetails() string {
 	title := filmTitleStyle.Render(fd.film.String())
-	colWidth := paneWidth/2 - 3 // minus 3, as we subtract outer padding plus a gap in the middle
-	rightText := filmTextStyle.Width(colWidth).Render(fd.film.Details.Overview)
+	_, rightPad, _, leftPad := filmDetailsStyle.GetPadding()
+	colWidthRight := paneWidth/2 - rightPad
+	colWidthLeft := paneWidth/2 - leftPad
+	rightText := filmTextStyle.Width(colWidthRight).Render(fd.film.Details.Overview)
 	limitAdj := 2 // adjust cast length limit based on height of text above
 	var b strings.Builder
 	if directors := fd.film.DirectorString(); directors != "" {
@@ -109,8 +111,12 @@ func (fd *FilmDetailsModel) renderDetails() string {
 		b.WriteString("\n")
 		b.WriteString(cast)
 	}
-	leftText := filmTextStyle.Width(colWidth).Render(b.String())
-	return lipgloss.JoinVertical(lipgloss.Left, title, lipgloss.JoinHorizontal(lipgloss.Top, leftText, rightText))
+	leftText := filmTextStyle.Width(colWidthLeft).Render(b.String())
+	return lipgloss.JoinVertical(
+		lipgloss.Left,
+		title,
+		lipgloss.JoinHorizontal(lipgloss.Top, leftText, rightText),
+	)
 }
 
 func (fd *FilmDetailsModel) castLine(limit int) string {
