@@ -7,6 +7,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 
 	"github.com/jsdoublel/nw/internal/app"
 )
@@ -53,7 +54,7 @@ var (
 	blue   = lipgloss.Color("#7788aa")
 	red    = paletteColor(app.Config.Appearance.Colors.Error, "#d70000")
 
-	gray = grayColors(app.Config.Appearance.LightMode)
+	gray = grayColors(!termenv.HasDarkBackground())
 
 	unfocusedColor       = gray[4]
 	focusedColor         = gray[6]
