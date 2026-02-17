@@ -31,11 +31,12 @@ func (ss ScreenStack) cur() tea.Model    { return ss[len(ss)-1] }
 // Main model struct that drives NW TUI
 type ApplicationTUI struct {
 	*app.Application
-	screens ScreenStack
-	status  StatusBarModel
-	help    help.Model
-	width   int
-	height  int
+	screens    ScreenStack
+	status     StatusBarModel
+	resizeLock tea.Model
+	help       help.Model
+	width      int
+	height     int
 }
 
 func RunApplicationTUI(username string) error {
@@ -63,6 +64,7 @@ func RunApplicationTUI(username string) error {
 	}
 	application.ApiInit()
 	a := ApplicationTUI{Application: application}
+	a.resizeLock = &ResizeLockModel{&a}
 	p := tea.NewProgram(&a, tea.WithAltScreen())
 	_, err = p.Run()
 	return err
@@ -75,8 +77,18 @@ func (a *ApplicationTUI) Init() tea.Cmd {
 }
 
 func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	cmds := a.UpdateRouter(msg)
+	if msg, ok := msg.(tea.KeyMsg); ok && (a.width <= paneWidth || a.height <= paneHeight) {
+		if key.Matches(msg, keys.Quit) {
+			return a, tea.Quit
+		}
+		return a, nil
+	}
+	var cmds []tea.Cmd
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		a.width = msg.Width
+		a.height = msg.Height
+		a.help.Width = a.width
 	case userDataLoadedMsg:
 		a.screens.pop()          // remove loading screen
 		if len(a.screens) == 0 { // we need different behavior on startup vs. update
@@ -92,11 +104,6 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case statusMessageMsg:
 		cmds = append(cmds, a.status.setMessage(msg.message))
-	case tea.WindowSizeMsg:
-		a.width = msg.Width
-		a.height = msg.Height
-		a.help.Width = a.width
-		a.checkSize()
 	case GoBackMsg:
 		if len(a.screens) == 1 {
 			return a, tea.Quit
@@ -115,15 +122,16 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			a.Popup(About)
 		}
 	}
+	cmds = append(cmds, a.UpdateRouter(msg)...)
 	return a, tea.Batch(cmds...)
 }
 
 func (a *ApplicationTUI) View() string {
+	if a.width <= paneWidth || a.height <= paneHeight {
+		return lipgloss.Place(a.width, a.height, lipgloss.Center, lipgloss.Center, a.resizeLock.View())
+	}
 	cur := a.screens.cur()
 	main := lipgloss.Place(a.width, a.height, lipgloss.Center, lipgloss.Center, cur.View())
-	if _, ok := cur.(*ResizeLockModel); ok {
-		return main
-	}
 	if _, ok := cur.(*SplashScreenModel); ok {
 		return main
 	}
@@ -146,15 +154,6 @@ func (a *ApplicationTUI) UpdateRouter(msg tea.Msg) []tea.Cmd {
 	}
 	_, c = a.screens.cur().Update(msg)
 	return []tea.Cmd{c, sc}
-}
-
-func (a *ApplicationTUI) checkSize() {
-	toSmall := a.height <= paneHeight || a.width <= paneWidth
-	if _, ok := a.screens.cur().(*ResizeLockModel); ok && !toSmall {
-		a.screens.pop()
-	} else if !ok && toSmall {
-		a.screens.push(&ResizeLockModel{a})
-	}
 }
 
 type userDataLoadedMsg struct{}
