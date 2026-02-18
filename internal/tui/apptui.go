@@ -77,7 +77,7 @@ func (a *ApplicationTUI) Init() tea.Cmd {
 }
 
 func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if msg, ok := msg.(tea.KeyMsg); ok && (a.width <= paneWidth || a.height <= paneHeight) {
+	if msg, ok := msg.(tea.KeyMsg); ok && a.TooSmall() {
 		if key.Matches(msg, keys.Quit) {
 			return a, tea.Quit
 		}
@@ -116,10 +116,13 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return a, updateUserDataCmd(a, false)
 		case key.Matches(msg, keys.StopWatch):
 			a.StopDiscordRPC()
+			return a, nil
 		case key.Matches(msg, keys.Help):
 			a.help.ShowAll = !a.help.ShowAll
+			return a, nil
 		case key.Matches(msg, keys.About):
 			a.Popup(About)
+			return a, nil
 		}
 	}
 	cmds = append(cmds, a.UpdateRouter(msg)...)
@@ -127,7 +130,7 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (a *ApplicationTUI) View() string {
-	if a.width <= paneWidth || a.height <= paneHeight {
+	if a.TooSmall() {
 		return lipgloss.Place(a.width, a.height, lipgloss.Center, lipgloss.Center, a.resizeLock.View())
 	}
 	cur := a.screens.cur()
@@ -154,6 +157,10 @@ func (a *ApplicationTUI) UpdateRouter(msg tea.Msg) []tea.Cmd {
 	}
 	_, c = a.screens.cur().Update(msg)
 	return []tea.Cmd{c, sc}
+}
+
+func (a *ApplicationTUI) TooSmall() bool {
+	return a.width <= paneWidth || a.height <= paneHeight
 }
 
 type userDataLoadedMsg struct{}

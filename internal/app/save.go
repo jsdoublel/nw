@@ -174,7 +174,7 @@ func (app *Application) UpdateUserData(check bool) error {
 		return err
 	}
 	app.UserDataChecked = time.Now()
-	return nil
+	return app.Save()
 }
 
 func (app *Application) updateWatchlist() error {

@@ -11,7 +11,7 @@ import (
 
 var NWDataPath string
 
-const Version = "v0.1.7"
+const Version = "v0.1.8"
 
 func init() {
 	configInit()
