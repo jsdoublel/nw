@@ -165,6 +165,15 @@ func (fd *FilmDetailsModel) actionLeft() {
 	}
 }
 
+func launchBrowserCmd(url string) tea.Cmd {
+	return func() tea.Msg {
+		if err := browser.OpenURL(url); err != nil {
+			return statusMessageMsg{message: Message{text: fmt.Sprintf("error %s", err), error: true}}
+		}
+		return nil
+	}
+}
+
 func filmActions(fr app.FilmRecord, a *ApplicationTUI) []FilmAction {
 	actions := []FilmAction{
 		{label: "Watch", action: func(fr app.FilmRecord) (tea.Cmd, error) { return nil, a.StartDiscordRPC(fr) }},
@@ -179,14 +188,14 @@ func filmActions(fr app.FilmRecord, a *ApplicationTUI) []FilmAction {
 	if fr.Url != "" {
 		actions = append(actions, FilmAction{
 			label:  "Letterboxd",
-			action: func(f app.FilmRecord) (tea.Cmd, error) { return nil, browser.OpenURL(f.Url) },
+			action: func(f app.FilmRecord) (tea.Cmd, error) { return launchBrowserCmd(f.Url), nil },
 		})
 	}
 	if fr.Url == "" || app.Config.Features.AlwaysIncludeTMDB {
 		actions = append(actions, FilmAction{
 			label: "TMDB",
 			action: func(f app.FilmRecord) (tea.Cmd, error) {
-				return nil, browser.OpenURL(fmt.Sprintf("%s%d", app.TMDBFilmPathPrefix, fr.TMDBID))
+				return launchBrowserCmd(fmt.Sprintf("%s%d", app.TMDBFilmPathPrefix, fr.TMDBID)), nil
 			},
 		})
 	}
