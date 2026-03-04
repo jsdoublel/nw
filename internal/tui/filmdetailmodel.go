@@ -224,7 +224,11 @@ func MakeFilmDetailsModel(f *app.Film, a *ApplicationTUI) *FilmDetailsModel {
 func MakeFilmDetailsModelFromResults(f tmdb.MovieResult, a *ApplicationTUI) *FilmDetailsModel {
 	releaseYear, _ := app.ReleaseYear(f)
 	details, err := app.TMDBFilm(int(f.ID))
-	fr := app.FilmRecord{Film: app.Film{Title: details.Title, Year: uint(releaseYear)}, TMDBID: int(details.ID), Details: details}
+	fr := app.FilmRecord{
+		Film:    app.Film{Title: details.Title, Year: uint(releaseYear)},
+		TMDBID:  int(details.ID),
+		Details: details,
+	}
 	return &FilmDetailsModel{
 		film:    &fr,
 		focused: false,

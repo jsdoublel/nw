@@ -25,6 +25,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime/debug"
 
 	"github.com/jsdoublel/nw/internal/app"
 	"github.com/jsdoublel/nw/internal/tui"
@@ -52,6 +53,12 @@ func parseArgs() string {
 }
 
 func main() {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Fprintf(os.Stderr, "nw crashed with a panic: %v\n--- STACK TRACE ---\n%s\n", r, debug.Stack())
+			os.Exit(1)
+		}
+	}()
 	if err := tui.RunApplicationTUI(parseArgs()); err != nil {
 		fmt.Fprintf(os.Stderr, "nw failed with error: %s\n", err.Error())
 		os.Exit(1)

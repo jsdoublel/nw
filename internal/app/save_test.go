@@ -179,3 +179,39 @@ func TestUpdateTrackedLists(t *testing.T) {
 		})
 	}
 }
+
+func TestUpdateTrackedListsNilNextFilm(t *testing.T) {
+	testCases := []struct {
+		name     string
+		forceAll bool
+	}{
+		{
+			name:     "handles nil NextFilm without panic",
+			forceAll: false,
+		},
+		{
+			name:     "handles nil NextFilm with forceAll without panic",
+			forceAll: true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			app := &Application{
+				TrackedLists: make(map[string]*FilmList),
+				WatchedFilms: FilmsSet{},
+			}
+			listWithNilNext := &FilmList{
+				Name:     "Empty or Completed List",
+				Url:      "https://letterboxd.com/user/list/empty/",
+				NextFilm: nil,
+			}
+			app.TrackedLists[listWithNilNext.Url] = listWithNilNext
+			defer func() {
+				if r := recover(); r != nil {
+					t.Fatalf("updateTrackedLists panicked with nil NextFilm: %v", r)
+				}
+			}()
+			_ = app.updateTrackedLists(tc.forceAll)
+		})
+	}
+}

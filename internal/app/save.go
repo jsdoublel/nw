@@ -224,7 +224,7 @@ func (app *Application) updateListHeaders() error {
 func (app *Application) updateTrackedLists(forceAll bool) error {
 	var lastErr error
 	for _, fl := range app.TrackedLists {
-		if app.WatchedFilms.InSet(fl.NextFilm) || forceAll {
+		if fl.NextFilm != nil && app.WatchedFilms.InSet(fl.NextFilm) || forceAll {
 			if err := app.RefreshList(fl); err != nil {
 				lastErr = err
 				log.Printf("failed refreshing list %s, %s", fl.Name, err)
