@@ -69,8 +69,8 @@ the [config file](config.toml). Alternatively, you can launch `nw` with the
 ## Configuration
 
 NW uses a configuration file to adjust various settings. NW will look in a sane
-place as per the OS used. You can figure out where this will be by running `nw
--c`, which will print the expected location.
+place for this configuration file, as per the OS used. You can figure out where 
+this will be by running `nw -c`, which will print the expected location.
 
 A configuration file with default settings is included in the repository as
 `config.toml`. It includes descriptions of the various settings. The file uses
