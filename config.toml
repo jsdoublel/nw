@@ -3,6 +3,7 @@
 
 # Enable or disable features that are apart of the application.
 [features]
+disable_startup_update = false # when true, disables automatic scrapping of letterboxd on startup
 disable_discord_rpc = false # when true, disables Discord RPC "watching" option.
 always_include_tmdb = false # when true, always includes link to TMDB page on all film details screens.
 

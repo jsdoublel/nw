@@ -20,8 +20,9 @@ type config struct {
 }
 
 type featuresConfig struct {
-	DisableDiscordRPC bool `toml:"discord_rpc"`
-	AlwaysIncludeTMDB bool `toml:"always_include_tmdb"`
+	DisableStartupUpdate bool `toml:"disable_startup_update"`
+	DisableDiscordRPC    bool `toml:"disable_discord_rpc"`
+	AlwaysIncludeTMDB    bool `toml:"always_include_tmdb"`
 }
 
 type appearanceConfig struct {
