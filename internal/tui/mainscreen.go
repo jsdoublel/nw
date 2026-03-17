@@ -13,15 +13,8 @@ const (
 	mainScreenViewListPos
 )
 
-type focusable interface {
-	tea.Model
-	Focus()
-	Unfocus()
-}
-
 type MainScreen struct {
-	panes []focusable
-	focus int
+	model *JoinModel
 	app   *ApplicationTUI
 }
 
@@ -30,16 +23,12 @@ func (ms *MainScreen) Init() tea.Cmd {
 }
 
 func (ms *MainScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	m, cmd := ms.panes[ms.focus].Update(msg)
+	m, cmd := ms.model.Update(msg)
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, keys.Back):
 			return m, GoBack
-		case key.Matches(msg, keys.MoveRight):
-			ms.focusRight()
-		case key.Matches(msg, keys.MoveLeft):
-			ms.focusLeft()
 		case key.Matches(msg, keys.AddList):
 			ms.app.screens.push(MakeAddListScreen(ms.app))
 		case key.Matches(msg, keys.SearchFilms):
@@ -47,58 +36,96 @@ func (ms *MainScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case NewFilmDetailsMsg:
 		ms.NewFilmDetails(msg.film)
+	}
+	return m, cmd
+}
+
+func (ms *MainScreen) View() string {
+	return ms.model.View()
+}
+
+func (ms *MainScreen) NewFilmDetails(film app.Film) {
+	ms.model.secondary = MakeFilmDetailsModel(&film, ms.app)
+}
+
+func MakeMainScreen(a *ApplicationTUI) *MainScreen {
+	return &MainScreen{
+		model: &JoinModel{
+			secondary: MakeFilmDetailsModel(a.NWQueue.Stacks[0][0], a),
+			main: &MainScreenPanes{
+				panes:    []focusable{MakeNWModel(a), MakeViewListPane(a)},
+				focusIdx: mainScreenNWPos,
+				app:      a,
+			},
+			pos: lipgloss.Top,
+			app: a,
+		},
+		app: a,
+	}
+}
+
+// -------- Main Screen Panes
+
+type focusable interface {
+	tea.Model
+	Focus()
+	Unfocus()
+}
+
+// Panes on the Main Screen which focus can be toggled between
+type MainScreenPanes struct {
+	panes    []focusable
+	focusIdx int // index of pane in focus
+	app      *ApplicationTUI
+}
+
+func (p *MainScreenPanes) Init() tea.Cmd {
+	return nil
+}
+
+func (p *MainScreenPanes) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	m, cmd := p.panes[p.focusIdx].Update(msg)
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch {
+		case key.Matches(msg, keys.Back):
+			return m, GoBack
+		case key.Matches(msg, keys.MoveRight):
+			p.focusRight()
+		case key.Matches(msg, keys.MoveLeft):
+			p.focusLeft()
+		}
 	case UpdateScreenMsg:
-		for _, p := range ms.panes {
+		for _, p := range p.panes {
 			p.Update(msg)
 		}
 	}
 	return m, cmd
 }
 
-func (ms *MainScreen) View() string {
-	if ms.app.width < 3*paneWidth {
-		return ms.panes[ms.focus].View()
+func (p *MainScreenPanes) View() string {
+	if p.app.width < 3*paneWidth { // 3 x paneWidth, as we consider film details
+		return p.panes[p.focusIdx].View()
 	}
 	return lipgloss.JoinHorizontal(
 		lipgloss.Center,
-		ms.panes[mainScreenNWPos].View(),
-		ms.panes[mainScreenViewListPos].View(),
+		p.panes[mainScreenNWPos].View(),
+		p.panes[mainScreenViewListPos].View(),
 	)
 }
 
-func (ms *MainScreen) focusRight() {
-	ms.panes[ms.focus].Unfocus()
-	if int(ms.focus) != len(ms.panes)-1 {
-		ms.focus++
+func (p *MainScreenPanes) focusRight() {
+	p.panes[p.focusIdx].Unfocus()
+	if int(p.focusIdx) != len(p.panes)-1 {
+		p.focusIdx++
 	}
-	ms.panes[ms.focus].Focus()
+	p.panes[p.focusIdx].Focus()
 }
 
-func (ms *MainScreen) focusLeft() {
-	ms.panes[ms.focus].Unfocus()
-	if int(ms.focus) != 0 {
-		ms.focus--
+func (p *MainScreenPanes) focusLeft() {
+	p.panes[p.focusIdx].Unfocus()
+	if int(p.focusIdx) != 0 {
+		p.focusIdx--
 	}
-	ms.panes[ms.focus].Focus()
-}
-
-func (ms *MainScreen) NewFilmDetails(film app.Film) {
-	if jm, ok := ms.panes[mainScreenNWPos].(*JoinModel); ok {
-		jm.secondary = MakeFilmDetailsModel(&film, ms.app)
-		return
-	}
-	panic("film details not in correct position in JoinModel")
-}
-
-func MakeMainScreen(a *ApplicationTUI) *MainScreen {
-	return &MainScreen{
-		panes: []focusable{&JoinModel{
-			secondary: MakeFilmDetailsModel(a.NWQueue.Stacks[0][0], a),
-			main:      MakeNWModel(a),
-			pos:       lipgloss.Top,
-			app:       a,
-		}, MakeViewListPane(a)},
-		focus: mainScreenNWPos,
-		app:   a,
-	}
+	p.panes[p.focusIdx].Focus()
 }
