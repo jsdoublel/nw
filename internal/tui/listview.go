@@ -114,21 +114,22 @@ func (li viewListItem) Description() string {
 }
 
 func (d viewListsDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
+	li, ok := ls.SelectedItem().(viewListItem)
+	if !ok { // SelectedItem will return nil when list is empty
+		return nil
+	}
 	switch msg := msg.(type) {
 	case UpdateScreenMsg:
 		ls.SetItems(creatViewListItems(d.app))
+		return func() tea.Msg { return NewFilmDetailsMsg{film: *li.fl.NextFilm} }
 	case tea.KeyMsg:
-		li, ok := ls.SelectedItem().(viewListItem)
-		if !ok { // SelectedItem will return nil when list is empty
-			return nil
-		}
 		switch {
 		case key.Matches(msg, keys.Up) || key.Matches(msg, keys.Down) || // anything that changes the selected list
 			msg.String() == "g" || msg.String() == "G":
 			return func() tea.Msg { return NewFilmDetailsMsg{film: *li.fl.NextFilm} }
-		// case msg.Type == tea.KeyEnter:
-		// 	li.fl.ToggleOrdered()
-		// 	return UpdateScreen
+		case key.Matches(msg, keys.ToggleOrder):
+			li.fl.ToggleOrdered()
+			return UpdateScreen
 		case key.Matches(msg, keys.Delete):
 			d.app.AskYesNo(fmt.Sprintf("Stop tracking list %s?", li.Title()), func(b bool) tea.Msg {
 				return removeListMsg{ok: b}

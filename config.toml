@@ -43,4 +43,5 @@ no = ["n", "N"]            # cancel prompts
 search_films = ["/"]       # open film search
 stop_watch = ["ctrl+w"]    # stop Discord "watching" presence
 update = ["ctrl+u"]        # refresh data from Letterboxd
+toggle_order = ["ctrl+o"]  # toggle the order of the selected tracked list
 quit = ["ctrl+c"]          # quit the application
