@@ -9,11 +9,10 @@ import (
 
 var heightCutoff = int(math.Floor(float64(paneHeight) * 1.8))
 
-// Bubbletea model joining two other models; it passes all updates to both and
-// is also focusable.
+// Bubbletea model joining two other models; it passes all updates to both
 type JoinModel struct {
-	main      focusable
-	secondary focusable
+	main      tea.Model
+	secondary tea.Model
 	pos       lipgloss.Position // lipgloss position for join
 	app       *ApplicationTUI
 }
@@ -47,16 +46,6 @@ func (jm *JoinModel) View() string {
 		return jm.main.View()
 	}
 	return lipgloss.JoinHorizontal(jm.pos, jm.secondary.View(), jm.main.View())
-}
-
-func (jm *JoinModel) Focus() {
-	jm.secondary.Focus()
-	jm.main.Focus()
-}
-
-func (jm *JoinModel) Unfocus() {
-	jm.secondary.Unfocus()
-	jm.main.Unfocus()
 }
 
 func (jm *JoinModel) bothOnScreen() bool {
