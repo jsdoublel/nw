@@ -84,23 +84,30 @@ func (p *MainScreenPanes) Init() tea.Cmd {
 }
 
 func (p *MainScreenPanes) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmds []tea.Cmd
 	m, cmd := p.panes[p.focusIdx].Update(msg)
+	p.panes[p.focusIdx] = m.(focusable)
+	cmds = append(cmds, cmd)
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, keys.Back):
-			return m, GoBack
+			return p, GoBack
 		case key.Matches(msg, keys.MoveRight):
-			return m, p.focusRight()
+			return p, p.focusRight()
 		case key.Matches(msg, keys.MoveLeft):
-			return m, p.focusLeft()
+			return p, p.focusLeft()
 		}
 	case UpdateScreenMsg:
-		for _, p := range p.panes {
-			p.Update(msg)
+		for i, pane := range p.panes {
+			if i == p.focusIdx {
+				continue
+			}
+			m, _ := pane.Update(msg)
+			p.panes[i] = m.(focusable)
 		}
 	}
-	return m, cmd
+	return p, tea.Batch(cmds...)
 }
 
 func (p *MainScreenPanes) View() string {

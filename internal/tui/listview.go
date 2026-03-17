@@ -62,7 +62,7 @@ func (ls *ListSelector) Focus() tea.Cmd {
 	ls.focused = true
 	ls.style = lsStyle.BorderForeground(focusedColor)
 	if li, ok := ls.list.SelectedItem().(viewListItem); ok {
-		return func() tea.Msg { return NewFilmDetailsMsg{film: *li.fl.NextFilm} }
+		return NewFilmDetailsCmd(li.fl.NextFilm)
 	}
 	log.Printf("%+v is not viewListItem", ls.list.SelectedItem())
 	return nil
@@ -115,18 +115,22 @@ func (li viewListItem) Description() string {
 
 func (d viewListsDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
 	li, ok := ls.SelectedItem().(viewListItem)
+	if _, ok := msg.(UpdateScreenMsg); ok { // update screen first, as we want to do it before empty check
+		ls.SetItems(creatViewListItems(d.app))
+		if li, ok := ls.SelectedItem().(viewListItem); ok {
+			return NewFilmDetailsCmd(li.fl.NextFilm)
+		}
+		return nil
+	}
 	if !ok { // SelectedItem will return nil when list is empty
 		return nil
 	}
 	switch msg := msg.(type) {
-	case UpdateScreenMsg:
-		ls.SetItems(creatViewListItems(d.app))
-		return func() tea.Msg { return NewFilmDetailsMsg{film: *li.fl.NextFilm} }
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, keys.Up) || key.Matches(msg, keys.Down) || // anything that changes the selected list
 			msg.String() == "g" || msg.String() == "G":
-			return func() tea.Msg { return NewFilmDetailsMsg{film: *li.fl.NextFilm} }
+			return NewFilmDetailsCmd(li.fl.NextFilm)
 		case key.Matches(msg, keys.ToggleOrder):
 			li.fl.ToggleOrdered()
 			return UpdateScreen

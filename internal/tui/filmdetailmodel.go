@@ -21,6 +21,15 @@ type NewFilmDetailsMsg struct {
 	film app.Film
 }
 
+func NewFilmDetailsCmd(film *app.Film) tea.Cmd {
+	if film == nil {
+		return nil
+	}
+	return func() tea.Msg {
+		return NewFilmDetailsMsg{film: *film}
+	}
+}
+
 type FilmDetailsModel struct {
 	film           *app.FilmRecord
 	focused        bool

@@ -70,7 +70,7 @@ func (d nwItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 		update = true
 	}
 	if li, ok := m.SelectedItem().(nwListItem); update && ok {
-		return func() tea.Msg { return NewFilmDetailsMsg{film: *li.film} }
+		return NewFilmDetailsCmd(li.film)
 	}
 	return nil
 }
@@ -120,9 +120,15 @@ type NWModel struct {
 func (nw *NWModel) Init() tea.Cmd { return nil }
 
 func (nw *NWModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if _, ok := msg.(UpdateScreenMsg); ok {
+		nw.list.SetItems(makeNWItemsList(nw.app))
+	}
+
 	li, ok := nw.list.SelectedItem().(nwListItem)
 	if !ok {
-		return nil, nil
+		var cmd tea.Cmd
+		nw.list, cmd = nw.list.Update(msg)
+		return nw, cmd
 	}
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -137,14 +143,12 @@ func (nw *NWModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if err := nw.app.NWQueue.DeleteFilm(*li.film); err != nil {
 				log.Printf("error after deleting film, %s", err)
 			}
-			return nil, UpdateScreen
+			return nw, UpdateScreen
 		}
-	case UpdateScreenMsg:
-		nw.list.SetItems(makeNWItemsList(nw.app))
 	}
 	var cmd tea.Cmd
 	nw.list, cmd = nw.list.Update(msg)
-	return nil, cmd
+	return nw, cmd
 }
 
 func (nw *NWModel) View() string {
@@ -156,7 +160,7 @@ func (nw *NWModel) Focus() tea.Cmd {
 	nwSeparatorStyle = nwSeparatorStyle.Foreground(focusedColor)
 	nw.style = nw.style.BorderForeground(focusedColor)
 	if li, ok := nw.list.SelectedItem().(nwListItem); ok {
-		return func() tea.Msg { return NewFilmDetailsMsg{film: *li.film} }
+		return NewFilmDetailsCmd(li.film)
 	}
 	log.Printf("%+v is not nwListItem", nw.list.SelectedItem())
 	return nil
