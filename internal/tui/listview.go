@@ -58,9 +58,14 @@ func (ls *ListSelector) View() string {
 	return ls.style.Width(paneWidth).Height(paneHeight).Render(view)
 }
 
-func (ls *ListSelector) Focus() {
+func (ls *ListSelector) Focus() tea.Cmd {
 	ls.focused = true
 	ls.style = lsStyle.BorderForeground(focusedColor)
+	if li, ok := ls.list.SelectedItem().(viewListItem); ok {
+		return func() tea.Msg { return NewFilmDetailsMsg{film: *li.fl.NextFilm} }
+	}
+	log.Printf("%+v is not viewListItem", ls.list.SelectedItem())
+	return nil
 }
 
 func (ls *ListSelector) Unfocus() {
@@ -117,10 +122,14 @@ func (d viewListsDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
 		if !ok { // SelectedItem will return nil when list is empty
 			return nil
 		}
-		if msg.Type == tea.KeyEnter {
-			li.fl.ToggleOrdered()
-			return UpdateScreen
-		} else if key.Matches(msg, keys.Delete) {
+		switch {
+		case key.Matches(msg, keys.Up) || key.Matches(msg, keys.Down) || // anything that changes the selected list
+			msg.String() == "g" || msg.String() == "G":
+			return func() tea.Msg { return NewFilmDetailsMsg{film: *li.fl.NextFilm} }
+		// case msg.Type == tea.KeyEnter:
+		// 	li.fl.ToggleOrdered()
+		// 	return UpdateScreen
+		case key.Matches(msg, keys.Delete):
 			d.app.AskYesNo(fmt.Sprintf("Stop tracking list %s?", li.Title()), func(b bool) tea.Msg {
 				return removeListMsg{ok: b}
 			})
