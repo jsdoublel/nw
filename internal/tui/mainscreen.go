@@ -68,7 +68,7 @@ func MakeMainScreen(a *ApplicationTUI) *MainScreen {
 
 type focusable interface {
 	tea.Model
-	Focus()
+	Focus() tea.Cmd
 	Unfocus()
 }
 
@@ -91,9 +91,9 @@ func (p *MainScreenPanes) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, keys.Back):
 			return m, GoBack
 		case key.Matches(msg, keys.MoveRight):
-			p.focusRight()
+			return m, p.focusRight()
 		case key.Matches(msg, keys.MoveLeft):
-			p.focusLeft()
+			return m, p.focusLeft()
 		}
 	case UpdateScreenMsg:
 		for _, p := range p.panes {
@@ -114,18 +114,18 @@ func (p *MainScreenPanes) View() string {
 	)
 }
 
-func (p *MainScreenPanes) focusRight() {
+func (p *MainScreenPanes) focusRight() tea.Cmd {
 	p.panes[p.focusIdx].Unfocus()
 	if int(p.focusIdx) != len(p.panes)-1 {
 		p.focusIdx++
 	}
-	p.panes[p.focusIdx].Focus()
+	return p.panes[p.focusIdx].Focus()
 }
 
-func (p *MainScreenPanes) focusLeft() {
+func (p *MainScreenPanes) focusLeft() tea.Cmd {
 	p.panes[p.focusIdx].Unfocus()
 	if int(p.focusIdx) != 0 {
 		p.focusIdx--
 	}
-	p.panes[p.focusIdx].Focus()
+	return p.panes[p.focusIdx].Focus()
 }

@@ -151,10 +151,15 @@ func (nw *NWModel) View() string {
 	return nw.style.Width(paneWidth).Render(nw.list.View())
 }
 
-func (nw *NWModel) Focus() {
+func (nw *NWModel) Focus() tea.Cmd {
 	nw.focused = true
 	nwSeparatorStyle = nwSeparatorStyle.Foreground(focusedColor)
 	nw.style = nw.style.BorderForeground(focusedColor)
+	if li, ok := nw.list.SelectedItem().(nwListItem); ok {
+		return func() tea.Msg { return NewFilmDetailsMsg{film: *li.film} }
+	}
+	log.Printf("%+v is not nwListItem", nw.list.SelectedItem())
+	return nil
 }
 
 func (nw *NWModel) Unfocus() {
