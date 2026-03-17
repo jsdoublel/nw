@@ -31,6 +31,7 @@ type keyMap struct {
 	Update      key.Binding
 	StopWatch   key.Binding
 	About       key.Binding
+	ToggleOrder key.Binding
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
@@ -46,7 +47,7 @@ func (k keyMap) FullHelp() [][]key.Binding {
 		{k.Left, k.Right, k.Up, k.Down},
 		{k.MoveLeft, k.MoveRight, k.MoveUp, k.MoveDown},
 		{k.Update, k.Delete, k.SearchFilms, k.AddList},
-		{k.About, k.Back, k.Help, k.Quit},
+		{k.ToggleOrder, k.About, k.Back, k.Help},
 	}
 }
 
@@ -74,6 +75,7 @@ func newKeyMap() keyMap {
 		Update:      binding(app.Config.Keybinds.Update, []string{"ctrl+u"}, "ctrl+u", "update data"),
 		StopWatch:   binding(app.Config.Keybinds.StopWatch, []string{"ctrl+w"}, "ctrl+w", "stop watching"),
 		About:       binding(app.Config.Keybinds.About, []string{"ctrl+a"}, "ctrl+a", "about"),
+		ToggleOrder: binding(app.Config.Keybinds.ToggleOrder, []string{"ctrl+o"}, "ctrl+o", "toggle list order"),
 	}
 }
 

@@ -53,6 +53,7 @@ type keybindConfig struct {
 	SearchFilms []string `toml:"search_films"`
 	Update      []string `toml:"update"`
 	StopWatch   []string `toml:"stop_watch"`
+	ToggleOrder []string `toml:"toggle_order"`
 	About       []string `toml:"about"`
 }
 
