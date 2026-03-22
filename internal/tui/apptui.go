@@ -111,22 +111,33 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.screens.pop()
 		return a, UpdateScreen
 	case tea.KeyMsg:
-		switch {
-		case key.Matches(msg, keys.Update):
-			return a, updateUserDataCmd(a, false)
-		case key.Matches(msg, keys.StopWatch):
-			a.StopDiscordRPC()
-			return a, nil
-		case key.Matches(msg, keys.Help):
-			a.help.ShowAll = !a.help.ShowAll
-			return a, nil
-		case key.Matches(msg, keys.About):
-			a.Popup(About)
-			return a, nil
+		if a.loading() {
+			break
+		}
+		if cmd, handled := a.checkKeyMsgs(msg); handled {
+			return a, cmd
 		}
 	}
 	cmds = append(cmds, a.UpdateRouter(msg)...)
 	return a, tea.Batch(cmds...)
+}
+
+func (a *ApplicationTUI) checkKeyMsgs(msg tea.KeyMsg) (tea.Cmd, bool) {
+	switch {
+	case key.Matches(msg, keys.Update):
+		return updateUserDataCmd(a, false), true
+	case key.Matches(msg, keys.StopWatch):
+		a.StopDiscordRPC()
+		return nil, true
+	case key.Matches(msg, keys.Help):
+		a.help.ShowAll = !a.help.ShowAll
+		return nil, true
+	case key.Matches(msg, keys.About):
+		a.Popup(About)
+		return nil, true
+	default:
+		return nil, false
+	}
 }
 
 func (a *ApplicationTUI) View() string {
@@ -142,7 +153,7 @@ func (a *ApplicationTUI) View() string {
 	return overlay.Composite(a.help.View(keys), compStatus, overlay.Left, overlay.Bottom, 0, 0)
 }
 
-// Handle update rounting with overlays
+// Handle update routing with overlays
 func (a *ApplicationTUI) UpdateRouter(msg tea.Msg) []tea.Cmd {
 	var c, bc, sc tea.Cmd
 	_, sc = a.status.Update(msg)
@@ -167,10 +178,8 @@ type userDataLoadedMsg struct{}
 type userDataFailedMsg struct{ err error }
 
 func updateUserDataCmd(app *ApplicationTUI, check bool) tea.Cmd {
-	if len(app.screens) != 0 { // check to prevent user spamming Update key
-		if _, ok := app.screens.cur().(*SplashScreenModel); ok {
-			return nil
-		}
+	if app.loading() {
+		return nil
 	}
 	splash, cmd := MakeSplashScreen()
 	app.screens.push(splash)
@@ -180,4 +189,14 @@ func updateUserDataCmd(app *ApplicationTUI, check bool) tea.Cmd {
 		}
 		return userDataLoadedMsg{}
 	})
+}
+
+// Check if app is currently loading
+func (app *ApplicationTUI) loading() bool {
+	if len(app.screens) != 0 {
+		if _, ok := app.screens.cur().(*SplashScreenModel); ok {
+			return true
+		}
+	}
+	return false
 }
