@@ -62,7 +62,9 @@ func (ls *ListSelector) Focus() tea.Cmd {
 	ls.focused = true
 	ls.style = lsStyle.BorderForeground(focusedColor)
 	if li, ok := ls.list.SelectedItem().(viewListItem); ok {
-		return NewFilmDetailsCmd(li.fl.NextFilm)
+		if nw, err := li.fl.NextWatch(); err == nil {
+			return NewFilmDetailsCmd(&nw)
+		}
 	}
 	log.Printf("%+v is not viewListItem", ls.list.SelectedItem())
 	return nil
@@ -118,7 +120,9 @@ func (d viewListsDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
 	if _, ok := msg.(UpdateScreenMsg); ok { // update screen first, as we want to do it before empty check
 		ls.SetItems(creatViewListItems(d.app))
 		if li, ok := ls.SelectedItem().(viewListItem); ok {
-			return NewFilmDetailsCmd(li.fl.NextFilm)
+			if nw, err := li.fl.NextWatch(); err == nil {
+				return NewFilmDetailsCmd(&nw)
+			}
 		}
 		return nil
 	}
@@ -130,7 +134,10 @@ func (d viewListsDelegate) Update(msg tea.Msg, ls *list.Model) tea.Cmd {
 		switch {
 		case key.Matches(msg, keys.Up) || key.Matches(msg, keys.Down) || // anything that changes the selected list
 			msg.String() == "g" || msg.String() == "G":
-			return NewFilmDetailsCmd(li.fl.NextFilm)
+			if nw, err := li.fl.NextWatch(); err == nil {
+				return NewFilmDetailsCmd(&nw)
+			}
+			return nil
 		case key.Matches(msg, keys.ToggleOrder):
 			li.fl.ToggleOrdered()
 			return UpdateScreen
