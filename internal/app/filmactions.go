@@ -18,8 +18,9 @@ import (
 )
 
 const (
-	TMDBFilmPathPrefix = "https://www.themoviedb.org/movie/"
-	PosterPathPrefix   = "https://image.tmdb.org/t/p/original/"
+	TMDBFilmPathPrefix     = "https://www.themoviedb.org/movie/"
+	PosterPathPrefix       = "https://image.tmdb.org/t/p/original/"
+	LetterboxdIMDBRedirect = "https://www.letterboxd.com/tmdb/"
 
 	DiscordRPCid = "1223146234538360906"
 )

@@ -184,6 +184,10 @@ func launchBrowserCmd(url string) tea.Cmd {
 }
 
 func filmActions(fr app.FilmRecord, a *ApplicationTUI) []FilmAction {
+	url := fr.Url
+	if url == "" {
+		url = fmt.Sprintf("%s%d", app.LetterboxdIMDBRedirect, fr.TMDBID)
+	}
 	actions := []FilmAction{
 		{label: "Watch", action: func(fr app.FilmRecord) (tea.Cmd, error) { return nil, a.StartDiscordRPC(fr) }},
 		{label: "Poster", action: func(fr app.FilmRecord) (tea.Cmd, error) {
@@ -193,14 +197,9 @@ func filmActions(fr app.FilmRecord, a *ApplicationTUI) []FilmAction {
 				return statusMessageCmd(Message{text: fmt.Sprintf("Poster downloaded to %s", path)}), nil
 			}
 		}},
+		{label: "Letterboxd", action: func(f app.FilmRecord) (tea.Cmd, error) { return launchBrowserCmd(url), nil }},
 	}
-	if fr.Url != "" {
-		actions = append(actions, FilmAction{
-			label:  "Letterboxd",
-			action: func(f app.FilmRecord) (tea.Cmd, error) { return launchBrowserCmd(f.Url), nil },
-		})
-	}
-	if fr.Url == "" || app.Config.Features.AlwaysIncludeTMDB {
+	if fr.Url == "" || app.Config.Features.AlwaysIncludeTMDB { // always include TMDB link in TMDB search results
 		actions = append(actions, FilmAction{
 			label: "TMDB",
 			action: func(f app.FilmRecord) (tea.Cmd, error) {
