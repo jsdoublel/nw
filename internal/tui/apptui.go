@@ -65,7 +65,7 @@ func RunApplicationTUI(username string) error {
 	application.ApiInit()
 	a := ApplicationTUI{Application: application}
 	a.resizeLock = &ResizeLockModel{&a}
-	p := tea.NewProgram(&a, tea.WithAltScreen())
+	p := tea.NewProgram(&a, tea.WithAltScreen(), tea.WithoutCatchPanics())
 	_, err = p.Run()
 	return err
 }

@@ -53,14 +53,17 @@ func parseArgs() string {
 }
 
 func main() {
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Fprintf(os.Stderr, "nw crashed with a panic: %v\n--- STACK TRACE ---\n%s\n", r, debug.Stack())
-			os.Exit(1)
-		}
-	}()
-	if err := tui.RunApplicationTUI(parseArgs()); err != nil {
-		fmt.Fprintf(os.Stderr, "nw failed with error: %s\n", err.Error())
+	if err := run(); err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
 	}
+}
+
+func run() (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("nw crashed with a panic: %v\n\n%s", r, debug.Stack())
+		}
+	}()
+	return tui.RunApplicationTUI(parseArgs())
 }
