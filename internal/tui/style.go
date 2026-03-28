@@ -44,15 +44,10 @@ otherwise approved by TMDB.`
 var (
 
 	// ----- Colors
-	// originally colors from : https://github.com/slugbyte/lackluster.nvim
-	// later changed to letterboxd colors
-	lack   = paletteColor(app.Config.Appearance.Colors.Primary, "#40bcf4")
-	luster = lipgloss.Color("#deeeed")
-	orange = paletteColor(app.Config.Appearance.Colors.Secondary, "#ff8000")
-	yellow = lipgloss.Color("#abab77")
-	green  = paletteColor(app.Config.Appearance.Colors.Success, "#00e054")
-	blue   = lipgloss.Color("#7788aa")
-	red    = paletteColor(app.Config.Appearance.Colors.Error, "#d70000")
+	primary   = paletteColor(app.Config.Appearance.Colors.Primary, "#40bcf4")
+	secondary = paletteColor(app.Config.Appearance.Colors.Secondary, "#ff8000")
+	success   = paletteColor(app.Config.Appearance.Colors.Success, "#00e054")
+	fail      = paletteColor(app.Config.Appearance.Colors.Error, "#d70000")
 
 	gray = grayColors(!termenv.HasDarkBackground())
 
@@ -66,7 +61,7 @@ var (
 	mainStyle = mainStyler()
 
 	// ----- Add List Screen
-	addListTitleColor = green
+	addListTitleColor = success
 	searchInputStyle  = lipgloss.NewStyle().Inherit(mainStyle)
 	searchListStyle   = lipgloss.NewStyle().Inherit(mainStyle)
 	cursorStyle       = lipgloss.NewStyle()
@@ -75,8 +70,8 @@ var (
 	// ----- NW Queue
 	nwStyle             = lipgloss.NewStyle().Inherit(mainStyle)
 	nwItemStyle         = lipgloss.NewStyle()
-	nwSelectedItemStyle = lipgloss.NewStyle().Background(lack).Foreground(textDark)
-	nwUpdatedItemStyle  = lipgloss.NewStyle().Foreground(green)
+	nwSelectedItemStyle = lipgloss.NewStyle().Background(primary).Foreground(textDark)
+	nwUpdatedItemStyle  = lipgloss.NewStyle().Foreground(success)
 	nwSeparatorStyle    = lipgloss.NewStyle().Foreground(focusedColor)
 
 	// ----- Model Join (Joint NW Queue / Details)
@@ -100,28 +95,28 @@ var (
 
 	// ----- Film Search
 	filmSearchItemStyle     = lipgloss.NewStyle()
-	filmSearchSelectedStyle = lipgloss.NewStyle().Background(lack).Foreground(textDark)
+	filmSearchSelectedStyle = lipgloss.NewStyle().Background(primary).Foreground(textDark)
 
 	// ----- Status Bar
 	statusBarWatchingStyle = lipgloss.NewStyle().
 				Border(mainStyle.GetBorderStyle()).
-				BorderForeground(green).
-				Foreground(green).
+				BorderForeground(success).
+				Foreground(success).
 				Padding(0, 1)
 	statusBarMessageStyle = lipgloss.NewStyle().Width(paneWidth).
 				Border(mainStyle.GetBorderStyle()).
 				Padding(0, 1)
 	statusBarErrStyle = lipgloss.NewStyle().Width(paneWidth).
-				Foreground(red).
+				Foreground(fail).
 				Border(mainStyle.GetBorderStyle()).
-				BorderForeground(red).
+				BorderForeground(fail).
 				Padding(0, 1)
 
 	// ----- Splash Screen
 	splashSpinnerStyles = []lipgloss.Style{
-		lipgloss.NewStyle().Foreground(orange),
-		lipgloss.NewStyle().Foreground(green),
-		lipgloss.NewStyle().Foreground(lack),
+		lipgloss.NewStyle().Foreground(secondary),
+		lipgloss.NewStyle().Foreground(success),
+		lipgloss.NewStyle().Foreground(primary),
 	}
 
 	// ----- Misc. Prompts
@@ -182,14 +177,14 @@ func listStyleDelegate() list.DefaultDelegate {
 	listStyleDele.Styles.DimmedDesc = listStyleDele.Styles.DimmedDesc.
 		Foreground(gray[5])
 	listStyleDele.Styles.SelectedTitle = listStyleDele.Styles.SelectedTitle.
-		Foreground(luster).
-		BorderForeground(orange).
+		Foreground(gray[9]).
+		BorderForeground(secondary).
 		Bold(true)
 	listStyleDele.Styles.SelectedDesc = listStyleDele.Styles.SelectedDesc.
-		Foreground(orange).
-		BorderForeground(orange)
+		Foreground(secondary).
+		BorderForeground(secondary)
 	listStyleDele.Styles.FilterMatch = listStyleDele.Styles.FilterMatch.
-		Foreground(blue).
+		Foreground(primary).
 		Underline(true)
 	return listStyleDele
 }

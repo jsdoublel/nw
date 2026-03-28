@@ -15,8 +15,8 @@ type ResizeLockModel struct {
 func (fl *ResizeLockModel) Init() tea.Cmd                           { return nil }
 func (fl *ResizeLockModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) { return nil, nil }
 func (fl *ResizeLockModel) View() string {
-	goodSty := lipgloss.NewStyle().Foreground(green)
-	badSty := lipgloss.NewStyle().Foreground(red)
+	goodSty := lipgloss.NewStyle().Foreground(success)
+	badSty := lipgloss.NewStyle().Foreground(fail)
 	h := goodSty.Render(strconv.Itoa(fl.app.height))
 	w := goodSty.Render(strconv.Itoa(fl.app.width))
 	if fl.app.height <= paneHeight {

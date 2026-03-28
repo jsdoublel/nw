@@ -36,7 +36,7 @@ func (ss *SplashScreenModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (ss *SplashScreenModel) View() string {
 	if ss.err != nil {
-		return lipgloss.NewStyle().Foreground(red).Render(lipgloss.JoinVertical(
+		return lipgloss.NewStyle().Foreground(fail).Render(lipgloss.JoinVertical(
 			lipgloss.Center,
 			fmt.Sprintf("error %s", ss.err),
 			fmt.Sprintf("press %s to exit.", keys.Back.Help().Key),

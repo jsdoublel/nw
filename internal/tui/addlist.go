@@ -183,9 +183,9 @@ func (d searchListsDelegate) Render(w io.Writer, m list.Model, index int, listIt
 	dd := d.DefaultDelegate
 	if d.app.IsListTracked(li.fl.Url) {
 		dd.Styles.NormalTitle = dd.Styles.NormalTitle.
-			Foreground(luster).Bold(true)
+			Foreground(primary).Bold(true)
 		dd.Styles.NormalDesc = dd.Styles.NormalDesc.
-			Foreground(lack)
+			Foreground(primary)
 	}
 	dd.Render(w, m, index, listItem)
 }

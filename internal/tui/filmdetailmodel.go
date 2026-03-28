@@ -74,7 +74,7 @@ func (fd *FilmDetailsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (fd *FilmDetailsModel) View() string {
 	if fd.err != nil {
-		return fd.style.Foreground(red).Width(paneWidth).Render(fd.errorText())
+		return fd.style.Foreground(fail).Width(paneWidth).Render(fd.errorText())
 	}
 	return fd.style.Width(paneWidth).
 		Render(lipgloss.JoinVertical(lipgloss.Center, fd.renderDetails(), "", fd.renderActions()))
@@ -113,7 +113,7 @@ func (fd *FilmDetailsModel) renderDetails() string {
 		limitAdj++
 	}
 	if runtime := fd.film.Details.Runtime; runtime > 0 {
-		b.WriteString(fmt.Sprintf("\n%d minutes", runtime))
+		fmt.Fprintf(&b, "\n%d minutes", runtime)
 		limitAdj++
 	}
 	castLimit := max(minCast, lipgloss.Height(rightText)-limitAdj)

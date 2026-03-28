@@ -36,7 +36,7 @@ func (fi FilmResultItem) String() string {
 	var b strings.Builder
 	b.WriteString(fi.Title)
 	if releaseDate, err := time.Parse("2006-01-02", fi.ReleaseDate); err == nil {
-		b.WriteString(fmt.Sprintf(" (%d)", releaseDate.Year()))
+		fmt.Fprintf(&b, " (%d)", releaseDate.Year())
 	} else {
 		log.Printf("error parsing date for film results %s, %s", fi.Title, fi.ReleaseDate)
 	}
