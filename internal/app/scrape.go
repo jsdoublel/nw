@@ -30,8 +30,7 @@ func ScrapeUserLists(username string) ([]*FilmList, error) {
 		return nil, fmt.Errorf("problem joining url parts, %w", err)
 	}
 	usersListUrls := []*FilmList{}
-	c := colly.NewCollector()
-	attachScrapeLogger(c, "user lists")
+	c := makeCollector(listPageUrl)
 	c.OnHTML("div.body", func(h *colly.HTMLElement) {
 		fl := &FilmList{}
 		h.ForEach("h2.name.prettify a[href]", func(_ int, link *colly.HTMLElement) {
@@ -85,8 +84,7 @@ func ScrapeFilmList(rawURL string) (fl FilmList, err error) {
 		return
 	}
 	fl.Url = rawURL
-	c := colly.NewCollector()
-	attachScrapeLogger(c, rawURL)
+	c := makeCollector(rawURL)
 	c.OnHTML("h1.title-1.prettify", func(h *colly.HTMLElement) {
 		fl.Name = strings.TrimSpace(h.Text)
 	})
@@ -153,8 +151,7 @@ func ScrapeFilmID(rawURL string) (id int, err error) {
 	} else if filmUrl.Hostname() != "letterboxd.com" {
 		return -1, fmt.Errorf("%w, %s is not a letterboxd.com url", ErrInvalidUrl, filmUrl)
 	}
-	c := colly.NewCollector()
-	attachScrapeLogger(c, rawURL)
+	c := makeCollector(rawURL)
 	var scrapingErr error
 	c.OnHTML("a.micro-button.track-event", func(h *colly.HTMLElement) {
 		if h.Text == "TMDB" {
@@ -209,19 +206,31 @@ func parseDescription(h *colly.HTMLElement, selector string) string {
 	return builder.String()
 }
 
-func attachScrapeLogger(c *colly.Collector, label string) {
-	// Use req/v3 to impersonate Chrome's TLS fingerprint (JA3)
+func makeCollector(logLabel string) *colly.Collector {
+	c := colly.NewCollector()
 	client := req.C().ImpersonateChrome()
 	c.WithTransport(client.Transport)
-
-	c.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
-	// Keep per-collector limit as a fallback/jitter
+	if ua := client.Headers.Get("User-Agent"); ua != "" {
+		c.UserAgent = ua
+	}
+	c.OnRequest(func(r *colly.Request) {
+		for k, v := range client.Headers {
+			if k == "User-Agent" {
+				continue
+			}
+			r.Headers.Set(k, v[0])
+		}
+	})
 	_ = c.Limit(&colly.LimitRule{
 		DomainGlob:  "*letterboxd.com*",
 		Delay:       100 * time.Millisecond,
 		RandomDelay: 100 * time.Millisecond,
 	})
+	attachScrapeLogger(c, logLabel)
+	return c
+}
 
+func attachScrapeLogger(c *colly.Collector, label string) {
 	c.OnError(func(resp *colly.Response, err error) {
 		status := 0
 		url := label

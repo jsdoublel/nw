@@ -62,7 +62,7 @@ func main() {
 func run() (err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("nw crashed with a panic: %v\n\n%s", r, debug.Stack())
+			err = fmt.Errorf("nw panicked: %v\n\n%s", r, debug.Stack())
 		}
 	}()
 	return tui.RunApplicationTUI(parseArgs())
