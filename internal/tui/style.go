@@ -169,19 +169,19 @@ func mainStyler() lipgloss.Style {
 func listStyleDelegate() list.DefaultDelegate {
 	listStyleDele := list.NewDefaultDelegate()
 	listStyleDele.Styles.NormalTitle = listStyleDele.Styles.NormalTitle.
-		Foreground(gray[8])
+		Foreground(gray[9])
 	listStyleDele.Styles.NormalDesc = listStyleDele.Styles.NormalDesc.
-		Foreground(gray[7])
+		Foreground(gray[6])
 	listStyleDele.Styles.DimmedTitle = listStyleDele.Styles.DimmedTitle.
 		Foreground(gray[6])
 	listStyleDele.Styles.DimmedDesc = listStyleDele.Styles.DimmedDesc.
 		Foreground(gray[5])
 	listStyleDele.Styles.SelectedTitle = listStyleDele.Styles.SelectedTitle.
-		Foreground(gray[9]).
+		Foreground(secondary).
 		BorderForeground(secondary).
 		Bold(true)
 	listStyleDele.Styles.SelectedDesc = listStyleDele.Styles.SelectedDesc.
-		Foreground(secondary).
+		Foreground(gray[9]).
 		BorderForeground(secondary)
 	listStyleDele.Styles.FilterMatch = listStyleDele.Styles.FilterMatch.
 		Foreground(primary).

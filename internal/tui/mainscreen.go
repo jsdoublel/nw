@@ -100,11 +100,10 @@ func (p *MainScreenPanes) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case UpdateScreenMsg:
 		for i, pane := range p.panes {
-			if i == p.focusIdx {
-				continue
+			if i != p.focusIdx {
+				m, _ := pane.Update(msg)
+				p.panes[i] = m.(focusable)
 			}
-			m, _ := pane.Update(msg)
-			p.panes[i] = m.(focusable)
 		}
 	}
 	return p, tea.Batch(cmds...)

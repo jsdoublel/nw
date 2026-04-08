@@ -77,7 +77,7 @@ func (a *ApplicationTUI) Init() tea.Cmd {
 }
 
 func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if msg, ok := msg.(tea.KeyMsg); ok && a.TooSmall() {
+	if msg, ok := msg.(tea.KeyMsg); ok && a.TooSmall() { // block all non-quitting keypresses if screen is blocked
 		if key.Matches(msg, keys.Quit) {
 			return a, tea.Quit
 		}
