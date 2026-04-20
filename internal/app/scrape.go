@@ -84,9 +84,31 @@ func ScrapeFilmList(rawURL string) (fl FilmList, err error) {
 		return
 	}
 	fl.Url = rawURL
+	officialCount := -1
 	c := makeCollector(rawURL)
 	c.OnHTML("h1.title-1.prettify", func(h *colly.HTMLElement) {
 		fl.Name = strings.TrimSpace(h.Text)
+	})
+	c.OnHTML(".js-watchlist-count", func(h *colly.HTMLElement) {
+		text := strings.TrimSpace(h.Text)
+		parts := strings.Fields(text)
+		if len(parts) > 0 {
+			countStr := strings.ReplaceAll(parts[0], "\u00A0", "")
+			countStr = strings.ReplaceAll(countStr, ",", "")
+			if count, err := strconv.Atoi(countStr); err == nil {
+				officialCount = count
+			}
+		}
+	})
+	c.OnHTML("meta[name='description']", func(h *colly.HTMLElement) {
+		content := h.Attr("content")
+		re := regexp.MustCompile(`A list of ([\d,]+) films`)
+		if matches := re.FindStringSubmatch(content); len(matches) == 2 {
+			countStr := strings.ReplaceAll(matches[1], ",", "")
+			if count, err := strconv.Atoi(countStr); err == nil {
+				officialCount = count
+			}
+		}
 	})
 	c.OnHTML("div.body-text", func(h *colly.HTMLElement) {
 		if h.Attr("data-full-text-url") != "#list-notes" {
@@ -145,6 +167,10 @@ func ScrapeFilmList(rawURL string) (fl FilmList, err error) {
 	}
 	if paginationErr != nil {
 		err = paginationErr
+		return
+	}
+	if len(fl.Films) == 0 && officialCount > 0 {
+		err = fmt.Errorf("%w, scraped 0 films but page reported %d", ErrBadScrape, officialCount)
 		return
 	}
 	fl.NumFilms = len(fl.Films)
