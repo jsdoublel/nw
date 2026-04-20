@@ -107,6 +107,13 @@ func ScrapeFilmList(rawURL string) (fl FilmList, err error) {
 				}
 				if id, err := strconv.Atoi(h.Attr("data-film-id")); err == nil {
 					f.LBxdID = id
+				} else if identifier := h.Attr("data-postered-identifier"); identifier != "" {
+					re := regexp.MustCompile(`"uid":"film:(\d+)"`)
+					if matches := re.FindStringSubmatch(identifier); len(matches) == 2 {
+						if id, err := strconv.Atoi(matches[1]); err == nil {
+							f.LBxdID = id
+						}
+					}
 				}
 				if f.Title != "" && f.Year != 0 && f.LBxdID != 0 {
 					fl.Films = append(fl.Films, &f)
