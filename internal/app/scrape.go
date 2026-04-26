@@ -22,6 +22,8 @@ var (
 	ErrNotAFilm   error = errors.New("not a film")
 
 	titleYearRegex = regexp.MustCompile(`^(.+?)\s+\((\d{4})\)$`)
+
+	httpClient = req.C().ImpersonateChrome()
 )
 
 func ScrapeUserLists(username string) ([]*FilmList, error) {
@@ -241,13 +243,13 @@ func parseDescription(h *colly.HTMLElement, selector string) string {
 
 func makeCollector(logLabel string) *colly.Collector {
 	c := colly.NewCollector()
-	client := req.C().ImpersonateChrome()
-	c.WithTransport(client.Transport)
-	if ua := client.Headers.Get("User-Agent"); ua != "" {
+	c.WithTransport(httpClient.Transport)
+	if ua := httpClient.Headers.Get("User-Agent"); ua != "" {
 		c.UserAgent = ua
 	}
 	c.OnRequest(func(r *colly.Request) {
-		for k, v := range client.Headers {
+		r.Headers.Set("Referer", "https://letterboxd.com/")
+		for k, v := range httpClient.Headers {
 			if k == "User-Agent" {
 				continue
 			}
@@ -256,8 +258,8 @@ func makeCollector(logLabel string) *colly.Collector {
 	})
 	_ = c.Limit(&colly.LimitRule{
 		DomainGlob:  "*letterboxd.com*",
-		Delay:       100 * time.Millisecond,
-		RandomDelay: 100 * time.Millisecond,
+		Delay:       50 * time.Millisecond,
+		RandomDelay: 50 * time.Millisecond,
 	})
 	attachScrapeLogger(c, logLabel)
 	return c
