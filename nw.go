@@ -25,7 +25,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"runtime/debug"
 
 	"github.com/jsdoublel/nw/internal/app"
 	"github.com/jsdoublel/nw/internal/tui"
@@ -42,7 +41,7 @@ func parseArgs() string {
 		os.Exit(0)
 	}
 	if *version {
-		fmt.Printf("nw version %s\n", app.Version)
+		fmt.Printf("nw %s\n", app.Version)
 		os.Exit(0)
 	}
 	if *help {
@@ -53,17 +52,8 @@ func parseArgs() string {
 }
 
 func main() {
-	if err := run(); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
+	if err := tui.RunApplicationTUI(parseArgs()); err != nil {
+		fmt.Fprintf(os.Stderr, "%s\r\n", err.Error())
 		os.Exit(1)
 	}
-}
-
-func run() (err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("nw panicked: %v\n\n%s", r, debug.Stack())
-		}
-	}()
-	return tui.RunApplicationTUI(parseArgs())
 }

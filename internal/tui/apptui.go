@@ -65,7 +65,7 @@ func RunApplicationTUI(username string) error {
 	application.ApiInit()
 	a := ApplicationTUI{Application: application}
 	a.resizeLock = &ResizeLockModel{&a}
-	p := tea.NewProgram(&a, tea.WithAltScreen(), tea.WithoutCatchPanics())
+	p := tea.NewProgram(&a, tea.WithAltScreen())
 	_, err = p.Run()
 	return err
 }
@@ -135,6 +135,8 @@ func (a *ApplicationTUI) checkKeyMsgs(msg tea.KeyMsg) (tea.Cmd, bool) {
 	case key.Matches(msg, keys.About):
 		a.Popup(About)
 		return nil, true
+	case key.Matches(msg, keys.Quit):
+		return tea.Quit, true
 	default:
 		return nil, false
 	}
