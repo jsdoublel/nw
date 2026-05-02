@@ -92,6 +92,7 @@ func (app *Application) StartDiscordRPC(fr FilmRecord) error {
 		defer client.Logout()
 		startT := time.Now()
 		activity := client.Activity{
+			Type:       client.ActivityTypeWatching,
 			Details:    fr.String(),
 			State:      fr.DirectorString(),
 			LargeText:  fr.String(),

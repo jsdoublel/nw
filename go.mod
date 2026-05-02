@@ -11,7 +11,7 @@ require (
 	github.com/cyruzin/golang-tmdb v1.9.0
 	github.com/gocolly/colly v1.2.0
 	github.com/imroc/req/v3 v3.57.0
-	github.com/jsdoublel/rich-go v0.0.0-20251224231517-025ebcf8b4db
+	github.com/jsdoublel/rich-go v0.0.0-20260502004317-e6fbdd534d42
 	github.com/muesli/termenv v0.16.0
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/rmhubbert/bubbletea-overlay v0.5.0
