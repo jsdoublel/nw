@@ -186,7 +186,7 @@ func launchBrowserCmd(url string) tea.Cmd {
 func filmActions(fr app.FilmRecord, a *ApplicationTUI) []FilmAction {
 	url := fr.Url
 	if url == "" {
-		url = fmt.Sprintf("%s%d", app.LetterboxdIMDBRedirect, fr.TMDBID)
+		url = fmt.Sprintf("%s%d", app.LetterboxdTMDBRedirect, fr.TMDBID)
 	}
 	actions := []FilmAction{
 		{label: "Watch", action: func(fr app.FilmRecord) (tea.Cmd, error) { return nil, a.StartDiscordRPC(fr) }},

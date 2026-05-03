@@ -20,7 +20,7 @@ import (
 const (
 	TMDBFilmPathPrefix     = "https://www.themoviedb.org/movie/"
 	PosterPathPrefix       = "https://image.tmdb.org/t/p/original/"
-	LetterboxdIMDBRedirect = "https://www.letterboxd.com/tmdb/"
+	LetterboxdTMDBRedirect = "https://www.letterboxd.com/tmdb/"
 
 	DiscordRPCid = "1223146234538360906"
 )
@@ -97,8 +97,9 @@ func (app *Application) StartDiscordRPC(fr FilmRecord) error {
 			State:      fr.DirectorString(),
 			LargeText:  fr.String(),
 			SmallImage: "tmdb_logo",
-			SmallText:  "The Movie Database",
+			SmallText:  "TMDB",
 			Timestamps: &client.Timestamps{Start: &startT},
+			Buttons:    []*client.Button{{Label: "TMDB", Url: fmt.Sprintf("%s%d", TMDBFilmPathPrefix, fr.TMDBID)}},
 		}
 		if fr.Details.PosterPath != "" {
 			activity.LargeImage = PosterPathPrefix + fr.Details.PosterPath
