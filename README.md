@@ -20,43 +20,46 @@ current film you are watching.
 > Some features require a TMDB API key. You can obtain one from [TMDB's
 > website](https://developer.themoviedb.org/docs/getting-started) for free.
 
-- Chooses your Next Watch
+- **Chooses your Next Watch**
 	- Populates a list of five ordered groups containing five films from your
 	  Letterboxd Watchlist, as well as a selection for what film is to be
 	  watched next.
 	- Each time you watch a film, a film is selected from each group to be
 	  promoted to the next group at random.
-- Track progress on lists
+
+- **Track progress on lists**
 	- You can search through public lists on your Letterboxd profile, as well
 	  as retrieve list from URLs.
 	- List can be set as "Ordered" (suggests the next unwatched film) or
 	  "Unordered" (selects a random unwatched film).
-- Search up film details
-    - Allows you to quickly search though films via TMDB.
-    - Once a film is selected you can 
+- **Search up film details**
+	- Allows you to quickly search though films via TMDB.
+	- Once a film is selected you can:
 		- View the film's details
 		- Download the poster image
 		- Display the film as being "Watched" on Discord.
 
-## Getting Started 
+## Getting Started
 
 ### Installation
 
 There are three ways to install `nw`. If you have [Go](https://go.dev/)
 installed, `nw` can be installed with
 
-```
+```sh
 go install github.com/jsdoublel/nw@latest
 ```
 
 Otherwise, you can download a precompiled binary from the [GitHub
 releases](https://github.com/jsdoublel/nw/releases); or, if you want to build
 `nw` from source, you can do this by running
-```
+
+```sh
 git clone https://github.com/jsdoublel/nw.git
 cd nw
 make
 ```
+
 Running `make` successfully requires that Go is installed.
 
 ### Initial setup
@@ -69,8 +72,8 @@ the [config file](config.toml). Alternatively, you can launch `nw` with the
 ## Configuration
 
 NW uses a configuration file to adjust various settings. NW will look in a sane
-place for this configuration file, as per the OS used. You can figure out where 
-this will be by running `nw -c`, which will print the expected location.
+place for this configuration file. You can figure out where this will be by
+running `nw -c`, which will print the expected location.
 
 A configuration file with default settings is included in the repository as
 `config.toml`. It includes descriptions of the various settings. The file uses
