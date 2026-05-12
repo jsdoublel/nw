@@ -8,7 +8,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/gocolly/colly"
 	"github.com/imroc/req/v3"
@@ -255,11 +254,6 @@ func makeCollector(logLabel string) *colly.Collector {
 			}
 			r.Headers.Set(k, v[0])
 		}
-	})
-	_ = c.Limit(&colly.LimitRule{
-		DomainGlob:  "*letterboxd.com*",
-		Delay:       50 * time.Millisecond,
-		RandomDelay: 50 * time.Millisecond,
 	})
 	attachScrapeLogger(c, logLabel)
 	return c
