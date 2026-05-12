@@ -4,14 +4,17 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"time"
 
 	"github.com/adrg/xdg"
 )
 
-var NWDataPath string
+var (
+	NWDataPath string
 
-const Version = "v0.2.6"
+	Version = "dev"
+)
 
 func init() {
 	configInit()
@@ -19,6 +22,12 @@ func init() {
 	if _, err := os.Stat(NWDataPath); os.IsNotExist(err) {
 		if err := os.MkdirAll(NWDataPath, 0o755); err != nil {
 			log.Printf("could not create directory at %s", NWDataPath)
+		}
+	}
+	if Version == "dev" {
+		info, ok := debug.ReadBuildInfo()
+		if ok {
+			Version = info.Main.Version
 		}
 	}
 }

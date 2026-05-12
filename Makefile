@@ -1,5 +1,7 @@
-BINARY_NAME=nw
-MAIN_GO_FILE=nw.go
+BINARY_NAME := nw
+MAIN_GO_FILE := nw.go
+VERSION := $(shell git describe --tags --always --dirty || echo "dev")
+LDFLAGS := -ldflags="-X 'github.com/jsdoublel/nw/internal/app.Version=$(VERSION)'"
 
 TARGETS := \
 	linux/amd64 \
@@ -10,7 +12,7 @@ TARGETS := \
 
 build: | bin
 	@echo "Building for $$(go env GOOS)/$$(go env GOARCH)..."
-	go build -o bin/$(BINARY_NAME) $(MAIN_GO_FILE)
+	go build $(LDFLAGS) -o bin/$(BINARY_NAME) $(MAIN_GO_FILE)
 
 all: $(TARGETS)
 
@@ -19,7 +21,7 @@ $(TARGETS): | bin
 	$(eval GOARCH := $(word 2,$(subst /, ,$@)))
 	$(eval EXT := $(if $(findstring windows,$(GOOS)),.exe,))
 	@echo "Building for $(GOOS)/$(GOARCH)..."
-	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o bin/$(BINARY_NAME)-$(GOOS)-$(GOARCH)$(EXT) $(MAIN_GO_FILE)
+	GOOS=$(GOOS) GOARCH=$(GOARCH) go build $(LDFLAGS) -o bin/$(BINARY_NAME)-$(GOOS)-$(GOARCH)$(EXT) $(MAIN_GO_FILE)
 
 bin:
 	@mkdir -p bin

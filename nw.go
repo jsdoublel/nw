@@ -41,7 +41,7 @@ func parseArgs() string {
 		os.Exit(0)
 	}
 	if *version {
-		fmt.Printf("nw %s\n", app.Version)
+		fmt.Println(app.Version)
 		os.Exit(0)
 	}
 	if *help {
