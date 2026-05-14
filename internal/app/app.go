@@ -26,7 +26,7 @@ func init() {
 	}
 	if Version == "dev" {
 		info, ok := debug.ReadBuildInfo()
-		if ok {
+		if ok && info.Main.Version != "" && info.Main.Version != "(devel)" {
 			Version = info.Main.Version
 		}
 	}

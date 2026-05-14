@@ -4,9 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -49,17 +48,13 @@ func DownloadPoster(fr FilmRecord) (string, error) {
 	if fr.Details.PosterPath == "" {
 		return "", fmt.Errorf("%w for film %s", ErrMissingPosterPath, fr.Title)
 	}
-	resp, err := http.Get(PosterPathPrefix + fr.Details.PosterPath)
-	defer func() { _ = resp.Body.Close() }()
+	posterUrl, err := url.JoinPath(PosterPathPrefix, fr.Details.PosterPath)
+	if err != nil {
+		return "", fmt.Errorf("failed to join poster path for film %s, %w", fr.Title, err)
+	}
+	content, err := getUrlContent(posterUrl)
 	if err != nil {
 		return "", fmt.Errorf("%w for film %s, %w", ErrRetreivingPoster, fr.Title, err)
-	}
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("%w for film %s, status code %d != %d", ErrRetreivingPoster, fr.Title, resp.StatusCode, http.StatusOK)
-	}
-	content, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
 	}
 	path := posterFileName(fr.Film)
 	return path, os.WriteFile(path, content, 0o644)
