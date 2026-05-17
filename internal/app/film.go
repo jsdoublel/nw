@@ -23,3 +23,15 @@ func (fs FilmsSet) InSet(film *Film) bool {
 	_, ok := fs[film.LBxdID]
 	return ok
 }
+
+func (fs FilmsSet) RemoveFilms(films []Film) {
+	for _, f := range films {
+		delete(fs, f.LBxdID)
+	}
+}
+
+func (fs FilmsSet) AddFilms(films []Film) {
+	for _, f := range films {
+		fs[f.LBxdID] = &f
+	}
+}
