@@ -178,6 +178,7 @@ func ScrapeFilmList(rawURL string) (fl FilmList, err error) {
 	return
 }
 
+// Scraps TMDB film ID given a URL to a Letterboxd film page
 func ScrapeFilmID(rawURL string) (id int, err error) {
 	filmUrl, err := url.Parse(rawURL)
 	if err != nil {
@@ -218,6 +219,45 @@ func ScrapeFilmID(rawURL string) (id int, err error) {
 	}
 	if id == 0 {
 		err = fmt.Errorf("%w, did not find TMDB id when scraping %s", ErrInvalidUrl, rawURL)
+	}
+	return
+}
+
+func ScrapeFilmFromFilmPage(rawURL string) (film Film, err error) {
+	var filmUrl *url.URL
+	filmUrl, err = url.Parse(rawURL)
+	if err != nil {
+		err = fmt.Errorf("problem parsing url %s, %w", rawURL, err)
+		return
+	}
+	if split := strings.Split(strings.Trim(filmUrl.Path, "/"), "/"); split[0] != "film" || filmUrl.Hostname() != "letterboxd.com" {
+		err = fmt.Errorf("%w, %s is not a letterboxd.com film url", ErrInvalidUrl, filmUrl)
+		return
+	}
+	film.Url = rawURL
+	c := makeCollector(rawURL)
+	c.OnHTML("script#production-data", func(h *colly.HTMLElement) {
+		re := regexp.MustCompile(`"uid":"film:(\d+)"`)
+		if matches := re.FindStringSubmatch(h.Text); len(matches) == 2 {
+			if id, err := strconv.Atoi(matches[1]); err == nil {
+				film.LBxdID = id
+			}
+		}
+	})
+	c.OnHTML("meta[property='og:title']", func(h *colly.HTMLElement) {
+		content := h.Attr("content")
+		if matches := titleYearRegex.FindStringSubmatch(content); len(matches) == 3 {
+			film.Title = strings.TrimSpace(matches[1])
+			if year, err := strconv.Atoi(matches[2]); err == nil {
+				film.Year = uint(year)
+			}
+		}
+	})
+	if err = c.Visit(filmUrl.String()); err != nil {
+		return
+	}
+	if film.LBxdID == -1 || film.Title == "" || film.Year == 0 {
+		err = fmt.Errorf("%w, failed to scrape all film data from %s (id=%d, title=%s, year=%d)", ErrBadScrape, rawURL, film.LBxdID, film.Title, film.Year)
 	}
 	return
 }
