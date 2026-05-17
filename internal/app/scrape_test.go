@@ -109,6 +109,46 @@ func TestScrapeFilmID(t *testing.T) {
 	}
 }
 
+func TestScrapeFilmFromFilmPage(t *testing.T) {
+	testCases := []struct {
+		name     string
+		url      string
+		expected Film
+	}{
+		{
+			name: "Oppenheimer",
+			url:  "https://letterboxd.com/film/oppenheimer-2023/",
+			expected: Film{
+				LBxdID: 784328,
+				Url:    "https://letterboxd.com/film/oppenheimer-2023/",
+				Title:  "Oppenheimer",
+				Year:   2023,
+			},
+		},
+		{
+			name: "Barbie",
+			url:  "https://letterboxd.com/film/barbie/",
+			expected: Film{
+				LBxdID: 277064,
+				Url:    "https://letterboxd.com/film/barbie/",
+				Title:  "Barbie",
+				Year:   2023,
+			},
+		},
+	}
+	for _, test := range testCases {
+		t.Run(test.name, func(t *testing.T) {
+			film, err := ScrapeFilmFromFilmPage(test.url)
+			if err != nil {
+				t.Fatalf("Produced error %s", err)
+			}
+			if !reflect.DeepEqual(test.expected, film) {
+				t.Errorf("want=%+v\n!= got=%+v\n", test.expected, film)
+			}
+		})
+	}
+}
+
 func BenchmarkScrapeFilmID(b *testing.B) {
 	filmUrl := "https://letterboxd.com/film/2001-a-space-odyssey/"
 	for b.Loop() {

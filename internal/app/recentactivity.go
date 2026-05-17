@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"log"
 	"net/url"
 	"strings"
 )
@@ -45,6 +46,10 @@ func (app *Application) QuickUpdateWatched() error {
 	if err != nil {
 		return err
 	}
+	return app.updateRecentActivity(updatedActivity)
+}
+
+func (app *Application) updateRecentActivity(updatedActivity []RSSItem) error {
 	newEntries := make([]RSSItem, 0)
 	for _, item := range updatedActivity {
 		if lastActivity, err := app.LastActivity(); err == nil && lastActivity.Guid == item.Guid {
@@ -74,13 +79,36 @@ func (app *Application) QuickUpdateWatched() error {
 	return nil
 }
 
-func GetFilmsForActivities(activity []RSSItem) ([]Film, error) {
-	return nil, nil
+func GetFilmsForActivities(activities []RSSItem) ([]Film, error) {
+	films := make([]Film, 0, len(activities))
+	for _, a := range activities {
+		f, err := filmForActivity(a)
+		if err != nil {
+			log.Printf("failed to get Letterboxd ID for film, %s", err)
+			continue
+		}
+		films = append(films, f)
+	}
+	return films, nil
+}
+
+func filmForActivity(activity RSSItem) (Film, error) {
+	parsedUrl, err := url.Parse(activity.Link)
+	if err != nil {
+		return Film{}, fmt.Errorf("%w, link from RSS item could not be parsed as url, %s", ErrParsingRSS, activity.Link)
+	}
+	parts := strings.Split(strings.Trim(parsedUrl.Path, "/"), "/")
+	filmUrl, err := url.JoinPath(LetterboxdUrl, "film", parts[2])
+	if err != nil {
+		return Film{}, fmt.Errorf("%w, couldn't create film URL from RSS link, %s", ErrParsingRSS, activity.Link)
+	}
+	return ScrapeFilmFromFilmPage(filmUrl)
 }
 
 func (app *Application) LastActivity() (RSSItem, error) {
-	if app.RecentActivity == nil || len(app.RecentActivity) > 0 {
+	if app.RecentActivity == nil || len(app.RecentActivity) == 0 {
 		return RSSItem{}, ErrNoActivity
 	}
 	return app.RecentActivity[0], nil
 }
+
