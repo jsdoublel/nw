@@ -13,7 +13,7 @@ import (
 var (
 	NWDataPath string
 
-	Version = "dev"
+	Version = "dev" // set at compile time with ldflags
 )
 
 func init() {
@@ -24,7 +24,7 @@ func init() {
 			log.Printf("could not create directory at %s", NWDataPath)
 		}
 	}
-	if Version == "dev" {
+	if Version == "dev" { // if Version was not set, see if we can get it from build info
 		info, ok := debug.ReadBuildInfo()
 		if ok && info.Main.Version != "" && info.Main.Version != "(devel)" {
 			Version = info.Main.Version
@@ -36,11 +36,12 @@ type Application struct {
 
 	// ----- stuff from letterboxd
 
-	Username     string      // username on letterboxd
-	ApiKey       string      // TMDB api key
-	ListHeaders  []*FilmList // lists that belong to user on letterboxd (without scrapped films)
-	Watchlist    FilmsSet    // users letterboxd watchlist
-	WatchedFilms FilmsSet    // users list of watched films on letterboxd
+	Username       string         // username on letterboxd
+	ApiKey         string         // TMDB api key
+	ListHeaders    []*FilmList    // lists that belong to user on letterboxd (without scrapped films)
+	Watchlist      FilmsSet       // users letterboxd watchlist
+	WatchedFilms   FilmsSet       // users list of watched films on letterboxd
+	RecentActivity RecentActivity // recent diary entries from RSS feed
 
 	// ----- tracked by app
 

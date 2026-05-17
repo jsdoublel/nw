@@ -158,23 +158,31 @@ func (app *Application) UpdateUserData(check bool) error {
 	if err := app.updateWatchedFilms(); err != nil {
 		return err
 	}
-	if app.NWQueue.Stacks != nil {
-		app.NWQueue.watchlist = app.Watchlist
-		app.NWQueue.watchedFilms = app.WatchedFilms
-		if err := app.NWQueue.UpdateWatched(); err != nil {
-			return err
-		}
-	} else {
-		var err error
-		if app.NWQueue, err = app.MakeNextWatch(); err != nil {
-			return err
-		}
+	if err := app.updateNextWatchQueue(); err != nil {
+		return err
 	}
 	if err := app.updateTrackedLists(false); err != nil {
 		return err
 	}
 	app.UserDataChecked = time.Now()
 	return app.Save()
+}
+
+// Updates user Next Watch Queue (or creates it if it does not exist)
+func (app *Application) updateNextWatchQueue() error {
+	if app.NWQueue.Stacks == nil {
+		var err error
+		if app.NWQueue, err = app.MakeNextWatch(); err != nil {
+			return err
+		}
+		return nil
+	}
+	app.NWQueue.watchlist = app.Watchlist
+	app.NWQueue.watchedFilms = app.WatchedFilms
+	if err := app.NWQueue.UpdateWatched(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (app *Application) updateWatchlist() error {
