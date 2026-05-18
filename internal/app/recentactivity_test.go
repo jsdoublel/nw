@@ -66,7 +66,7 @@ func TestUpdateRecentActivity(t *testing.T) {
 	tests := []struct {
 		name             string
 		initialActivity  RecentActivity
-		updatedActivity  RecentActivity
+		updatedActivity  []RSSItem
 		initialWatchlist FilmsSet
 		initialWatched   FilmsSet
 		wantWatchlistLen int
@@ -76,7 +76,7 @@ func TestUpdateRecentActivity(t *testing.T) {
 		{
 			name:            "new watch activity moves film from watchlist to watched",
 			initialActivity: RecentActivity{},
-			updatedActivity: RecentActivity{
+			updatedActivity: []RSSItem{
 				{Guid: "letterboxd-watch-stalker-123", Link: "https://letterboxd.com/user/film/stalker/"},
 			},
 			initialWatchlist: FilmsSet{51062: &stalker},
@@ -86,9 +86,9 @@ func TestUpdateRecentActivity(t *testing.T) {
 			wantInWatched:    []int{51062},
 		},
 		{
-			name: "multiple updates processed",
+			name:            "multiple updates processed",
 			initialActivity: RecentActivity{},
-			updatedActivity: RecentActivity{
+			updatedActivity: []RSSItem{
 				{Guid: "letterboxd-watch-solaris-1", Link: "https://letterboxd.com/user/film/solaris/"},
 				{Guid: "letterboxd-review-stalker-1", Link: "https://letterboxd.com/user/film/stalker/"},
 			},
@@ -99,9 +99,9 @@ func TestUpdateRecentActivity(t *testing.T) {
 			wantInWatched:    []int{51062, 51528},
 		},
 		{
-			name: "breaks loop on non-watch/review item",
+			name:            "breaks loop on non-watch/review item",
 			initialActivity: RecentActivity{},
-			updatedActivity: RecentActivity{
+			updatedActivity: []RSSItem{
 				{Guid: "letterboxd-watch-solaris-1", Link: "https://letterboxd.com/user/film/solaris/"},
 				{Guid: "letterboxd-list-some-list", Link: "https://letterboxd.com/user/list/some-list/"},
 				{Guid: "letterboxd-watch-stalker-1", Link: "https://letterboxd.com/user/film/stalker/"},
@@ -115,7 +115,7 @@ func TestUpdateRecentActivity(t *testing.T) {
 		{
 			name:            "film not in watchlist still added to watched",
 			initialActivity: RecentActivity{},
-			updatedActivity: RecentActivity{
+			updatedActivity: []RSSItem{
 				{Guid: "letterboxd-watch-stalker-123", Link: "https://letterboxd.com/user/film/stalker/"},
 			},
 			initialWatchlist: FilmsSet{},
@@ -127,9 +127,11 @@ func TestUpdateRecentActivity(t *testing.T) {
 		{
 			name: "duplicate activity does nothing",
 			initialActivity: RecentActivity{
-				{Guid: "letterboxd-watch-stalker-123", Link: "https://letterboxd.com/user/film/stalker/"},
+				Activity: []RSSItem{
+					{Guid: "letterboxd-watch-stalker-123", Link: "https://letterboxd.com/user/film/stalker/"},
+				},
 			},
-			updatedActivity: RecentActivity{
+			updatedActivity: []RSSItem{
 				{Guid: "letterboxd-watch-stalker-123", Link: "https://letterboxd.com/user/film/stalker/"},
 			},
 			initialWatchlist: FilmsSet{51062: &stalker},
@@ -141,7 +143,7 @@ func TestUpdateRecentActivity(t *testing.T) {
 		{
 			name:            "review activity also counts",
 			initialActivity: RecentActivity{},
-			updatedActivity: RecentActivity{
+			updatedActivity: []RSSItem{
 				{Guid: "letterboxd-review-stalker-456", Link: "https://letterboxd.com/user/film/stalker/"},
 			},
 			initialWatchlist: FilmsSet{51062: &stalker},
