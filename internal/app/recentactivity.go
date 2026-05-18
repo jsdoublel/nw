@@ -7,10 +7,17 @@ import (
 	"log"
 	"net/url"
 	"strings"
+	"time"
 )
 
+// How requently checking Letterboxd RSS is allowed
+const RSSCheckTime = 15 * time.Minute
+
 // Set of recent diary entries.
-type RecentActivity []RSSItem
+type RecentActivity struct {
+	Activity  []RSSItem
+	LastCheck time.Time
+}
 
 type RSSItem struct {
 	Guid string `xml:"guid"`
@@ -41,7 +48,16 @@ func getRSSItems(username string) ([]RSSItem, error) {
 	return rssItems.Items, nil
 }
 
+func (app *Application) CanCheckRSS() bool {
+	return time.Since(app.RecentActivity.LastCheck) > RSSCheckTime
+}
+
 func (app *Application) QuickUpdateWatched() error {
+	if time.Since(app.RecentActivity.LastCheck) <= RSSCheckTime {
+		return nil
+	}
+	log.Printf("executing quick update with RSS...")
+	app.RecentActivity.LastCheck = time.Now()
 	updatedActivity, err := getRSSItems(app.Username)
 	if err != nil {
 		return err
@@ -63,7 +79,7 @@ func (app *Application) updateRecentActivity(updatedActivity []RSSItem) error {
 	if len(newEntries) == 0 {
 		return nil
 	}
-	app.RecentActivity = updatedActivity
+	app.RecentActivity.Activity = updatedActivity
 	watchedFilms, err := GetFilmsForActivities(newEntries)
 	if err != nil {
 		return err
@@ -106,9 +122,8 @@ func filmForActivity(activity RSSItem) (Film, error) {
 }
 
 func (app *Application) LastActivity() (RSSItem, error) {
-	if app.RecentActivity == nil || len(app.RecentActivity) == 0 {
+	if len(app.RecentActivity.Activity) == 0 {
 		return RSSItem{}, ErrNoActivity
 	}
-	return app.RecentActivity[0], nil
+	return app.RecentActivity.Activity[0], nil
 }
-
