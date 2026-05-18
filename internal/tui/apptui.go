@@ -73,7 +73,7 @@ func RunApplicationTUI(username string) error {
 func (a *ApplicationTUI) Init() tea.Cmd {
 	a.status = *MakeStatusBar(a)
 	a.help = help.New()
-	return updateUserDataCmd(a, true)
+	return updateUserDataCmd(a, app.UpdateExpiredCheck)
 }
 
 func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -108,7 +108,11 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if len(a.screens) == 1 {
 			return a, tea.Quit
 		}
+		_, wasLoading := a.screens.cur().(*SplashScreenModel)
 		a.screens.pop()
+		if _, ok := a.screens.cur().(*MainScreen); ok && !wasLoading {
+			return a, updateUserDataCmd(a, app.UpdateNeverCheck)
+		}
 		return a, UpdateScreen
 	case tea.KeyMsg:
 		if a.loading() {
@@ -125,10 +129,10 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (a *ApplicationTUI) checkKeyMsgs(msg tea.KeyMsg) (tea.Cmd, bool) {
 	switch {
 	case key.Matches(msg, keys.Update):
-		return updateUserDataCmd(a, false), true
+		return updateUserDataCmd(a, app.UpdateNeverCheck), true
 	case key.Matches(msg, keys.StopWatch):
 		a.StopDiscordRPC()
-		return nil, true
+		return updateUserDataCmd(a, app.UpdateNeverCheck), true
 	case key.Matches(msg, keys.Help):
 		a.help.ShowAll = !a.help.ShowAll
 		return nil, true
@@ -176,17 +180,24 @@ func (a *ApplicationTUI) TooSmall() bool {
 	return a.width <= paneWidth || a.height <= paneHeight
 }
 
+// ---------- User Data Updating
+
 type userDataLoadedMsg struct{}
 type userDataFailedMsg struct{ err error }
 
-func updateUserDataCmd(app *ApplicationTUI, check bool) tea.Cmd {
-	if app.loading() {
+func updateUserDataCmd(a *ApplicationTUI, check app.CheckUpdateCondition) tea.Cmd {
+	// Don't check if either we are already loading, or we're only trying to do an RSS
+	// check but we're on cool down.
+	if a.loading() || check == app.UpdateNeverCheck && !a.CanCheckRSS() {
 		return nil
 	}
 	splash, cmd := MakeSplashScreen()
-	app.screens.push(splash)
+	a.screens.push(splash)
 	return tea.Batch(cmd, tea.SetWindowTitle("nw"), func() tea.Msg {
-		if err := app.UpdateUserData(check); err != nil {
+		if err := a.QuickUpdateWatched(); err != nil {
+			log.Printf("failed to execute quick update on startup, %s", err)
+		}
+		if err := a.UpdateUserData(check); err != nil {
 			return userDataFailedMsg{err}
 		}
 		return userDataLoadedMsg{}

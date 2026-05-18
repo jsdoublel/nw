@@ -50,8 +50,9 @@ type Application struct {
 	FilmStore       FilmStore            // central structure that stores local film information
 	UserDataChecked time.Time            // last time watchlist, watched films, etc. were checked
 
-	// ----- tracked processes
-	DiscordRPC DiscordRPC
+	// ----- other stuff
+
+	DiscordRPC DiscordRPC // discord rich presence data
 }
 
 // Run application shutdown tasks (e.g., write save).
