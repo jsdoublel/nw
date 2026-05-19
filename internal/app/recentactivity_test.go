@@ -7,6 +7,9 @@ import (
 )
 
 func TestGetRSSItems(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode")
+	}
 	tests := []struct {
 		name     string
 		username string
@@ -60,6 +63,9 @@ func TestGetRSSItems(t *testing.T) {
 }
 
 func TestUpdateRecentActivity(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode")
+	}
 	stalker := Film{LBxdID: 51062, Title: "Stalker", Url: "https://letterboxd.com/film/stalker/"}
 	solaris := Film{LBxdID: 51528, Title: "Solaris", Url: "https://letterboxd.com/film/solaris/"}
 
