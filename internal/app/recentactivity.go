@@ -49,11 +49,11 @@ func getRSSItems(username string) ([]RSSItem, error) {
 }
 
 func (app *Application) CanCheckRSS() bool {
-	return time.Since(app.RecentActivity.LastCheck) > RSSCheckTime
+	return time.Since(app.RecentActivity.LastCheck) > RSSCheckTime && !Config.Features.DisableQuickUpdates
 }
 
 func (app *Application) QuickUpdateWatched() error {
-	if time.Since(app.RecentActivity.LastCheck) <= RSSCheckTime {
+	if !app.CanCheckRSS() {
 		return nil
 	}
 	log.Printf("executing quick update with RSS...")

@@ -129,7 +129,7 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (a *ApplicationTUI) checkKeyMsgs(msg tea.KeyMsg) (tea.Cmd, bool) {
 	switch {
 	case key.Matches(msg, keys.Update):
-		return updateUserDataCmd(a, app.UpdateNeverCheck), true
+		return updateUserDataCmd(a, app.UpdateAlwaysCheck), true
 	case key.Matches(msg, keys.StopWatch):
 		a.StopDiscordRPC()
 		return updateUserDataCmd(a, app.UpdateNeverCheck), true
@@ -194,8 +194,10 @@ func updateUserDataCmd(a *ApplicationTUI, check app.CheckUpdateCondition) tea.Cm
 	splash, cmd := MakeSplashScreen()
 	a.screens.push(splash)
 	return tea.Batch(cmd, tea.SetWindowTitle("nw"), func() tea.Msg {
-		if err := a.QuickUpdateWatched(); err != nil {
-			log.Printf("failed to execute quick update on startup, %s", err)
+		if a.CanCheckRSS() {
+			if err := a.QuickUpdateWatched(); err != nil {
+				log.Printf("failed to execute quick update on startup, %s", err)
+			}
 		}
 		if err := a.UpdateUserData(check); err != nil {
 			return userDataFailedMsg{err}
