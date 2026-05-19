@@ -1,6 +1,7 @@
 package app
 
 import (
+	"io"
 	"log"
 	"os"
 	"testing"
@@ -13,6 +14,8 @@ func TestMain(m *testing.M) {
 	if TMDBClient == nil {
 		log.Fatal("failed to initialize TMDB client")
 	}
+
+	log.SetOutput(io.Discard)
 	os.Exit(m.Run())
 }
 

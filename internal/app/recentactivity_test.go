@@ -33,6 +33,7 @@ func TestGetRSSItems(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		time.Sleep(2 * time.Second)
 		t.Run(tt.name, func(t *testing.T) {
 			items, err := getRSSItems(tt.username)
 			if tt.wantErr != nil {
@@ -161,6 +162,7 @@ func TestUpdateRecentActivity(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		time.Sleep(2 * time.Second)
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.initialWatchlist == nil {
 				tt.initialWatchlist = make(FilmsSet)
