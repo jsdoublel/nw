@@ -27,6 +27,9 @@ func (fl *ResizeLockModel) View() string {
 	}
 	return lipgloss.JoinVertical(lipgloss.Center,
 		"Terminal size too small!",
+		"Try decreasing size of terminal text or increasing size of window.",
+		fmt.Sprintf("Use %s to quit.", keys.Quit.Help().Key),
+		"",
 		fmt.Sprintf("Current: Width = %s, Height = %s", w, h),
 		"",
 		fmt.Sprintf("Requires: Width = %d, Height = %d", paneWidth+1, paneHeight+1),
