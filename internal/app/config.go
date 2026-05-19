@@ -21,6 +21,7 @@ type config struct {
 
 type featuresConfig struct {
 	DisableStartupUpdate bool `toml:"disable_startup_update"`
+	DisableQuickUpdates  bool `toml:"disable_quick_update"`
 	DisableDiscordRPC    bool `toml:"disable_discord_rpc"`
 	AlwaysIncludeTMDB    bool `toml:"always_include_tmdb"`
 }
