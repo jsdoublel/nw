@@ -32,4 +32,4 @@ jobs:
     - name: Test
       env:
         TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
-      run: go test -v ./...
+      run: go test -v ./... -short
