@@ -182,14 +182,14 @@ func (a *ApplicationTUI) TooSmall() bool {
 
 // ---------- User Data Updating
 
-type userDataLoadedMsg struct{}
-type userDataFailedMsg struct{ err error }
+type userDataLoadedMsg struct{}            // success updating user data
+type userDataFailedMsg struct{ err error } // failure updating user data
 
 func updateUserDataCmd(a *ApplicationTUI, check app.CheckUpdateCondition) tea.Cmd {
 	// Don't check if either we are already loading, or we're only trying to do an RSS
 	// check but we're on cool down.
 	if a.loading() || check == app.UpdateNeverCheck && !a.CanCheckRSS() {
-		return nil
+		return func() tea.Msg { return userDataLoadedMsg{} } // return cmd as we need to make sure we still update screen
 	}
 	splash, cmd := MakeSplashScreen()
 	a.screens.push(splash)
