@@ -87,14 +87,15 @@ func (app *Application) StartDiscordRPC(fr FilmRecord) error {
 		defer client.Logout()
 		startT := time.Now()
 		activity := client.Activity{
-			Type:       client.ActivityTypeWatching,
-			Details:    fr.String(),
-			State:      fr.DirectorString(),
-			LargeText:  fr.String(),
-			SmallImage: "tmdb_logo",
-			SmallText:  "TMDB",
-			Timestamps: &client.Timestamps{Start: &startT},
-			Buttons:    []*client.Button{{Label: "TMDB", Url: fmt.Sprintf("%s%d", TMDBFilmPathPrefix, fr.TMDBID)}},
+			Type:              client.ActivityTypeWatching,
+			StatusDisplayType: client.StatusDisplayTypeDetails,
+			Details:           fr.String(),
+			State:             fr.DirectorString(),
+			LargeText:         fr.String(),
+			SmallImage:        "tmdb_logo",
+			SmallText:         "TMDB",
+			Timestamps:        &client.Timestamps{Start: &startT},
+			Buttons:           []*client.Button{{Label: "TMDB", Url: fmt.Sprintf("%s%d", TMDBFilmPathPrefix, fr.TMDBID)}},
 		}
 		if fr.Details.PosterPath != "" {
 			activity.LargeImage = PosterPathPrefix + fr.Details.PosterPath
