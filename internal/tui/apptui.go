@@ -185,10 +185,18 @@ func (a *ApplicationTUI) TooSmall() bool {
 type userDataLoadedMsg struct{}            // success updating user data
 type userDataFailedMsg struct{ err error } // failure updating user data
 
+// Updates users data from Letterboxd. There are three possible check conditions:
+//  1. `app.UpdateAlwaysCheck`: Always do a full Letterboxd scrape.
+//  2. `app.UpdateExpiredCheck`: Do a full Letterboxd scrape if we have not checked in a while.
+//  2. `app.UpdateNeverCheck`: Only do a quick check of the RSS feed (if it's not on cooldown).
+//
+// IMPORTANT: Don't call this if it is already running.
 func updateUserDataCmd(a *ApplicationTUI, check app.CheckUpdateCondition) tea.Cmd {
-	// Don't check if either we are already loading, or we're only trying to do an RSS
-	// check but we're on cool down.
-	if a.loading() || check == app.UpdateNeverCheck && !a.CanCheckRSS() {
+	if a.loading() {
+		return nil
+	}
+	// Don't check if we're only trying to do an RSS check but we're on cool down.
+	if check == app.UpdateNeverCheck && !a.CanCheckRSS() {
 		return func() tea.Msg { return userDataLoadedMsg{} } // return cmd as we need to make sure we still update screen
 	}
 	splash, cmd := MakeSplashScreen()

@@ -154,6 +154,7 @@ func CreateApp(username string) (*Application, error) {
 // Argument "check," when true, checks whether previous data has expired---if
 // it has not, nothing is done.
 func (app *Application) UpdateUserData(check CheckUpdateCondition) error {
+	// TODO: Probably best to move this logic to internal/tui
 	if check == UpdateNeverCheck || check == UpdateExpiredCheck && (time.Since(app.UserDataChecked) < userDataExpireTime || Config.Features.DisableStartupUpdate) {
 		return nil
 	}
