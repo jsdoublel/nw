@@ -143,7 +143,7 @@ func TestScrapeFilmFromFilmPage(t *testing.T) {
 				t.Fatalf("Produced error %s", err)
 			}
 			if !reflect.DeepEqual(test.expected, film) {
-				t.Errorf("want=%+v\n!= got=%+v\n", test.expected, film)
+				t.Errorf("want=%#v\n!= got=%#v\n", test.expected, film)
 			}
 		})
 	}

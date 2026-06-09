@@ -236,9 +236,20 @@ func ScrapeFilmFromFilmPage(rawURL string) (film Film, err error) {
 	}
 	film.Url = rawURL
 	c := makeCollector(rawURL)
-	c.OnHTML("script#production-data", func(h *colly.HTMLElement) {
+	c.OnHTML("meta[name='production:identifier']", func(h *colly.HTMLElement) {
 		re := regexp.MustCompile(`"uid":"film:(\d+)"`)
-		if matches := re.FindStringSubmatch(h.Text); len(matches) == 2 {
+		if matches := re.FindStringSubmatch(h.Attr("content")); len(matches) == 2 {
+			if id, err := strconv.Atoi(matches[1]); err == nil {
+				film.LBxdID = id
+			}
+		}
+	})
+	c.OnHTML("[data-production-uid]", func(h *colly.HTMLElement) {
+		if film.LBxdID != 0 {
+			return
+		}
+		re := regexp.MustCompile(`film:(\d+)`)
+		if matches := re.FindStringSubmatch(h.Attr("data-production-uid")); len(matches) == 2 {
 			if id, err := strconv.Atoi(matches[1]); err == nil {
 				film.LBxdID = id
 			}
@@ -256,7 +267,7 @@ func ScrapeFilmFromFilmPage(rawURL string) (film Film, err error) {
 	if err = c.Visit(filmUrl.String()); err != nil {
 		return
 	}
-	if film.LBxdID == -1 || film.Title == "" || film.Year == 0 {
+	if film.LBxdID <= 0 || film.Title == "" || film.Year == 0 {
 		err = fmt.Errorf("%w, failed to scrape all film data from %s (id=%d, title=%s, year=%d)", ErrBadScrape, rawURL, film.LBxdID, film.Title, film.Year)
 	}
 	return

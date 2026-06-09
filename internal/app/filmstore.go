@@ -105,10 +105,12 @@ func (fs *FilmStore) register(film Film) {
 func (fs *FilmStore) deregister(film Film) {
 	fr, ok := fs.Films[film.LBxdID]
 	if !ok {
-		panic(fmt.Sprintf("trying to deregister %s, but it has not been registered", film))
+		log.Printf("warning: trying to deregister %s, but it has not been registered", film)
+		return
 	}
 	if fr.NRefs == 0 {
-		panic(fmt.Sprintf("cannot decrement number of refs to %s, already 0", film))
+		log.Printf("warning: cannot decrement number of refs to %s, already 0", film)
+		return
 	}
 	fr.NRefs--
 }

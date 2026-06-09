@@ -88,10 +88,10 @@ func TestFilmStoreDeregisterList(t *testing.T) {
 			wantExists: map[int]bool{1: true},
 		},
 		{
-			name:       "panics when film missing",
+			name:       "does not panic when film missing",
 			existing:   map[int]*FilmRecord{},
 			list:       &FilmList{Films: []*Film{{LBxdID: 42}}},
-			wantPanic:  true,
+			wantPanic:  false,
 			wantRefs:   map[int]uint{},
 			wantExists: map[int]bool{},
 		},
