@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gocolly/colly"
 	"github.com/imroc/req/v3"
@@ -23,6 +24,9 @@ var (
 	titleYearRegex = regexp.MustCompile(`^(.+?)\s+\((\d{4})\)$`)
 
 	httpClient = req.C().ImpersonateChrome()
+
+	// Retries transient failures (429/403/5xx) below colly and getUrlContent alike.
+	scrapeTransport = &retryTransport{next: httpClient.Transport, maxRetries: 3}
 )
 
 func ScrapeUserLists(username string) ([]*FilmList, error) {
@@ -293,7 +297,7 @@ func parseDescription(h *colly.HTMLElement, selector string) string {
 
 func makeCollector(logLabel string) *colly.Collector {
 	c := colly.NewCollector()
-	c.WithTransport(httpClient.Transport)
+	c.WithTransport(scrapeTransport)
 	if ua := httpClient.Headers.Get("User-Agent"); ua != "" {
 		c.UserAgent = ua
 	}
@@ -305,6 +309,11 @@ func makeCollector(logLabel string) *colly.Collector {
 			}
 			r.Headers.Set(k, v[0])
 		}
+	})
+	_ = c.Limit(&colly.LimitRule{
+		DomainGlob:  "*letterboxd.com*",
+		Delay:       50 * time.Millisecond,
+		RandomDelay: 50 * time.Millisecond,
 	})
 	attachScrapeLogger(c, logLabel)
 	return c
