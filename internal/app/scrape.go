@@ -25,8 +25,9 @@ var (
 
 	httpClient = req.C().ImpersonateChrome()
 
-	// Retries transient failures (429/403/5xx) below colly and getUrlContent alike.
-	scrapeTransport = &retryTransport{next: httpClient.Transport, maxRetries: 3}
+	// Retries transient failures (429/403/5xx) and rate limits every request to
+	// letterboxd.com, below colly and getUrlContent alike.
+	scrapeTransport = &retryTransport{next: httpClient.Transport, maxRetries: 3, minInterval: 150 * time.Millisecond}
 )
 
 func ScrapeUserLists(username string) ([]*FilmList, error) {
@@ -309,11 +310,6 @@ func makeCollector(logLabel string) *colly.Collector {
 			}
 			r.Headers.Set(k, v[0])
 		}
-	})
-	_ = c.Limit(&colly.LimitRule{
-		DomainGlob:  "*letterboxd.com*",
-		Delay:       50 * time.Millisecond,
-		RandomDelay: 50 * time.Millisecond,
 	})
 	attachScrapeLogger(c, logLabel)
 	return c
