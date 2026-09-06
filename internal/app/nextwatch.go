@@ -56,7 +56,7 @@ func (app *Application) MakeNextWatch() (NextWatch, error) {
 func (nw *NextWatch) DeleteFilm(film Film) error {
 	deleted := false
 	for i, j := range nw.Positions() {
-		if nw.Stacks[i][j].LBxdID == film.LBxdID {
+		if nw.Stacks[i][j] != nil && nw.Stacks[i][j].LBxdID == film.LBxdID {
 			nw.Stacks[i][j] = nil
 			deleted = true
 			break
@@ -145,6 +145,10 @@ func (nw *NextWatch) filterFilm(film Film) bool {
 	if errors.Is(err, ErrNoAPI) {
 		log.Printf("%s, proceeding without checks to add film %s to next watch queue", err, film)
 		return true
+	}
+	if err != nil {
+		log.Printf("failed to look up %s, excluding film, %s", film, err)
+		return false
 	}
 	if f.ReleaseDate.IsZero() {
 		log.Printf("invalid release date for %s, %s, excluding film", film, err)

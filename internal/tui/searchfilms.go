@@ -69,11 +69,15 @@ func (d filmSearchDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
 	if !ok || keyMsg.Type != tea.KeyEnter {
 		return nil
 	}
-	if r, ok := m.SelectedItem().(FilmResultItem); ok {
+	item := m.SelectedItem()
+	if item == nil {
+		return nil
+	}
+	if r, ok := item.(FilmResultItem); ok {
 		d.app.screens.push(MakeFilmDetailsModelFromResults(tmdb.MovieResult(r), d.app))
 		return nil
 	}
-	panic(fmt.Sprintf("Film search result (type %T) is not a tmdb.MovieResult", m.SelectedItem()))
+	panic(fmt.Sprintf("Film search result (type %T) is not a tmdb.MovieResult", item))
 }
 
 // Pads a string to reach given width or, if it is too long trim it, adding an

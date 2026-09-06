@@ -30,7 +30,12 @@ type nwListItem struct {
 	updated bool
 }
 
-func (li nwListItem) Title() string       { return li.film.String() }
+func (li nwListItem) Title() string {
+	if li.film == nil {
+		return "(empty)"
+	}
+	return li.film.String()
+}
 func (li nwListItem) Updated() bool       { return li.updated }
 func (li nwListItem) FilterValue() string { return "" }
 
