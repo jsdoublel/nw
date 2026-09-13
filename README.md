@@ -2,7 +2,6 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/jsdoublel/nw.svg)](https://pkg.go.dev/github.com/jsdoublel/nw)
 [![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/jsdoublel/nw?logo=go)](https://go.dev/)
-[![Go Report Card](https://goreportcard.com/badge/github.com/jsdoublel/nw)](https://goreportcard.com/report/github.com/jsdoublel/nw)
 [![build](https://github.com/jsdoublel/nw/actions/workflows/go.yml/badge.svg)](https://github.com/jsdoublel/nw/actions)
 [![GitHub License](https://img.shields.io/github/license/jsdoublel/nw)](https://github.com/jsdoublel/nw/blob/main/LICENSE.txt)
 
