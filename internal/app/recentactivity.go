@@ -79,11 +79,13 @@ func (app *Application) updateRecentActivity(updatedActivity []RSSItem) error {
 	if len(newEntries) == 0 {
 		return nil
 	}
+	log.Printf("RSS quick update: found %d new activity entr(y/ies)", len(newEntries))
 	app.RecentActivity.Activity = updatedActivity
 	watchedFilms, err := GetFilmsForActivities(newEntries)
 	if err != nil {
 		return err
 	}
+	log.Printf("RSS quick update: marking %d film(s) watched: %v", len(watchedFilms), watchedFilms)
 	for _, f := range watchedFilms { // register in film store
 		if _, ok := app.Watchlist[f.LBxdID]; ok {
 			app.FilmStore.deregister(f)

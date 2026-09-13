@@ -49,6 +49,9 @@ func RunApplicationTUI(username string) error {
 	if app.ConfigErr != nil {
 		log.Printf("error loading config, %s", app.ConfigErr)
 	}
+	log.Printf("config: path=%s disableStartupUpdate=%v disableQuickUpdates=%v disableDiscordRPC=%v alwaysIncludeTMDB=%v",
+		app.ConfigPath(), app.Config.Features.DisableStartupUpdate, app.Config.Features.DisableQuickUpdates,
+		app.Config.Features.DisableDiscordRPC, app.Config.Features.AlwaysIncludeTMDB)
 	if err := app.GetUser(&username, func() string {
 		return AskQuestion("What is your Letterboxd username?", "Username")
 	}); err != nil {

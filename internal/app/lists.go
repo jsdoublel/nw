@@ -49,6 +49,7 @@ func (fl *FilmList) NextWatch() (Film, error) {
 	if fl.NextFilm != nil && !fl.watched.InSet(fl.NextFilm) {
 		return *fl.NextFilm, nil
 	}
+	prev := fl.NextFilm
 	var tmpList []*Film
 	if !fl.Ordered {
 		tmpList = make([]*Film, len(fl.Films))
@@ -62,10 +63,12 @@ func (fl *FilmList) NextWatch() (Film, error) {
 	for _, f := range tmpList {
 		if !fl.watched.InSet(f) {
 			fl.NextFilm = f
+			log.Printf("list %s: next watch pick changed from %v to %s", fl.Name, prev, f)
 			return *f, nil
 		}
 	}
 	fl.NextFilm = nil
+	log.Printf("list %s: next watch pick changed from %v to none (list complete)", fl.Name, prev)
 	return Film{}, fmt.Errorf("%w, no unwatched films in %s", ErrNoValidFilm, fl.Name)
 }
 

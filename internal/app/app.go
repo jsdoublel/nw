@@ -57,6 +57,7 @@ type Application struct {
 
 // Run application shutdown tasks (e.g., write save).
 func (app *Application) Shutdown() {
+	log.Print("shutting down...")
 	app.StopDiscordRPC()
 	app.FilmStore.Clean()
 	if err := app.Save(); err != nil {

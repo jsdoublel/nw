@@ -41,16 +41,17 @@ func (app *Application) Save() error {
 	savePath := savePath(app.Username)
 	if _, err := os.Stat(filepath.Dir(savePath)); os.IsNotExist(err) {
 		if err = os.MkdirAll(filepath.Dir(savePath), 0o755); err != nil {
-			return err
+			return fmt.Errorf("failed to create save directory: %w", err)
 		}
 	}
 	bytes, err := json.Marshal(Save{Application: *app, Version: LatestSaveVersion})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal save data: %w", err)
 	}
 	if err = os.WriteFile(savePath, bytes, 0o644); err != nil {
-		return err
+		return fmt.Errorf("failed to write save file: %w", err)
 	}
+	log.Printf("application data saved to %s", savePath)
 	return nil
 }
 
@@ -153,44 +154,48 @@ func CreateApp(username string) (*Application, error) {
 //
 // Argument "check," when true, checks whether previous data has expired---if
 // it has not, nothing is done.
-func (app *Application) UpdateUserData(check CheckUpdateCondition) error {
+func (app *Application) UpdateUserData(check CheckUpdateCondition) (err error) {
 	// TODO: Probably best to move this logic to internal/tui
 	if check == UpdateNeverCheck || check == UpdateExpiredCheck && (time.Since(app.UserDataChecked) < userDataExpireTime || Config.Features.DisableStartupUpdate) {
 		return nil
 	}
-	log.Print("updating user data...")
-	if err := app.updateListHeaders(); err != nil {
+	log.Printf("updating user data (check=%v)...", check)
+	defer func() { log.Printf("updateUserData: finished, err=%v", err) }()
+	if err = app.updateListHeaders(); err != nil {
 		return err
 	}
-	if err := app.updateWatchlist(); err != nil {
+	if err = app.updateWatchlist(); err != nil {
 		return err
 	}
-	if err := app.updateWatchedFilms(); err != nil {
+	if err = app.updateWatchedFilms(); err != nil {
 		return err
 	}
-	if err := app.updateNextWatchQueue(); err != nil {
+	if err = app.updateNextWatchQueue(); err != nil {
 		return err
 	}
-	if err := app.updateTrackedLists(false); err != nil {
+	if err = app.updateTrackedLists(false); err != nil {
 		return err
 	}
 	app.UserDataChecked = time.Now()
-	return app.Save()
+	err = app.Save()
+	return err
 }
 
 // Updates user Next Watch Queue (or creates it if it does not exist)
 func (app *Application) updateNextWatchQueue() error {
 	if app.NWQueue.Stacks == nil {
+		log.Print("creating next watch queue...")
 		var err error
 		if app.NWQueue, err = app.MakeNextWatch(); err != nil {
-			return err
+			return fmt.Errorf("failed to create next watch queue: %w", err)
 		}
 		return nil
 	}
+	log.Print("updating next watch queue...")
 	app.NWQueue.watchlist = app.Watchlist
 	app.NWQueue.watchedFilms = app.WatchedFilms
 	if err := app.NWQueue.UpdateWatched(); err != nil {
-		return err
+		return fmt.Errorf("failed to update next watch queue: %w", err)
 	}
 	return nil
 }
@@ -199,13 +204,14 @@ func (app *Application) updateWatchlist() error {
 	log.Print("updating watchlist")
 	watchlist, err := retrieveWatchlist(app.Username)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to update watchlist: %w", err)
 	}
 	if app.Watchlist != nil {
 		app.FilmStore.DeregisterSet(app.Watchlist)
 	}
 	app.FilmStore.RegisterSet(watchlist)
 	app.Watchlist = watchlist
+	log.Printf("watchlist updated: %d films", len(watchlist))
 	return nil
 }
 
@@ -213,7 +219,7 @@ func (app *Application) updateWatchedFilms() error {
 	log.Print("updating watched films")
 	watchedFilms, err := retrieveWatchedFilms(app.Username)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to update watched films: %w", err)
 	}
 	if app.WatchedFilms != nil {
 		app.FilmStore.DeregisterSet(app.WatchedFilms)
@@ -223,6 +229,7 @@ func (app *Application) updateWatchedFilms() error {
 	for _, v := range app.TrackedLists {
 		v.watched = app.WatchedFilms
 	}
+	log.Printf("watched films updated: %d films", len(watchedFilms))
 	return nil
 }
 
@@ -230,7 +237,7 @@ func (app *Application) updateListHeaders() error {
 	log.Print("updating user's lists")
 	headers, err := ScrapeUserLists(app.Username)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to update user's lists: %w", err)
 	}
 	app.ListHeaders = headers
 	return nil
@@ -241,15 +248,27 @@ func (app *Application) updateListHeaders() error {
 // can be overridden with forceAll.
 func (app *Application) updateTrackedLists(forceAll bool) error {
 	var lastErr error
+	refreshed, skipped, failed := 0, 0, 0
 	for _, fl := range app.TrackedLists {
 		if fl.NextFilm == nil || app.WatchedFilms.InSet(fl.NextFilm) || forceAll {
+			log.Printf("refreshing tracked list %s (nextFilm=%v, forceAll=%v)", fl.Name, fl.NextFilm, forceAll)
 			if err := app.RefreshList(fl); err != nil {
 				lastErr = err
+				failed++
 				log.Printf("failed refreshing list %s, %s", fl.Name, err)
+			} else {
+				refreshed++
 			}
+		} else {
+			skipped++
+			log.Printf("skipping tracked list %s refresh (nextFilm=%s not yet watched)", fl.Name, fl.NextFilm)
 		}
 	}
-	return lastErr
+	log.Printf("updateTrackedLists done: refreshed=%d skipped=%d failed=%d", refreshed, skipped, failed)
+	if lastErr != nil {
+		return fmt.Errorf("failed to update tracked lists: %w", lastErr)
+	}
+	return nil
 }
 
 // Retrieve watchlist from letterbxod

@@ -3,6 +3,7 @@ package app
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -19,9 +20,11 @@ var (
 func (app *Application) ApiInit() { // prefers config key if valid
 	var err error
 	if TMDBClient, err = tmdb.Init(app.ApiKey); err != nil {
+		log.Printf("failed to initialize TMDB client, TMDB features disabled: %s", err)
 		return
 	}
 	TMDBClient.SetClientAutoRetry()
+	log.Print("TMDB client initialized")
 }
 
 func TMDBFilm(id int) (*tmdb.MovieDetails, error) {

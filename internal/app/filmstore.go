@@ -79,10 +79,15 @@ func (fs *FilmStore) Lookup(film Film) (*FilmRecord, error) {
 
 // Clear film records that are either not referenced or too old.
 func (fs *FilmStore) Clean() {
+	cleaned := 0
 	for id, fr := range fs.Films {
 		if fr.NRefs == 0 {
 			delete(fs.Films, id)
+			cleaned++
 		}
+	}
+	if cleaned > 0 {
+		log.Printf("film store: cleaned %d unreferenced film record(s), %d remain", cleaned, len(fs.Films))
 	}
 }
 

@@ -179,6 +179,9 @@ func ScrapeFilmList(rawURL string) (fl FilmList, err error) {
 		err = fmt.Errorf("%w, scraped 0 films but page reported %d", ErrBadScrape, officialCount)
 		return
 	}
+	if officialCount > 0 && len(fl.Films) != officialCount {
+		log.Printf("warning: scraped %d films from %s but page reported %d (possible partial scrape)", len(fl.Films), fl.Url, officialCount)
+	}
 	fl.NumFilms = len(fl.Films)
 	return
 }

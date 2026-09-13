@@ -61,6 +61,9 @@ func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		t.waitTurn()
 		resp, err = t.next.RoundTrip(req)
 		if err != nil || !retryableStatusCodes[resp.StatusCode] || attempt >= t.maxRetries {
+			if attempt > 0 && err == nil && !retryableStatusCodes[resp.StatusCode] {
+				log.Printf("request to %s succeeded after %d retr(y/ies)", req.URL, attempt)
+			}
 			return resp, err
 		}
 		_, _ = io.Copy(io.Discard, resp.Body)
