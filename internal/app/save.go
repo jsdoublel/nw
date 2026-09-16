@@ -206,10 +206,6 @@ func (app *Application) updateWatchlist() error {
 	if err != nil {
 		return fmt.Errorf("failed to update watchlist: %w", err)
 	}
-	if app.Watchlist != nil {
-		app.FilmStore.DeregisterSet(app.Watchlist)
-	}
-	app.FilmStore.RegisterSet(watchlist)
 	app.Watchlist = watchlist
 	log.Printf("watchlist updated: %d films", len(watchlist))
 	return nil
@@ -221,10 +217,6 @@ func (app *Application) updateWatchedFilms() error {
 	if err != nil {
 		return fmt.Errorf("failed to update watched films: %w", err)
 	}
-	if app.WatchedFilms != nil {
-		app.FilmStore.DeregisterSet(app.WatchedFilms)
-	}
-	app.FilmStore.RegisterSet(watchedFilms)
 	app.WatchedFilms = watchedFilms
 	for _, v := range app.TrackedLists {
 		v.watched = app.WatchedFilms

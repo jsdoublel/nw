@@ -59,7 +59,7 @@ type Application struct {
 func (app *Application) Shutdown() {
 	log.Print("shutting down...")
 	app.StopDiscordRPC()
-	app.FilmStore.Clean()
+	app.CleanFilmStore()
 	if err := app.Save(); err != nil {
 		log.Printf("application save had error %s", err)
 	}

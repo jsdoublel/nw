@@ -83,7 +83,6 @@ func (app *Application) AddList(filmList *FilmList) error {
 		return nil
 	}
 	filmList.watched = app.WatchedFilms
-	app.FilmStore.RegisterList(filmList)
 	app.TrackedLists[filmList.Url] = filmList
 	return nil
 }
@@ -95,7 +94,6 @@ func (app *Application) RemoveList(filmList *FilmList) error {
 		return ErrListNotTracked
 	}
 	delete(app.TrackedLists, fl.Url)
-	app.FilmStore.DeregisterList(fl)
 	return nil
 }
 
