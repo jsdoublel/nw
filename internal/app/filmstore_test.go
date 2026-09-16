@@ -2,176 +2,127 @@ package app
 
 import (
 	"testing"
-	"time"
 
 	tmdb "github.com/cyruzin/golang-tmdb"
 )
 
-func TestFilmStoreRegisterList(t *testing.T) {
-	testCases := []struct {
-		name     string
-		existing map[int]*FilmRecord
-		list     *FilmList
-		wantRefs map[int]uint
-	}{
-		{
-			name:     "registers new film",
-			existing: map[int]*FilmRecord{},
-			list: &FilmList{
-				Films: []*Film{{LBxdID: 1, Url: "https://letterboxd.com/film/example", Title: "Example", Year: 2000}},
-			},
-			wantRefs: map[int]uint{1: 1},
-		},
-		{
-			name: "increments existing reference",
-			existing: map[int]*FilmRecord{
-				1: {
-					Film:    Film{LBxdID: 1, Url: "https://letterboxd.com/film/example", Title: "Example", Year: 2000},
-					NRefs:   1,
-					Checked: time.Now(),
-				},
-			},
-			list: &FilmList{Films: []*Film{
-				{LBxdID: 1, Url: "https://letterboxd.com/film/example", Title: "Example", Year: 2000}},
-			},
-			wantRefs: map[int]uint{1: 2},
-		},
+// newEmptyStacks builds an empty NextWatch.Stacks with the same shape
+// MakeNextWatch produces (CleanFilmStore indexes it directly by position).
+func newEmptyStacks() [][]*Film {
+	stacks := make([][]*Film, NumberOfStacks+1)
+	stacks[0] = make([]*Film, 1)
+	for i := range NumberOfStacks {
+		stacks[i+1] = make([]*Film, StackSize)
 	}
-	for _, test := range testCases {
-		t.Run(test.name, func(t *testing.T) {
-			fs := &FilmStore{Films: map[int]*FilmRecord{}}
-			for id, record := range test.existing {
-				r := *record
-				fs.Films[id] = &r
-			}
-			fs.RegisterList(test.list)
-			if len(fs.Films) != len(test.wantRefs) {
-				t.Fatalf("expected %d records, got %d", len(test.wantRefs), len(fs.Films))
-			}
-			for id, refs := range test.wantRefs {
-				record, ok := fs.Films[id]
-				if !ok {
-					t.Fatalf("missing record %d", id)
-				}
-				if record.NRefs != refs {
-					t.Fatalf("expected %d references, got %d", refs, record.NRefs)
-				}
-				if record.Checked != (time.Time{}) && record.Checked.IsZero() {
-					t.Fatalf("checked time should not be zero when set")
-				}
-			}
-		})
-	}
+	return stacks
 }
 
-func TestFilmStoreDeregisterList(t *testing.T) {
+func TestApplicationCleanFilmStore(t *testing.T) {
 	testCases := []struct {
-		name       string
-		existing   map[int]*FilmRecord
-		list       *FilmList
-		wantRefs   map[int]uint
-		wantPanic  bool
-		wantExists map[int]bool
+		name          string
+		stacksSetup   func(stacks [][]*Film)
+		trackedLists  map[string]*FilmList
+		films         map[int]*FilmRecord
+		wantRemaining []int
 	}{
 		{
-			name:       "decrements references",
-			existing:   map[int]*FilmRecord{1: {Film: Film{LBxdID: 1}, NRefs: 2, Checked: time.Now()}},
-			list:       &FilmList{Films: []*Film{{LBxdID: 1}}},
-			wantRefs:   map[int]uint{1: 1},
-			wantExists: map[int]bool{1: true},
+			name: "retains film visible in a non-top Stacks slot",
+			stacksSetup: func(stacks [][]*Film) {
+				stacks[1][0] = &Film{LBxdID: 1}
+			},
+			films:         map[int]*FilmRecord{1: {Film: Film{LBxdID: 1}}},
+			wantRemaining: []int{1},
 		},
 		{
-			name:       "keeps record when count reaches zero",
-			existing:   map[int]*FilmRecord{1: {Film: Film{LBxdID: 1}, NRefs: 1, Checked: time.Now()}},
-			list:       &FilmList{Films: []*Film{{LBxdID: 1}}},
-			wantRefs:   map[int]uint{1: 0},
-			wantExists: map[int]bool{1: true},
+			name: "retains film visible at top-of-queue slot",
+			stacksSetup: func(stacks [][]*Film) {
+				stacks[0][0] = &Film{LBxdID: 2}
+			},
+			films:         map[int]*FilmRecord{2: {Film: Film{LBxdID: 2}}},
+			wantRemaining: []int{2},
 		},
 		{
-			name:       "does not panic when film missing",
-			existing:   map[int]*FilmRecord{},
-			list:       &FilmList{Films: []*Film{{LBxdID: 42}}},
-			wantPanic:  false,
-			wantRefs:   map[int]uint{},
-			wantExists: map[int]bool{},
+			name: "retains film visible via tracked list NextFilm",
+			trackedLists: map[string]*FilmList{
+				"list": {NextFilm: &Film{LBxdID: 3}},
+			},
+			films:         map[int]*FilmRecord{3: {Film: Film{LBxdID: 3}}},
+			wantRemaining: []int{3},
+		},
+		{
+			name:          "removes film not referenced anywhere",
+			films:         map[int]*FilmRecord{4: {Film: Film{LBxdID: 4}}},
+			wantRemaining: []int{},
+		},
+		{
+			name: "nil Stacks slots do not panic",
+			stacksSetup: func(stacks [][]*Film) {
+				// Most slots stay nil; only one is populated.
+				stacks[3][2] = &Film{LBxdID: 5}
+			},
+			films: map[int]*FilmRecord{
+				5: {Film: Film{LBxdID: 5}},
+				6: {Film: Film{LBxdID: 6}},
+			},
+			wantRemaining: []int{5},
+		},
+		{
+			name: "nil NextFilm in TrackedLists does not panic",
+			trackedLists: map[string]*FilmList{
+				"empty":  {NextFilm: nil},
+				"filled": {NextFilm: &Film{LBxdID: 7}},
+			},
+			films: map[int]*FilmRecord{
+				7: {Film: Film{LBxdID: 7}},
+				8: {Film: Film{LBxdID: 8}},
+			},
+			wantRemaining: []int{7},
+		},
+		{
+			name: "mixed roots, including a film reachable from two roots",
+			stacksSetup: func(stacks [][]*Film) {
+				stacks[0][0] = &Film{LBxdID: 9}
+				stacks[2][1] = &Film{LBxdID: 10}
+			},
+			trackedLists: map[string]*FilmList{
+				"list": {NextFilm: &Film{LBxdID: 9}}, // also visible via Stacks[0][0]
+			},
+			films: map[int]*FilmRecord{
+				9:  {Film: Film{LBxdID: 9}},
+				10: {Film: Film{LBxdID: 10}},
+				11: {Film: Film{LBxdID: 11}},
+			},
+			wantRemaining: []int{9, 10},
+		},
+		{
+			name:          "empty film store",
+			films:         map[int]*FilmRecord{},
+			wantRemaining: []int{},
 		},
 	}
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			fs := &FilmStore{Films: map[int]*FilmRecord{}}
-			for id, record := range test.existing {
+			stacks := newEmptyStacks()
+			if test.stacksSetup != nil {
+				test.stacksSetup(stacks)
+			}
+			films := map[int]*FilmRecord{}
+			for id, record := range test.films {
 				r := *record
-				fs.Films[id] = &r
+				films[id] = &r
 			}
-			defer func() {
-				r := recover()
-				if test.wantPanic {
-					if r == nil {
-						t.Fatalf("expected panic but none occurred")
-					}
-				} else if r != nil {
-					t.Fatalf("unexpected panic: %v", r)
-				}
-			}()
-			fs.DeregisterList(test.list)
-			if test.wantPanic {
-				return
+			app := &Application{
+				NWQueue:      NextWatch{Stacks: stacks},
+				TrackedLists: test.trackedLists,
+				FilmStore:    FilmStore{Films: films},
 			}
-			for id, expected := range test.wantExists {
-				record, ok := fs.Films[id]
-				if expected && !ok {
+			app.CleanFilmStore()
+			if len(app.FilmStore.Films) != len(test.wantRemaining) {
+				t.Fatalf("expected %d remaining records, got %d", len(test.wantRemaining), len(app.FilmStore.Films))
+			}
+			for _, id := range test.wantRemaining {
+				if _, ok := app.FilmStore.Films[id]; !ok {
 					t.Fatalf("expected record %d to remain", id)
-				}
-				if !expected && ok {
-					t.Fatalf("expected record %d to be removed", id)
-				}
-				if expected {
-					if record.NRefs != test.wantRefs[id] {
-						t.Fatalf("expected %d refs, got %d", test.wantRefs[id], record.NRefs)
-					}
-				}
-			}
-		})
-	}
-}
-
-func TestFilmStoreClean(t *testing.T) {
-	testCases := []struct {
-		name   string
-		record map[int]*FilmRecord
-		want   map[int]bool
-	}{
-		{
-			name:   "removes unreferenced film",
-			record: map[int]*FilmRecord{1: {Film: Film{LBxdID: 1}, Checked: time.Now()}},
-			want:   map[int]bool{1: false},
-		},
-		{
-			name:   "retains expired film with refs",
-			record: map[int]*FilmRecord{1: {Film: Film{LBxdID: 1}, NRefs: 1, Checked: time.Now().Add(-filmExpireTime - time.Second)}},
-			want:   map[int]bool{1: true},
-		},
-		{
-			name:   "retains active film",
-			record: map[int]*FilmRecord{1: {Film: Film{LBxdID: 1}, NRefs: 1, Checked: time.Now()}},
-			want:   map[int]bool{1: true},
-		},
-	}
-	for _, test := range testCases {
-		t.Run(test.name, func(t *testing.T) {
-			fs := &FilmStore{Films: map[int]*FilmRecord{}}
-			for id, record := range test.record {
-				r := *record
-				fs.Films[id] = &r
-			}
-			fs.Clean()
-			for id, expected := range test.want {
-				_, ok := fs.Films[id]
-				if expected && !ok {
-					t.Fatalf("expected record %d", id)
-				}
-				if !expected && ok {
-					t.Fatalf("unexpected record %d", id)
 				}
 			}
 		})
@@ -190,13 +141,13 @@ func TestFilmStoreLookup(t *testing.T) {
 			name: "returns existing record",
 			existing: map[int]*FilmRecord{
 				1: func() *FilmRecord {
-					r := &FilmRecord{Film: Film{LBxdID: 1, Title: "Stored"}, NRefs: 1, Checked: time.Now()}
+					r := &FilmRecord{Film: Film{LBxdID: 1, Title: "Stored"}}
 					r.Details = &tmdb.MovieDetails{ID: 1, Title: "Stored"}
 					return r
 				}(),
 			},
 			film:     Film{LBxdID: 1},
-			expected: &FilmRecord{Film: Film{LBxdID: 1, Title: "Stored"}, NRefs: 1, Checked: time.Now()},
+			expected: &FilmRecord{Film: Film{LBxdID: 1, Title: "Stored"}},
 			wantErr:  false,
 		},
 		{
@@ -215,7 +166,6 @@ func TestFilmStoreLookup(t *testing.T) {
 					Title:  "Dancer in the Dark",
 					Year:   2000,
 				},
-				Checked: time.Now(),
 			},
 		},
 		{
@@ -254,12 +204,6 @@ func TestFilmStoreLookup(t *testing.T) {
 			}
 			if record.Title != test.expected.Title {
 				t.Fatalf("expected Title %s, got %s", test.expected.Title, record.Title)
-			}
-			if record.NRefs != test.expected.NRefs {
-				t.Fatalf("expected NReps %d, got %d", test.expected.NRefs, record.NRefs)
-			}
-			if record.Checked.IsZero() != test.expected.Checked.IsZero() {
-				t.Fatalf("checked time in unexpected state %+v", record.Checked)
 			}
 			if record.Details == nil {
 				t.Fatalf("details nil for requested film record, %s", record.Title)

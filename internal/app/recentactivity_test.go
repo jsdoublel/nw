@@ -180,10 +180,11 @@ func TestUpdateRecentActivity(t *testing.T) {
 				FilmStore:      FilmStore{Films: make(map[int]*FilmRecord)},
 			}
 
-			app.FilmStore.RegisterSet(tt.initialWatchlist)
-			for _, fr := range app.FilmStore.Films {
-				fr.Checked = time.Now()
-				fr.ReleaseDate = time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC)
+			for id, film := range tt.initialWatchlist {
+				app.FilmStore.Films[id] = &FilmRecord{
+					Film:        *film,
+					ReleaseDate: time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC),
+				}
 			}
 
 			var err error
