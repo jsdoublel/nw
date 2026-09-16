@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 )
 
 func TestApplicationSave(t *testing.T) {
@@ -19,7 +18,7 @@ func TestApplicationSave(t *testing.T) {
 			app: Application{
 				Username: "alice",
 				FilmStore: FilmStore{Films: map[int]*FilmRecord{
-					1: {Film: Film{LBxdID: 1, Title: "Stored", Url: "https://example.com/film"}, NRefs: 1, Checked: time.Now()},
+					1: {Film: Film{LBxdID: 1, Title: "Stored", Url: "https://example.com/film"}},
 				}},
 			},
 		},
@@ -72,7 +71,7 @@ func TestLoadReturnsSavedData(t *testing.T) {
 				Application: Application{
 					Username: "bob",
 					FilmStore: FilmStore{Films: map[int]*FilmRecord{
-						7: {Film: Film{LBxdID: 7, Title: "Loaded"}, NRefs: 2},
+						7: {Film: Film{LBxdID: 7, Title: "Loaded"}},
 					}},
 				},
 			},

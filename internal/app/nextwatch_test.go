@@ -42,7 +42,6 @@ func seedFilmStore(t *testing.T, store *FilmStore, films map[int]*Film) {
 		store.Films[film.LBxdID] = &FilmRecord{
 			Film:        *film,
 			ReleaseDate: released,
-			Checked:     now,
 		}
 	}
 }
