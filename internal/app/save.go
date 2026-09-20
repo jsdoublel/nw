@@ -49,11 +49,6 @@ type Save struct {
 // Save application info to file
 func (app *Application) Save() error {
 	savePath := savePath(app.Username)
-	if _, err := os.Stat(filepath.Dir(savePath)); os.IsNotExist(err) {
-		if err = os.MkdirAll(filepath.Dir(savePath), 0o755); err != nil {
-			return fmt.Errorf("failed to create save directory, %w", err)
-		}
-	}
 	bytes, err := json.Marshal(Save{Application: *app, Version: LatestSaveVersion})
 	if err != nil {
 		return fmt.Errorf("failed to marshal save data, %w", err)
