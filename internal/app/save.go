@@ -2,13 +2,16 @@ package app
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -16,8 +19,15 @@ const (
 	LatestSaveVersion  = 0
 	userDataExpireTime = time.Hour * 24
 
-	lastUserFile = "lastusername.txt"
-	saveExt      = ".json"
+	lastUserFile  = "lastusername.txt"
+	saveExt       = ".json.gz"
+	legacySaveExt = ".json"
+)
+
+var (
+	ErrLoading         = errors.New("failed to load save")
+	ErrSaving          = errors.New("failed to write save")
+	ErrFailedMigration = errors.New("failed to migrate legacy save")
 )
 
 // Conditions to scrape Letterboxd for user data update
@@ -41,15 +51,24 @@ func (app *Application) Save() error {
 	savePath := savePath(app.Username)
 	if _, err := os.Stat(filepath.Dir(savePath)); os.IsNotExist(err) {
 		if err = os.MkdirAll(filepath.Dir(savePath), 0o755); err != nil {
-			return fmt.Errorf("failed to create save directory: %w", err)
+			return fmt.Errorf("failed to create save directory, %w", err)
 		}
 	}
 	bytes, err := json.Marshal(Save{Application: *app, Version: LatestSaveVersion})
 	if err != nil {
-		return fmt.Errorf("failed to marshal save data: %w", err)
+		return fmt.Errorf("failed to marshal save data, %w", err)
 	}
-	if err = os.WriteFile(savePath, bytes, 0o644); err != nil {
-		return fmt.Errorf("failed to write save file: %w", err)
+	out, err := os.Create(savePath)
+	if err != nil {
+		return fmt.Errorf("%w, could not create file, %w", ErrSaving, err)
+	}
+	defer func() { _ = out.Close() }()
+	gw := gzip.NewWriter(out)
+	if _, err := gw.Write(bytes); err != nil {
+		return fmt.Errorf("%w, failed to write save file, %w", ErrSaving, err)
+	}
+	if err := gw.Close(); err != nil {
+		return fmt.Errorf("%w, could not close gzip writer, %w", ErrSaving, err)
 	}
 	log.Printf("application data saved to %s", savePath)
 	return nil
@@ -58,30 +77,83 @@ func (app *Application) Save() error {
 // Creates application struct. First tries to load user from save file;
 // otherwise, it creates new user and filmstore.
 func Load(username string) (*Application, error) {
-	save := savePath(username)
-	if _, err := os.Stat(save); err == nil {
-		log.Printf("save found at %s, loading...", save)
-		bytes, err := os.ReadFile(save)
-		if err != nil {
-			return nil, err
+	path := savePath(username)
+	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+		if migrated, err := migrateLegacySave(username); !migrated { // changes save path if true
+			if err != nil {
+				return nil, fmt.Errorf("%w, %w", ErrFailedMigration, err)
+			}
+			log.Printf("no save found; creating new user %s", username)
+			app, err := CreateApp(username)
+			if err != nil {
+				return nil, err
+			}
+			return app, nil
 		}
-		var save Save
-		if err := json.Unmarshal(bytes, &save); err != nil {
-			return nil, err
-		}
-		app := &save.Application
-		app.rehydrate()
-		return app, nil
-	} else if errors.Is(err, os.ErrNotExist) {
-		log.Printf("no save found; creating new user %s", username)
-		app, err := CreateApp(username)
-		if err != nil {
-			return nil, err
-		}
-		return app, nil
-	} else {
+	} else if err != nil {
 		return nil, err
 	}
+	log.Printf("save found at %s, loading...", path)
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("%w, could not open save, %w", ErrLoading, err)
+	}
+	defer func() { _ = f.Close() }()
+	gz, err := gzip.NewReader(f)
+	if err != nil {
+		return nil, fmt.Errorf("%w, could not create gzip reader, %w", ErrLoading, err)
+	}
+	defer func() { _ = gz.Close() }()
+	bytes, err := io.ReadAll(gz)
+	if err != nil {
+		return nil, fmt.Errorf("%w, could not read gzip, %w", ErrLoading, err)
+	}
+	var save Save
+	if err := json.Unmarshal(bytes, &save); err != nil {
+		return nil, fmt.Errorf("%w, could not unmarshal json, %w", ErrLoading, err)
+	}
+	app := &save.Application
+	app.rehydrate()
+	return app, nil
+}
+
+// Check data directory for possible save files with legacy names, then moves
+// them to the proper name/type.
+//
+// Legacy files may be in mixed case, and will have the extension .json
+func migrateLegacySave(username string) (bool, error) {
+	legacyName := fmt.Sprintf("%s%s", username, legacySaveExt) // maybe the wrong case
+	canonicalName := fmt.Sprintf("%s%s", username, saveExt)
+	entries, err := os.ReadDir(NWDataPath)
+	if err != nil {
+		return false, fmt.Errorf("failed to read NWDataPath, %w", err)
+	}
+	for _, e := range entries {
+		if !e.IsDir() && strings.EqualFold(legacyName, e.Name()) {
+			legacySave := filepath.Join(NWDataPath, e.Name())
+			bytes, err := os.ReadFile(legacySave)
+			if err != nil {
+				return false, fmt.Errorf("could not read %s, %w", e.Name(), err)
+			}
+			out, err := os.Create(filepath.Join(NWDataPath, canonicalName))
+			if err != nil {
+				return false, fmt.Errorf("could not create %s, %w", canonicalName, err)
+			}
+			defer func() { _ = out.Close() }()
+			gw := gzip.NewWriter(out)
+			if _, err := gw.Write(bytes); err != nil {
+				return false, fmt.Errorf("could not write %s, %w", canonicalName, err)
+			}
+			if err := gw.Close(); err != nil {
+				return false, fmt.Errorf("could not close %s, %w", canonicalName, err)
+			}
+			if err := os.Remove(legacySave); err != nil {
+				log.Printf("failed to remove legacy save, %s", err.Error())
+			}
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 // Retrieve username if it has not been set using a variety of means. askUser
@@ -95,19 +167,20 @@ func GetUser(username *string, askUser func() string) error {
 	lastUsernameFile := filepath.Join(NWDataPath, lastUserFile)
 	if *username == "" {
 		if content, err := os.ReadFile(lastUsernameFile); err == nil {
-			*username = string(bytes.TrimSpace(content))
+			*username = string(bytes.ToLower(bytes.TrimSpace(content)))
 		}
 	}
 	if *username == "" && askUser != nil {
 		*username = askUser()
 	}
 	if *username != "" {
-		if err := os.WriteFile(lastUsernameFile, []byte(*username), 0o0666); err != nil {
+		if err := os.WriteFile(lastUsernameFile, []byte(*username), 0o0644); err != nil {
 			log.Printf("error storing last username, %s", err)
 		}
 	} else {
 		return errors.New("no username provided")
 	}
+	*username = strings.ToLower(*username)
 	return nil
 }
 

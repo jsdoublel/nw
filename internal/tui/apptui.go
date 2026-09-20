@@ -57,6 +57,7 @@ func RunApplicationTUI(username string) error {
 	}); err != nil {
 		return err
 	}
+	log.Printf("starting application for user %s", username)
 	application, err := app.Load(username)
 	if err != nil {
 		return fmt.Errorf("could not load application data, %w", err)
