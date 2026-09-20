@@ -1,8 +1,10 @@
 package app
 
 import (
+	"compress/gzip"
 	"encoding/json"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -34,7 +36,17 @@ func TestApplicationSave(t *testing.T) {
 			if _, err := os.Stat(path); err != nil {
 				t.Fatalf("save file missing: %v", err)
 			}
-			bytes, err := os.ReadFile(path)
+			f, err := os.Open(path)
+			if err != nil {
+				t.Fatalf("failed to open save: %v", err)
+			}
+			defer func() { _ = f.Close() }()
+			gz, err := gzip.NewReader(f)
+			if err != nil {
+				t.Fatalf("failed to create gzip reader: %v", err)
+			}
+			defer func() { _ = gz.Close() }()
+			bytes, err := io.ReadAll(gz)
 			if err != nil {
 				t.Fatalf("failed to read save: %v", err)
 			}
@@ -90,8 +102,19 @@ func TestLoadReturnsSavedData(t *testing.T) {
 			if err != nil {
 				t.Fatalf("marshal failed: %v", err)
 			}
-			if err := os.WriteFile(path, bytes, 0o644); err != nil {
-				t.Fatalf("write failed: %v", err)
+			out, err := os.Create(path)
+			if err != nil {
+				t.Fatalf("create failed: %v", err)
+			}
+			gw := gzip.NewWriter(out)
+			if _, err := gw.Write(bytes); err != nil {
+				t.Fatalf("gzip write failed: %v", err)
+			}
+			if err := gw.Close(); err != nil {
+				t.Fatalf("gzip close failed: %v", err)
+			}
+			if err := out.Close(); err != nil {
+				t.Fatalf("file close failed: %v", err)
 			}
 			app, err := Load(test.user)
 			if err != nil {
