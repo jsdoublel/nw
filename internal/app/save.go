@@ -60,7 +60,10 @@ func (app *Application) Save() error {
 	if err != nil {
 		return fmt.Errorf("%w, could not create file, %w", ErrSaving, err)
 	}
-	defer func() { _ = out.Close() }()
+	defer func() {
+		_ = out.Close()
+		_ = os.Remove(out.Name())
+	}()
 	gw := gzip.NewWriter(out)
 	if _, err := gw.Write(bytes); err != nil {
 		return fmt.Errorf("%w, failed to write save file, %w", ErrSaving, err)
