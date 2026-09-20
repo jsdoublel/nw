@@ -58,7 +58,7 @@ func (app *Application) Save() error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal save data, %w", err)
 	}
-	out, err := os.Create(savePath)
+	out, err := os.CreateTemp(NWDataPath, filepath.Base(savePath)+".tmp-*")
 	if err != nil {
 		return fmt.Errorf("%w, could not create file, %w", ErrSaving, err)
 	}
@@ -69,6 +69,9 @@ func (app *Application) Save() error {
 	}
 	if err := gw.Close(); err != nil {
 		return fmt.Errorf("%w, could not close gzip writer, %w", ErrSaving, err)
+	}
+	if err := os.Rename(out.Name(), savePath); err != nil {
+		return fmt.Errorf("%w, error overwriting save with tmp, %w", ErrSaving, err)
 	}
 	log.Printf("application data saved to %s", savePath)
 	return nil
