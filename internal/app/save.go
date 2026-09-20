@@ -185,7 +185,15 @@ func GetUser(username *string, askUser func() string) error {
 		return errors.New("no username provided")
 	}
 	*username = strings.ToLower(*username)
+	if !validUser(*username) {
+		return fmt.Errorf("invalid username %s", *username)
+	}
 	return nil
+}
+
+// Checks that username doesn't contain path separators
+func validUser(username string) bool {
+	return !strings.ContainsAny(username, "/\\")
 }
 
 // Get save path name from username
