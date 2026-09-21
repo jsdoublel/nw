@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"path/filepath"
@@ -9,6 +10,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/gofrs/flock"
 	overlay "github.com/rmhubbert/bubbletea-overlay"
 
 	"github.com/jsdoublel/nw/internal/app"
@@ -40,6 +42,15 @@ type ApplicationTUI struct {
 }
 
 func RunApplicationTUI(username string) error {
+	fileLock := flock.New(filepath.Join(app.NWDataPath, "nw.lock"))
+	locked, err := fileLock.TryLock()
+	if err != nil {
+		return fmt.Errorf("could not set up lock file, %w", err)
+	}
+	if !locked {
+		return errors.New("could not acquire lock, is another instance of nw running?")
+	}
+	defer func() { _ = fileLock.Unlock() }()
 	logf, err := tea.LogToFile(filepath.Join(app.NWDataPath, "nw.log"), "")
 	if err != nil {
 		return fmt.Errorf("could not set up logging, %w", err)
