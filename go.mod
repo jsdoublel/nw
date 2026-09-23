@@ -16,6 +16,7 @@ require (
 	github.com/muesli/termenv v0.16.0
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/rmhubbert/bubbletea-overlay v0.5.0
+	golang.org/x/mod v0.41.0
 )
 
 require (

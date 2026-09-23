@@ -7,6 +7,7 @@ disable_startup_update = false # when true, disables automatic scrapping of lett
 disable_quick_update = false # when true, disables feature that checks profile RSS feed periodically
 disable_discord_rpc = false # when true, disables Discord RPC "watching" option.
 always_include_tmdb = false # when true, always includes link to TMDB page on all film details screens.
+disable_update_check = false # when true, disables checking GitHub for newer releases on startup
 
 # Directories let you override where NW stores data/posters.
 # Below are shown the default locations on Linux.

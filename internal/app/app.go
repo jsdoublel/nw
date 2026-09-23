@@ -45,10 +45,11 @@ type Application struct {
 
 	// ----- tracked by app
 
-	NWQueue         NextWatch
-	TrackedLists    map[string]*FilmList // lists tracked in this program; urls are keys
-	FilmStore       FilmStore            // central structure that stores local film information
-	UserDataChecked time.Time            // last time watchlist, watched films, etc. were checked
+	NWQueue             NextWatch
+	TrackedLists        map[string]*FilmList // lists tracked in this program; urls are keys
+	FilmStore           FilmStore            // central structure that stores local film information
+	UserDataChecked     time.Time            // last time watchlist, watched films, etc. were checked
+	LastNotifiedVersion string               // last release version the user was shown an update popup for
 
 	// ----- other stuff
 

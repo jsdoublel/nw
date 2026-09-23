@@ -133,7 +133,7 @@ var (
 			Background(unfocusedButtonColor).
 			Padding(0, 2)
 	popupStyle     = lipgloss.NewStyle().Inherit(mainStyle)
-	popupTextStyle = lipgloss.NewStyle().Padding(1)
+	popupTextStyle = lipgloss.NewStyle().Padding(1).Width(82)
 	popupOkStyle   = lipgloss.NewStyle().
 			Foreground(gray[0]).
 			Background(focusedButtonColor).
@@ -147,6 +147,14 @@ var (
 	startupTextStyle  = lipgloss.NewStyle().Foreground(gray[8]).Italic(true)
 	startupInputStyle = lipgloss.NewStyle().Foreground(textColor)
 )
+
+func NewReleaseNotice(release app.Release) string {
+	return strings.Join([]string{
+		lipgloss.NewStyle().Bold(true).Render(fmt.Sprintf("A new version of NW is available! (%s)", release.Version)),
+		lipgloss.NewStyle().Italic(true).Underline(true).Render("https://github.com/jsdoublel/nw/releases"),
+		popupTextStyle.Render(release.Changes),
+	}, "\n\n")
+}
 
 func mainStyler() lipgloss.Style {
 	mainStyle := lipgloss.NewStyle().

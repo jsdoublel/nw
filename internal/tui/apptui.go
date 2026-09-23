@@ -60,9 +60,9 @@ func RunApplicationTUI(username string) error {
 	if app.ConfigErr != nil {
 		log.Printf("error loading config, %s", app.ConfigErr)
 	}
-	log.Printf("config: path=%s disableStartupUpdate=%v disableQuickUpdates=%v disableDiscordRPC=%v alwaysIncludeTMDB=%v",
+	log.Printf("config: path=%s disableStartupUpdate=%v disableQuickUpdates=%v disableDiscordRPC=%v alwaysIncludeTMDB=%v disableUpdateCheck=%v",
 		app.ConfigPath(), app.Config.Features.DisableStartupUpdate, app.Config.Features.DisableQuickUpdates,
-		app.Config.Features.DisableDiscordRPC, app.Config.Features.AlwaysIncludeTMDB)
+		app.Config.Features.DisableDiscordRPC, app.Config.Features.AlwaysIncludeTMDB, app.Config.Features.DisableUpdateCheck)
 	if err := app.GetUser(&username, func() string {
 		return AskQuestion("What is your Letterboxd username?", "Username")
 	}); err != nil {
@@ -107,6 +107,7 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case userDataLoadedMsg:
 		a.screens.pop()          // remove loading screen
 		if len(a.screens) == 0 { // we need different behavior on startup vs. update
+			cmds = append(cmds, checkSoftwareUpdate(a))
 			a.screens.push(MakeMainScreen(a))
 		} else {
 			return a, UpdateScreen
@@ -117,17 +118,16 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else {
 			panic("userDataFailedMsg received without splash screen")
 		}
+	case newReleaseMsg:
+		a.LastNotifiedVersion = msg.release.Version
+		a.Popup(NewReleaseNotice(msg.release))
 	case statusMessageMsg:
 		cmds = append(cmds, a.status.setMessage(msg.message))
 	case GoBackMsg:
 		if len(a.screens) == 1 {
 			return a, tea.Quit
 		}
-		_, wasLoading := a.screens.cur().(*SplashScreenModel)
 		a.screens.pop()
-		if _, ok := a.screens.cur().(*MainScreen); ok && !wasLoading {
-			return a, updateUserDataCmd(a, app.UpdateNeverCheck)
-		}
 		return a, UpdateScreen
 	case tea.KeyMsg:
 		if a.loading() {
@@ -237,4 +237,21 @@ func (app *ApplicationTUI) loading() bool {
 		}
 	}
 	return false
+}
+
+// ----------- Check Software Update
+
+type newReleaseMsg struct{ release app.Release }
+
+func checkSoftwareUpdate(a *ApplicationTUI) tea.Cmd {
+	if app.Config.Features.DisableUpdateCheck {
+		return nil
+	}
+	return func() tea.Msg {
+		newer, release := app.CheckSoftwareUpdate()
+		if !newer || release.Version == a.LastNotifiedVersion {
+			return nil
+		}
+		return newReleaseMsg{release}
+	}
 }
