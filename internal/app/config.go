@@ -24,6 +24,7 @@ type featuresConfig struct {
 	DisableQuickUpdates  bool `toml:"disable_quick_update"`
 	DisableDiscordRPC    bool `toml:"disable_discord_rpc"`
 	AlwaysIncludeTMDB    bool `toml:"always_include_tmdb"`
+	DisableUpdateCheck   bool `toml:"disable_update_check"`
 }
 
 type appearanceConfig struct {
