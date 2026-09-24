@@ -100,6 +100,7 @@ func (app *Application) RemoveList(filmList *FilmList) error {
 // Rescrapes the list films and data from Letterboxd.
 func (app *Application) RefreshList(filmList *FilmList) error {
 	log.Printf("refreshing list %s", filmList.Name)
+	prevNext := filmList.NextFilm
 	if err := app.RemoveList(filmList); err != nil {
 		return err
 	}
@@ -107,6 +108,7 @@ func (app *Application) RefreshList(filmList *FilmList) error {
 		_ = app.AddList(filmList) // re-add old list if scraping failed, should not fail with error
 		return err
 	}
+	app.TrackedLists[filmList.Url].NextFilm = prevNext
 	return nil
 }
 
