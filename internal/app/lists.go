@@ -101,6 +101,7 @@ func (app *Application) RemoveList(filmList *FilmList) error {
 func (app *Application) RefreshList(filmList *FilmList) error {
 	log.Printf("refreshing list %s", filmList.Name)
 	prevNext := filmList.NextFilm
+	prevOrdered := filmList.Ordered
 	if err := app.RemoveList(filmList); err != nil {
 		return err
 	}
@@ -109,6 +110,7 @@ func (app *Application) RefreshList(filmList *FilmList) error {
 		return err
 	}
 	app.TrackedLists[filmList.Url].NextFilm = prevNext
+	app.TrackedLists[filmList.Url].Ordered = prevOrdered
 	return nil
 }
 
