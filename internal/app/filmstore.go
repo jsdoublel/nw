@@ -19,9 +19,16 @@ type FilmStore struct {
 type FilmRecord struct {
 	Film
 	TMDBID      int                // tmdb id number
+	Stats       LBxdStats          // Letterboxd stats
 	Details     *tmdb.MovieDetails // film details from tmdb
 	ReleaseDate time.Time          // release date (according to tmdb)
 	Watched     bool               // film is recorded as watched
+}
+
+type LBxdStats struct {
+	Views  float32 // how many viewers on Letterboxd
+	Rating float32 // average rating on Letterboxd
+	Likes  float32 // how many likes on Letterboxd
 }
 
 // Get cached film record, retrieve if necessary
@@ -29,7 +36,10 @@ type FilmRecord struct {
 // Returns error if it needs to retrieve details and fails.
 func (fs *FilmStore) Lookup(film Film) (*FilmRecord, error) {
 	if f, ok := fs.Films[film.LBxdID]; ok {
-		return f, nil
+		if f.Stats != (LBxdStats{}) { // if we don't have stats, we need to refetch (backwards compatibility)
+			return f, nil
+		}
+		log.Printf("%s is missing letterboxd stats, retrieving...", f)
 	}
 	if err := fs.retrieve(film); err != nil {
 		return nil, err
@@ -70,8 +80,8 @@ func (app *Application) CleanFilmStore() {
 func (fs *FilmStore) retrieve(film Film) error {
 	fr := &FilmRecord{Film: film}
 	var err error
-	if fr.TMDBID, err = ScrapeFilmID(film.Url); err != nil {
-		return fmt.Errorf("couldn't get TMDB id, %w", err)
+	if fr.TMDBID, fr.Stats, err = GetLBxdFilmInfo(film.Url); err != nil {
+		return fmt.Errorf("couldn't get Letterboxd info for film %s, %w", fr, err)
 	}
 	if fr.Details, err = TMDBFilm(fr.TMDBID); err != nil {
 		return err

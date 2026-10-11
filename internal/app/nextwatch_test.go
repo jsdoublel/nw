@@ -41,6 +41,7 @@ func seedFilmStore(t *testing.T, store *FilmStore, films map[int]*Film) {
 	for _, film := range films {
 		store.Films[film.LBxdID] = &FilmRecord{
 			Film:        *film,
+			Stats:       LBxdStats{Views: 1},
 			ReleaseDate: released,
 		}
 	}
