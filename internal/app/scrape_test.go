@@ -67,7 +67,7 @@ func BenchmarkScrapeUserLists(b *testing.B) {
 	}
 }
 
-func TestScrapeFilmID(t *testing.T) {
+func TestGetLBxdFilmInfo(t *testing.T) {
 	testCases := []struct {
 		name     string
 		url      string
@@ -92,7 +92,7 @@ func TestScrapeFilmID(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			id, err := ScrapeFilmID(test.url)
+			id, stats, err := GetLBxdFilmInfo(test.url)
 			if test.expected == -1 {
 				if !errors.Is(err, ErrNotAFilm) {
 					t.Errorf("expected ErrNotAFilm, got %v", err)
@@ -104,6 +104,10 @@ func TestScrapeFilmID(t *testing.T) {
 			}
 			if test.expected != id {
 				t.Errorf("%d != %d", test.expected, id)
+			}
+			// stats change over time, so only check they were scraped
+			if stats.Views <= 0 || stats.Likes <= 0 || stats.Rating <= 0 || stats.Rating > 5 {
+				t.Errorf("bad stats %+v", stats)
 			}
 		})
 	}
@@ -149,10 +153,10 @@ func TestScrapeFilmFromFilmPage(t *testing.T) {
 	}
 }
 
-func BenchmarkScrapeFilmID(b *testing.B) {
+func BenchmarkGetLBxdFilmInfo(b *testing.B) {
 	filmUrl := "https://letterboxd.com/film/2001-a-space-odyssey/"
 	for b.Loop() {
-		if _, err := ScrapeFilmID(filmUrl); err != nil {
+		if _, _, err := GetLBxdFilmInfo(filmUrl); err != nil {
 			b.Fatalf("failed to scrape film url, %s", err)
 		}
 	}

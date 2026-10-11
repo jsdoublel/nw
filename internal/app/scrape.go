@@ -22,6 +22,7 @@ var (
 	ErrNotAFilm   error = errors.New("not a film")
 
 	titleYearRegex = regexp.MustCompile(`^(.+?)\s+\((\d{4})\)$`)
+	nonDigitRegex  = regexp.MustCompile(`\D`)
 
 	httpClient = req.C().ImpersonateChrome()
 
@@ -186,13 +187,15 @@ func ScrapeFilmList(rawURL string) (fl FilmList, err error) {
 	return
 }
 
-// Scraps TMDB film ID given a URL to a Letterboxd film page
-func ScrapeFilmID(rawURL string) (id int, err error) {
-	filmUrl, err := url.Parse(rawURL)
-	if err != nil {
-		return -1, err
+// Scraps TMDB film ID and Letterboxd Stats given a URL to a Letterboxd film page
+func GetLBxdFilmInfo(rawURL string) (id int, stats LBxdStats, err error) {
+	filmUrl, parseErr := url.Parse(rawURL)
+	if parseErr != nil {
+		err = parseErr
+		return
 	} else if filmUrl.Hostname() != "letterboxd.com" {
-		return -1, fmt.Errorf("%w, %s is not a letterboxd.com url", ErrInvalidUrl, filmUrl)
+		err = fmt.Errorf("%w, %s is not a letterboxd.com url", ErrInvalidUrl, filmUrl)
+		return
 	}
 	c := makeCollector(rawURL)
 	var scrapingErr error
@@ -218,6 +221,26 @@ func ScrapeFilmID(rawURL string) (id int, err error) {
 			}
 		}
 	})
+	c.OnHTML("meta[name='twitter:data2']", func(h *colly.HTMLElement) {
+		ratingStr, _, _ := strings.Cut(h.Attr("content"), " ")
+		if rating, err := strconv.ParseFloat(ratingStr, 32); err == nil {
+			stats.Rating = float32(rating)
+		}
+	})
+	c.OnHTML(".csi[data-src$='/stats/']", func(h *colly.HTMLElement) {
+		if err := c.Visit(h.Request.AbsoluteURL(h.Attr("data-src"))); err != nil {
+			scrapingErr = fmt.Errorf("problem scraping stats, %w", err)
+		}
+	})
+	statScraper := func(stat *float32) colly.HTMLCallback {
+		return func(h *colly.HTMLElement) {
+			if count, err := strconv.Atoi(nonDigitRegex.ReplaceAllString(h.Attr("aria-label"), "")); err == nil {
+				*stat = float32(count)
+			}
+		}
+	}
+	c.OnHTML(".production-statistic.-watches", statScraper(&stats.Views))
+	c.OnHTML(".production-statistic.-likes", statScraper(&stats.Likes))
 	if err = c.Visit(filmUrl.String()); err != nil {
 		return
 	}

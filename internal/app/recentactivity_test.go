@@ -183,6 +183,7 @@ func TestUpdateRecentActivity(t *testing.T) {
 			for id, film := range tt.initialWatchlist {
 				app.FilmStore.Films[id] = &FilmRecord{
 					Film:        *film,
+					Stats:       LBxdStats{Views: 1},
 					ReleaseDate: time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC),
 				}
 			}

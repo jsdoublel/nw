@@ -141,7 +141,7 @@ func TestFilmStoreLookup(t *testing.T) {
 			name: "returns existing record",
 			existing: map[int]*FilmRecord{
 				1: func() *FilmRecord {
-					r := &FilmRecord{Film: Film{LBxdID: 1, Title: "Stored"}}
+					r := &FilmRecord{Film: Film{LBxdID: 1, Title: "Stored"}, Stats: LBxdStats{Views: 1}}
 					r.Details = &tmdb.MovieDetails{ID: 1, Title: "Stored"}
 					return r
 				}(),
@@ -167,6 +167,19 @@ func TestFilmStoreLookup(t *testing.T) {
 					Year:   2000,
 				},
 			},
+		},
+		{
+			name: "refetches record missing stats",
+			existing: map[int]*FilmRecord{
+				2701: {Film: Film{LBxdID: 2701, Title: "Stale"}, Details: &tmdb.MovieDetails{Title: "Stale"}},
+			},
+			film: Film{
+				Url:    "https://letterboxd.com/film/dancer-in-the-dark/",
+				LBxdID: 2701,
+				Title:  "Dancer in the Dark",
+				Year:   2000,
+			},
+			expected: &FilmRecord{Film: Film{Title: "Dancer in the Dark"}},
 		},
 		{
 			name:     "returns error when retrieval fails",
