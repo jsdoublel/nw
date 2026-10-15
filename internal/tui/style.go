@@ -92,6 +92,9 @@ var (
 				Foreground(textColor).
 				Background(unfocusedButtonColor).
 				Padding(0, 2)
+	filmStatsViews  = lipgloss.NewStyle().Foreground(success)
+	filmStatsLikes  = lipgloss.NewStyle().Foreground(primary)
+	filmStatsRating = lipgloss.NewStyle().Foreground(secondary)
 
 	// ----- Film Search
 	filmSearchItemStyle     = lipgloss.NewStyle()
