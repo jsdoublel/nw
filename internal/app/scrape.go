@@ -232,10 +232,10 @@ func GetLBxdFilmInfo(rawURL string) (id int, stats LBxdStats, err error) {
 			scrapingErr = fmt.Errorf("problem scraping stats, %w", err)
 		}
 	})
-	statScraper := func(stat *float32) colly.HTMLCallback {
+	statScraper := func(stat *int) colly.HTMLCallback {
 		return func(h *colly.HTMLElement) {
 			if count, err := strconv.Atoi(nonDigitRegex.ReplaceAllString(h.Attr("aria-label"), "")); err == nil {
-				*stat = float32(count)
+				*stat = count
 			}
 		}
 	}
