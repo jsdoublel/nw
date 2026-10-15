@@ -26,9 +26,9 @@ type FilmRecord struct {
 }
 
 type LBxdStats struct {
-	Views  float32 // how many viewers on Letterboxd
+	Views  int     // how many viewers on Letterboxd
 	Rating float32 // average rating on Letterboxd
-	Likes  float32 // how many likes on Letterboxd
+	Likes  int     // how many likes on Letterboxd
 }
 
 // Get cached film record, retrieve if necessary
