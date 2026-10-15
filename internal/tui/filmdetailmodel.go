@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
@@ -102,10 +103,18 @@ func (fd *FilmDetailsModel) renderDetails() string {
 	_, rightPad, _, leftPad := filmDetailsStyle.GetPadding()
 	colWidthRight := paneWidth/2 - rightPad
 	colWidthLeft := paneWidth/2 - leftPad
-	rightText := filmTextStyle.Width(colWidthRight).Render(fd.film.Details.Overview)
+	var rb strings.Builder
 	if len([]rune(fd.film.String())) > colWidthRight {
-		rightText = "\n" + rightText
+		rb.WriteString("\n")
 	}
+	if stats := fd.film.Stats; stats != (app.LBxdStats{}) {
+		rb.WriteString(filmStatsViews.Render(fmt.Sprintf("W: %s ", formatLargeNumber(stats.Views))))
+		rb.WriteString(filmStatsLikes.Render(fmt.Sprintf("L: %s ", formatLargeNumber(stats.Likes))))
+		rb.WriteString(filmStatsRating.Render(fmt.Sprintf("R: %.1f", stats.Rating)))
+		rb.WriteString("\n\n")
+	}
+	rb.WriteString(filmTextStyle.Width(colWidthRight).Render(fd.film.Details.Overview))
+	rightText := rb.String()
 	limitAdj := 2 // adjust cast length limit based on height of text above
 	var b strings.Builder
 	if directors := fd.film.DirectorString(); directors != "" {
@@ -129,6 +138,17 @@ func (fd *FilmDetailsModel) renderDetails() string {
 		title,
 		lipgloss.JoinHorizontal(lipgloss.Top, leftText, rightText),
 	)
+}
+
+func formatLargeNumber(n int) string {
+	switch {
+	case n >= 1_000_000:
+		return fmt.Sprintf("%.1fM", float32(n)/1_000_000)
+	case n >= 1_000:
+		return fmt.Sprintf("%.1fK", float32(n)/1_000)
+	default:
+		return strconv.FormatInt(int64(n), 10)
+	}
 }
 
 func (fd *FilmDetailsModel) castLine(limit int) string {
