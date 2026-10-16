@@ -193,7 +193,7 @@ func GetLBxdFilmInfo(rawURL string) (id int, stats LBxdStats, err error) {
 	if parseErr != nil {
 		err = parseErr
 		return
-	} else if filmUrl.Hostname() != "letterboxd.com" {
+	} else if !strings.HasSuffix(filmUrl.Hostname(), "letterboxd.com") {
 		err = fmt.Errorf("%w, %s is not a letterboxd.com url", ErrInvalidUrl, filmUrl)
 		return
 	}

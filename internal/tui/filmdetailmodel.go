@@ -107,32 +107,32 @@ func (fd *FilmDetailsModel) renderDetails() string {
 	if len([]rune(fd.film.String())) > colWidthRight {
 		rb.WriteString("\n")
 	}
-	if stats := fd.film.Stats; stats != (app.LBxdStats{}) {
-		rb.WriteString(filmStatsViews.Render(fmt.Sprintf("W: %s ", formatLargeNumber(stats.Views))))
-		rb.WriteString(filmStatsLikes.Render(fmt.Sprintf("L: %s ", formatLargeNumber(stats.Likes))))
-		rb.WriteString(filmStatsRating.Render(fmt.Sprintf("R: %.1f", stats.Rating)))
-		rb.WriteString("\n\n")
-	}
 	rb.WriteString(filmTextStyle.Width(colWidthRight).Render(fd.film.Details.Overview))
 	rightText := rb.String()
 	limitAdj := 2 // adjust cast length limit based on height of text above
-	var b strings.Builder
+	var lb strings.Builder
 	if directors := fd.film.DirectorString(); directors != "" {
-		b.WriteString(flimDirStyle.Render(directors))
+		lb.WriteString(flimDirStyle.Render(directors))
 		limitAdj++
 	}
 	if runtime := fd.film.Details.Runtime; runtime > 0 {
-		fmt.Fprintf(&b, "\n%d minutes", runtime)
+		fmt.Fprintf(&lb, "\n%d minutes", runtime)
+		limitAdj++
+	}
+	if stats := fd.film.Stats; stats != (app.LBxdStats{}) {
+		lb.WriteString(filmStatsViewsStyle.Render(fmt.Sprintf("\nW: %s ", formatLargeNumber(stats.Views))))
+		lb.WriteString(filmStatsLikesStyle.Render(fmt.Sprintf("L: %s ", formatLargeNumber(stats.Likes))))
+		lb.WriteString(filmStatsRatingStyle.Render(fmt.Sprintf("R: %.1f", stats.Rating)))
 		limitAdj++
 	}
 	castLimit := max(minCast, lipgloss.Height(rightText)-limitAdj)
 	if cast := fd.castLine(castLimit); cast != "" {
-		b.WriteString("\n\n")
-		b.WriteString(filmCastHeaderStyle.Render("Cast"))
-		b.WriteString("\n")
-		b.WriteString(cast)
+		lb.WriteString("\n\n")
+		lb.WriteString(filmCastHeaderStyle.Render("Cast"))
+		lb.WriteString("\n")
+		lb.WriteString(cast)
 	}
-	leftText := filmTextStyle.Width(colWidthLeft).Render(b.String())
+	leftText := filmTextStyle.Width(colWidthLeft).Render(lb.String())
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		title,
@@ -262,9 +262,14 @@ func MakeFilmDetailsModelFromResults(f tmdb.MovieResult, a *ApplicationTUI) *Fil
 			err:     err,
 		}
 	}
+	var stats app.LBxdStats
+	if _, s, err := app.GetLBxdFilmInfo(fmt.Sprintf("%s%d", app.LetterboxdTMDBRedirect, details.ID)); err == nil {
+		stats = s
+	}
 	fr := app.FilmRecord{
 		Film:    app.Film{Title: details.Title, Year: uint(releaseYear)},
 		TMDBID:  int(details.ID),
+		Stats:   stats,
 		Details: details,
 	}
 	return &FilmDetailsModel{
