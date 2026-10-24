@@ -105,18 +105,12 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.height = msg.Height
 		a.help.Width = a.width
 	case userDataLoadedMsg:
-		a.screens.pop()          // remove loading screen
-		if len(a.screens) == 0 { // we need different behavior on startup vs. update
-			cmds = append(cmds, checkSoftwareUpdate(a))
-			a.screens.push(MakeMainScreen(a))
-		} else {
-			return a, UpdateScreen
-		}
+		cmds = append(cmds, a.popLoadingScreen()...)
 	case userDataFailedMsg:
-		if ss, ok := a.screens.cur().(*SplashScreenModel); ok {
-			ss.SetError(msg.err)
+		if a.NWQueue.Stacks == nil { // no data to fall back on (e.g. first run offline)
+			a.screens.cur().(*SplashScreenModel).SetError(msg.err)
 		} else {
-			panic("userDataFailedMsg received without splash screen")
+			cmds = append(cmds, func() tea.Msg { return userDataLoadedMsg{} }, a.status.setMessage(Message{text: msg.err.Error(), error: true}))
 		}
 	case newReleaseMsg:
 		a.LastNotifiedVersion = msg.release.Version
@@ -139,6 +133,19 @@ func (a *ApplicationTUI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 	cmds = append(cmds, a.UpdateRouter(msg)...)
 	return a, tea.Batch(cmds...)
+}
+
+func (a *ApplicationTUI) popLoadingScreen() (cmds []tea.Cmd) {
+	if _, ok := a.screens.cur().(*SplashScreenModel); ok {
+		a.screens.pop()          // remove loading screen
+		if len(a.screens) == 0 { // we need different behavior on startup vs. update
+			cmds = append(cmds, checkSoftwareUpdate(a))
+			a.screens.push(MakeMainScreen(a))
+		} else {
+			cmds = append(cmds, UpdateScreen)
+		}
+	}
+	return cmds
 }
 
 func (a *ApplicationTUI) checkKeyMsgs(msg tea.KeyMsg) (tea.Cmd, bool) {
