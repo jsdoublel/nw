@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
-var webHTTPClient = &http.Client{Transport: scrapeTransport}
+var webHTTPClient = &http.Client{Transport: scrapeTransport, Timeout: 30 * time.Second}
 
 func getUrlContent(url string) ([]byte, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)

@@ -57,11 +57,11 @@ func (app *Application) QuickUpdateWatched() error {
 		return nil
 	}
 	log.Printf("executing quick update with RSS...")
-	app.RecentActivity.LastCheck = time.Now()
 	updatedActivity, err := getRSSItems(app.Username)
 	if err != nil {
 		return err
 	}
+	app.RecentActivity.LastCheck = time.Now()
 	return app.updateRecentActivity(updatedActivity)
 }
 
