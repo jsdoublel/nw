@@ -2,6 +2,7 @@ package app
 
 import (
 	"errors"
+	"slices"
 	"testing"
 	"time"
 )
@@ -218,6 +219,59 @@ func TestNextWatchUpdateWatched(t *testing.T) {
 			}
 			if !nw.Full() {
 				t.Fatal("expected queue to be full after update")
+			}
+		})
+	}
+}
+
+func TestNextWatchUpdateWatchedKeepsOrder(t *testing.T) {
+	testCases := []struct {
+		name    string
+		watched [][2]int // (stack, index) positions to mark watched
+	}{
+		{
+			name:    "watching next pick",
+			watched: [][2]int{{0, 0}},
+		},
+		{
+			name:    "watching nested film",
+			watched: [][2]int{{2, 1}},
+		},
+		{
+			name:    "watching multiple films in same stack",
+			watched: [][2]int{{1, 0}, {1, 3}},
+		},
+		{
+			name:    "watching films across stacks",
+			watched: [][2]int{{0, 0}, {3, 2}, {3, 4}, {NumberOfStacks, 0}},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			for range 20 { // refill is random, so repeat to cover different pulls
+				watched := make(map[int]*Film)
+				nw := makeTestNextWatch(t, NumberOfStacks*StackSize+10, watched)
+				before := make([][]int, len(nw.Stacks))
+				for i, j := range nw.Positions() {
+					before[i] = append(before[i], nw.Stacks[i][j].LBxdID)
+				}
+				for _, p := range tc.watched {
+					f := nw.Stacks[p[0]][p[1]]
+					watched[f.LBxdID] = f
+				}
+				if err := nw.UpdateWatched(); err != nil {
+					t.Fatalf("UpdateWatched returned error: %v", err)
+				}
+				for i := 1; i <= NumberOfStacks; i++ {
+					after := make([]int, 0, StackSize)
+					for _, f := range nw.Stacks[i] {
+						after = append(after, f.LBxdID)
+					}
+					retained := slices.DeleteFunc(slices.Clone(before[i]), func(id int) bool { return !slices.Contains(after, id) })
+					if !slices.Equal(after[:len(retained)], retained) {
+						t.Fatalf("stack %d: retained films %v not kept in order at top, got %v (before %v)", i, retained, after, before[i])
+					}
+				}
 			}
 		})
 	}
