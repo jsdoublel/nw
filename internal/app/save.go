@@ -262,8 +262,7 @@ func (app *Application) UpdateUserData(check CheckUpdateCondition) (err error) {
 		return err
 	}
 	app.UserDataChecked = time.Now()
-	err = app.Save()
-	return err
+	return app.Save()
 }
 
 // Updates user Next Watch Queue (or creates it if it does not exist)

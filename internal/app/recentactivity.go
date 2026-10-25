@@ -62,7 +62,10 @@ func (app *Application) QuickUpdateWatched() error {
 		return err
 	}
 	app.RecentActivity.LastCheck = time.Now()
-	return app.updateRecentActivity(updatedActivity)
+	if err := app.updateRecentActivity(updatedActivity); err != nil {
+		return err
+	}
+	return app.Save()
 }
 
 func (app *Application) updateRecentActivity(updatedActivity []RSSItem) error {
