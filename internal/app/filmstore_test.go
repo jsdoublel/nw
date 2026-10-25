@@ -130,6 +130,9 @@ func TestApplicationCleanFilmStore(t *testing.T) {
 }
 
 func TestFilmStoreLookup(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode")
+	}
 	testCases := []struct {
 		name     string
 		existing map[int]*FilmRecord

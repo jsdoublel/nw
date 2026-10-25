@@ -68,6 +68,9 @@ func BenchmarkScrapeUserLists(b *testing.B) {
 }
 
 func TestGetLBxdFilmInfo(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode")
+	}
 	testCases := []struct {
 		name     string
 		url      string
