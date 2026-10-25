@@ -6,6 +6,7 @@ import (
 	"iter"
 	"log"
 	"math/rand"
+	"slices"
 	"time"
 )
 
@@ -91,6 +92,9 @@ func (nw *NextWatch) update() error {
 		return nil
 	}
 	nw.ClearLastUpdated()
+	for i := 1; i <= NumberOfStacks; i++ { // compact stacks to retain original ordering
+		nw.Stacks[i] = slices.DeleteFunc(nw.Stacks[i], func(f *Film) bool { return f == nil })[:StackSize]
+	}
 	pool := make([]*Film, 0, len(nw.watchlist))
 	for _, f := range nw.watchlist {
 		if !nw.watchedFilms.InSet(f) && !nw.ContainsFilm(*f) {
@@ -106,7 +110,7 @@ func (nw *NextWatch) update() error {
 			if nw.Stacks[i][j] == nil && i != NumberOfStacks {
 				r := rand.Intn(StackSize)
 				nw.Stacks[i][j] = nw.Stacks[i+1][r]
-				nw.Stacks[i+1][r] = nil
+				nw.Stacks[i+1] = append(slices.Delete(nw.Stacks[i+1], r, r+1), nil)
 				nw.lastUpdated[i][j] = true
 			} else if nw.Stacks[i][j] == nil {
 				for {
